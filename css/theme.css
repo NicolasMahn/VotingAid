@@ -1,0 +1,56 @@
+/* Every raw color value lives here. style.css gives them meaning. */
+:root {
+  color-scheme: light dark;
+
+  --paper: #f6f4ef;
+  --card: #ffffff;
+  --ink: #1b1d22;
+  --ink-muted: #6b6f78;
+  --line: #d9d6ce;
+  --accent: #1f4fd1;
+  --accent-ink: #ffffff;
+
+  --red-soft: #f4b5b8;
+  --blue-soft: #9fd8ee;
+  --green-soft: #c9e7bf;
+  --yellow-soft: #f5f0a4;
+  --grid: rgba(0, 0, 0, 0.08);
+  --axis: rgba(27, 29, 34, 0.7);
+
+  --disagree-strong: #b3261e;
+  --disagree: #d9776f;
+  --neutral: #8a8f98;
+  --agree: #5b9a5f;
+  --agree-strong: #1f7a33;
+
+  --conservative: #1d2a8a;
+  --progressive: #2fbf5a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #14161b;
+    --card: #1e2128;
+    --ink: #eceae4;
+    --ink-muted: #9a9ea8;
+    --line: #353944;
+    --accent: #6d8dff;
+    --accent-ink: #0d0f14;
+
+    --red-soft: #6b3336;
+    --blue-soft: #25566b;
+    --green-soft: #3a5a35;
+    --yellow-soft: #66602c;
+    --grid: rgba(255, 255, 255, 0.07);
+    --axis: rgba(236, 234, 228, 0.7);
+
+    --disagree-strong: #ff8a80;
+    --disagree: #e3a39d;
+    --neutral: #a6aab3;
+    --agree: #95c998;
+    --agree-strong: #62d37a;
+
+    --conservative: #5566e0;
+    --progressive: #3fd46d;
+  }
+}
