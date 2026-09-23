@@ -1,3 +1,7 @@
+[hidden] {
+  display: none !important;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -16,16 +20,14 @@ header,
 main,
 footer {
   width: 100%;
-  max-width: 40rem;
+  max-width: 42rem;
   margin: 0 auto;
   padding: 1rem 1.25rem;
 }
 
 header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 1.25rem;
 }
 
 main {
@@ -37,50 +39,31 @@ main {
   font-size: 0.9rem;
 }
 
-#statement {
-  font-size: 1.5rem;
-  line-height: 1.3;
-  font-weight: 600;
-  margin: 0.5rem 0 1.25rem;
-  min-height: 4em;
+ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-textarea,
-input {
+input,
+textarea {
   width: 100%;
   font: inherit;
   color: inherit;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 0.6rem;
-  padding: 0.75rem 0.9rem;
+  padding: 0.6rem 0.8rem;
 }
 
 textarea {
   resize: vertical;
 }
 
-textarea:focus,
-input:focus {
+input:focus,
+textarea:focus {
   outline: 2px solid var(--accent);
   outline-offset: -1px;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  align-items: center;
-  margin: 1rem 0;
-}
-
-.actions input {
-  flex: 1;
-  min-width: 12rem;
-}
-
-.spacer {
-  flex: 1;
 }
 
 button {
@@ -88,7 +71,7 @@ button {
   cursor: pointer;
   border: 1px solid var(--accent);
   border-radius: 0.6rem;
-  padding: 0.55rem 1.1rem;
+  padding: 0.5rem 1.1rem;
   background: var(--accent);
   color: var(--accent-ink);
 }
@@ -105,108 +88,127 @@ button:disabled {
 }
 
 button:focus-visible,
-li:focus-visible {
+summary:focus-visible,
+a:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-#reading-text {
-  font-size: 1.1rem;
-  animation: breathe 1.6s ease-in-out infinite;
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.75rem 0;
 }
 
-@keyframes breathe {
-  50% {
-    opacity: 0.4;
-  }
+.actions .spacer {
+  flex: 1;
 }
 
-/* The result */
-
-#compass {
-  display: block;
-  width: 100%;
-  max-width: 28rem;
-  margin: 0 auto;
-  border: 1px solid var(--line);
+#key input {
+  flex: 1;
+  min-width: 12rem;
 }
 
-#social {
-  display: block;
-  width: 100%;
-  max-width: 28rem;
-  margin: 1rem auto 0;
-}
-
-#scores {
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-  margin-bottom: 0;
-}
-
-#counted {
-  text-align: center;
-  margin-top: 0.25rem;
-}
-
-.quadrant.auth-left { fill: var(--red-soft); }
-.quadrant.auth-right { fill: var(--blue-soft); }
-.quadrant.lib-left { fill: var(--green-soft); }
-.quadrant.lib-right { fill: var(--yellow-soft); }
-
-.grid {
-  stroke: var(--grid);
-  stroke-width: 0.5;
-}
-
-.axis {
-  stroke: var(--axis);
-  stroke-width: 0.8;
-}
-
-.label {
-  fill: var(--ink);
-  font-size: 7px;
-  font-weight: 600;
-}
-
-.spread {
-  fill: var(--ink);
-  fill-opacity: 0.18;
-}
-
-.you {
-  fill: var(--ink);
-  stroke: var(--paper);
-  stroke-width: 1.5;
-}
-
-.social-bar { fill: url(#social-gradient); }
-.conservative-stop { stop-color: var(--conservative); }
-.progressive-stop { stop-color: var(--progressive); }
-
-#readings {
-  list-style: none;
-  padding: 0;
-  margin: 1.5rem 0 0;
-}
-
-#readings li {
-  padding: 0.9rem 0;
-  border-top: 1px solid var(--line);
-  cursor: pointer;
-}
-
-#readings li p {
+#key p {
+  flex-basis: 100%;
   margin: 0;
 }
 
-#readings blockquote {
+.topic {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.topic-name {
+  font-weight: 600;
+}
+
+.topic .actions {
+  margin: 0;
+}
+
+.topic .actions button {
+  font-size: 0.9rem;
+  padding: 0.35rem 0.8rem;
+}
+
+#status:empty {
+  display: none;
+}
+
+/* Results */
+
+#results {
+  margin-top: 1.5rem;
+}
+
+.party {
+  border-top: 1px solid var(--line);
+}
+
+.party summary {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr 3.5rem;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.8rem 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+.party summary::-webkit-details-marker {
+  display: none;
+}
+
+.party .name {
+  font-weight: 700;
+}
+
+.party .percent {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.bar {
+  height: 0.7rem;
+  border-radius: 1rem;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  background: var(--party);
+}
+
+.finding {
+  margin: 0 0 1.25rem;
+  padding-left: 0.9rem;
+  border-left: 3px solid var(--party);
+}
+
+.finding p {
+  margin: 0;
+}
+
+.finding-topic {
+  font-weight: 600;
+}
+
+.finding blockquote {
   margin: 0.4rem 0;
-  padding-left: 0.8rem;
-  border-left: 3px solid var(--line);
+  font-size: 0.9rem;
   color: var(--ink-muted);
-  white-space: pre-wrap;
+}
+
+.finding a {
+  font-size: 0.85rem;
+  color: var(--accent);
 }
 
 .verdict {
@@ -214,9 +216,19 @@ li:focus-visible {
   font-weight: 600;
 }
 
-/* How Jev read each reply, from strongly disagree (0) to strongly agree (4). */
+/* How well a program matches an opinion, from Klarer Widerspruch (0) to Klare Übereinstimmung (4). */
 .level-0 { color: var(--disagree-strong); }
 .level-1 { color: var(--disagree); }
 .level-2 { color: var(--neutral); }
 .level-3 { color: var(--agree); }
 .level-4 { color: var(--agree-strong); }
+.silent { color: var(--neutral); font-weight: 400; }
+
+/* Party colors */
+.party-afd { --party: var(--afd-blue); }
+.party-bsw { --party: var(--bsw-purple); }
+.party-fdp { --party: var(--fdp-yellow); }
+.party-gruene { --party: var(--gruene-green); }
+.party-linke { --party: var(--linke-magenta); }
+.party-spd { --party: var(--spd-red); }
+.party-union { --party: var(--union-black); }

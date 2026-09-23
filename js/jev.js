@@ -1,7 +1,7 @@
 // OpenRouter serves Jev through its (alpha) Decisions endpoint rather than
 // chat completions; the request and response use TypeSafe's own format.
 const ENDPOINT = 'https://openrouter.ai/api/alpha/decisions';
-const STORAGE_KEY = 'compass.openrouterKey';
+const STORAGE_KEY = 'votingaid.openrouterKey';
 
 // The key ends up in a request header, which only accepts ASCII.
 const KEY_SHAPE = /^sk-or-[\w-]+$/;
@@ -34,7 +34,7 @@ export async function askJev(apiKey, body) {
     headers: {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
-      'X-Title': 'Political Compass 2.0',
+      'X-Title': 'Voting Aid',
     },
     body: JSON.stringify(body),
   });

@@ -1,23 +1,31 @@
-# Political Compass 2.0
+# Voting Aid
 
-The [SapplyValues](https://sapplyvalues.github.io) questionnaire, answered in your
-own words instead of with buttons. At the end, every reply goes to
-[Jev](https://docs.typesafe.ai/), TypeSafe's decision model, in one request through
-OpenRouter's Decisions endpoint. Jev reads each reply on the usual five-level
-scale (strongly disagree … strongly agree) and returns probabilities, not prose.
+Write what you think about the topics you care about, and see which party's
+program for the Bundestagswahl 2025 is closest. A rebuild of
+[VotingAid](https://github.com/NicolasMahn/VotingAid_Frontend) that runs entirely
+in the browser and lets [Jev](https://docs.typesafe.ai/), TypeSafe's decision
+model, do the judging.
 
-Live: https://nicolasmahn.github.io/political-compass-2.0/
+Live: https://nicolasmahn.github.io/VotingAid/
 
-The score works like SapplyValues, with two differences:
+## How it works
 
-- Skipped statements are left out, so they don't pull a score towards the centre.
-- Each axis shows a spread (the halo on the compass). It comes from how unsure Jev
-  was reading your replies: "yes, clearly" is certain, "partly" is not. It treats
-  the readings as independent, so it says nothing about how consistent your views are.
+1. `scripts/build_programs.py` splits the seven programs in `programme/` into
+   ~1,000-character passages (never across pages) and embeds them once. The result,
+   `data/programme.json`, is the whole database: 2,025 passages, 3.2 MB.
+2. In the browser, each opinion is embedded with the same model, and the four
+   closest passages of every party are picked.
+3. One Jev request per topic answers three narrow questions per party: how well
+   the program matches the opinion, whether it takes a clear position at all, and
+   which passage shows it best. Jev returns probabilities, not prose.
+4. A party's overall match averages its topics, weighted by how clearly the
+   program addresses each one. Topics a program is silent on don't count.
 
-The statements and German translations come from
-[political_compass_llm](https://github.com/NicolasMahn/political_compass_llm),
-which puts language models through the same test.
+One topic costs about $0.0004 and takes under a second; topics run in parallel.
+
+The retrieval step is what keeps Jev's input small (under 32k tokens), so the
+database can grow (more programs, other elections, voting records) without
+changing what Jev is asked.
 
 ## Run locally
 
@@ -29,18 +37,23 @@ npm test
 
 Without `js/key.js`, the page asks for a key and keeps it in `localStorage`.
 
+To rebuild the database after changing a program (needs `pdftotext`):
+
+```sh
+OPENROUTER_API_KEY=sk-or-… python3 scripts/build_programs.py
+```
+
 ## Deploy
 
-Pushing to `main` deploys to GitHub Pages (Settings → Pages → Source: GitHub Actions).
-If the repository has an `OPENROUTER_KEY` secret, the workflow bakes it into the
-deployed `js/key.js`. Anyone can read it from there, so use a separate key with a
-low credit limit. A full questionnaire costs about $0.0003.
+Pushing to `main` deploys to GitHub Pages. If the repository has an
+`OPENROUTER_KEY` secret, the workflow bakes it into the deployed `js/key.js`.
+Anyone can read it from there, so use a separate key with a low credit limit.
 
 ## Where things live
 
-- `js/statements.js`: the 46 statements, their translations and which axis they move.
-- `js/reading.js`: what Jev is asked, and how its answers become axis scores.
-- `js/compass.js`: the compass and the social bar, as SVG.
-- `js/strings.js`: every visible string, English and German.
-- `js/app.js`: the page flow; replies are kept in `localStorage`.
-- `css/theme.css`: every raw color value.
+- `js/retrieval.js`: loading the database and finding the closest passages.
+- `js/analysis.js`: what Jev is asked, and how answers become a match.
+- `js/parties.js`: the parties and links into their programs.
+- `js/suggestions.js`: the "Thema vorschlagen" topics from the original.
+- `js/app.js`: the page.
+- `css/theme.css`: every raw color value, including party colors.

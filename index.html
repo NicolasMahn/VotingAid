@@ -1,72 +1,60 @@
 <!doctype html>
-<html lang="en">
+<html lang="de">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Political Compass 2.0</title>
-    <meta name="description" content="A political compass you answer in your own words, read by Jev." />
+    <title>Voting Aid</title>
+    <meta name="description" content="Schreib deine Meinung, Jev vergleicht sie mit den Wahlprogrammen zur Bundestagswahl 2025." />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="css/theme.css" />
     <link rel="stylesheet" href="css/style.css" />
     <script type="module" src="js/app.js"></script>
   </head>
   <body>
-    <header>
-      <span id="title"></span>
-      <button id="language" class="quiet" type="button"></button>
-    </header>
+    <header>Voting Aid</header>
 
     <main>
-      <section id="question" hidden>
-        <p id="progress" class="muted"></p>
-        <p id="statement"></p>
-        <textarea id="reply" rows="4" maxlength="600" aria-labelledby="statement"></textarea>
-        <p id="hint" class="muted"></p>
-        <div class="actions">
-          <button id="back" class="quiet" type="button"></button>
-          <button id="finish-early" class="quiet" type="button"></button>
-          <span class="spacer"></span>
-          <button id="skip" class="quiet" type="button"></button>
-          <button id="next" type="button"></button>
-        </div>
-      </section>
+      <p>
+        Schreib zu den Themen, die dir wichtig sind, was du denkst. Jev vergleicht deine Meinung mit
+        den Wahlprogrammen zur Bundestagswahl 2025 und zeigt, welche Partei dir am nächsten ist.
+      </p>
 
-      <section id="key" hidden>
-        <p id="key-prompt"></p>
-        <form id="key-form" class="actions">
-          <input id="key-input" type="password" placeholder="sk-or-…" autocomplete="off" required />
-          <button id="key-save" type="submit"></button>
-        </form>
-      </section>
+      <ol id="topics"></ol>
 
-      <section id="reading" hidden>
-        <p id="reading-text" class="muted"></p>
-      </section>
+      <div class="actions">
+        <button id="add" class="quiet" type="button">Weiteres Thema</button>
+        <span class="spacer"></span>
+        <button id="analyse" type="button">Analysieren</button>
+      </div>
+      <p id="status" class="muted" role="status"></p>
 
-      <section id="failure" hidden>
-        <p id="failure-text"></p>
-        <div class="actions">
-          <button id="failure-back" class="quiet" type="button"></button>
-          <button id="retry" type="button"></button>
-        </div>
-      </section>
+      <form id="key" class="actions" hidden>
+        <p class="muted">Diese Seite braucht einen OpenRouter-Schlüssel, um Jev zu fragen. Er bleibt in diesem Browser.</p>
+        <input id="key-input" type="password" placeholder="sk-or-…" autocomplete="off" required />
+        <button type="submit">Schlüssel verwenden</button>
+      </form>
 
-      <section id="result" hidden>
-        <svg id="compass" role="img"></svg>
-        <svg id="social" role="img"></svg>
-        <p id="scores"></p>
-        <p id="counted" class="muted"></p>
-        <div class="actions">
-          <button id="restart" class="quiet" type="button"></button>
-          <span class="spacer"></span>
-          <button id="edit" type="button"></button>
-        </div>
-        <ol id="readings"></ol>
-      </section>
+      <ol id="results"></ol>
     </main>
 
-    <footer>
-      <p id="privacy" class="muted"></p>
+    <footer class="muted">
+      <p>
+        Deine Meinungen werden zum Vergleichen an OpenRouter und TypeSafe geschickt, sonst nirgendwohin.
+        Jev liest nur die passendsten Abschnitte jedes Programms, nicht das ganze. Prüf die Quellen,
+        bevor du dich darauf verlässt.
+      </p>
     </footer>
+
+    <template id="topic-template">
+      <li class="topic">
+        <input class="topic-name" placeholder="Thema, z. B. Mietpreisbremse" aria-label="Thema" />
+        <textarea class="topic-opinion" rows="3" maxlength="1000" placeholder="Deine Meinung" aria-label="Deine Meinung"></textarea>
+        <div class="actions">
+          <button class="suggest quiet" type="button">Thema vorschlagen</button>
+          <span class="spacer"></span>
+          <button class="remove quiet" type="button">Entfernen</button>
+        </div>
+      </li>
+    </template>
   </body>
 </html>

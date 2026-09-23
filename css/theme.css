@@ -10,21 +10,19 @@
   --accent: #1f4fd1;
   --accent-ink: #ffffff;
 
-  --red-soft: #f4b5b8;
-  --blue-soft: #9fd8ee;
-  --green-soft: #c9e7bf;
-  --yellow-soft: #f5f0a4;
-  --grid: rgba(0, 0, 0, 0.08);
-  --axis: rgba(27, 29, 34, 0.7);
-
   --disagree-strong: #b3261e;
   --disagree: #d9776f;
   --neutral: #8a8f98;
   --agree: #5b9a5f;
   --agree-strong: #1f7a33;
 
-  --conservative: #1d2a8a;
-  --progressive: #2fbf5a;
+  --afd-blue: #009ee0;
+  --bsw-purple: #7d254f;
+  --fdp-yellow: #e6d200;
+  --gruene-green: #64a12d;
+  --linke-magenta: #be3075;
+  --spd-red: #e3000f;
+  --union-black: #1b1d22;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -37,20 +35,13 @@
     --accent: #6d8dff;
     --accent-ink: #0d0f14;
 
-    --red-soft: #6b3336;
-    --blue-soft: #25566b;
-    --green-soft: #3a5a35;
-    --yellow-soft: #66602c;
-    --grid: rgba(255, 255, 255, 0.07);
-    --axis: rgba(236, 234, 228, 0.7);
-
     --disagree-strong: #ff8a80;
     --disagree: #e3a39d;
     --neutral: #a6aab3;
     --agree: #95c998;
     --agree-strong: #62d37a;
 
-    --conservative: #5566e0;
-    --progressive: #3fd46d;
+    --bsw-purple: #b04a7c;
+    --union-black: #b8bcc4;
   }
 }
