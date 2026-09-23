@@ -9,6 +9,7 @@
   --line: #d9d6ce;
   --accent: #1f4fd1;
   --accent-ink: #ffffff;
+  --warning: #a15c00;
 
   --disagree-strong: #b3261e;
   --disagree: #d9776f;
@@ -34,6 +35,7 @@
     --line: #353944;
     --accent: #6d8dff;
     --accent-ink: #0d0f14;
+    --warning: #f0b35a;
 
     --disagree-strong: #ff8a80;
     --disagree: #e3a39d;

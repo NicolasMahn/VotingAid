@@ -1,15 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildTopicRequest, overallMatch, readTopic } from '../js/analysis.js';
+import { buildProgramRequest, buildVotesRequest, diverges, overallMatch, readTopic } from '../js/analysis.js';
 import { closestPassages, loadIndex } from '../js/retrieval.js';
+import { positionOf } from '../js/votes.js';
 import { PARTIES } from '../js/parties.js';
 
-test('programs that are silent on a topic do not count towards the match', () => {
-  const readings = [
-    { match: 1, covered: 0.9 },
-    { match: 0, covered: 0.2 },
-  ];
-  assert.equal(overallMatch(readings), 1);
+test('topics a party is silent on do not count towards its match', () => {
+  assert.equal(overallMatch([{ match: 1, covered: 0.9 }, { match: 0, covered: 0.2 }, null]), 1);
 });
 
 test('a party silent on every topic has no match rather than zero', () => {
@@ -17,28 +14,50 @@ test('a party silent on every topic has no match rather than zero', () => {
 });
 
 test('clearly addressed topics weigh more than vaguely addressed ones', () => {
-  const readings = [
-    { match: 1, covered: 1 },
-    { match: 0, covered: 0.5 },
-  ];
-  assert.equal(overallMatch(readings), 2 / 3);
+  assert.equal(overallMatch([{ match: 1, covered: 1 }, { match: 0, covered: 0.5 }]), 2 / 3);
 });
 
-test('every party gets a match, coverage and source question', () => {
+test('every party gets a match, coverage and source question about its program', () => {
   const passages = Object.fromEntries(PARTIES.map(({ id }) => [id, [{ id: `${id}-0`, page: 1, text: 'x' }]]));
-  const { questions } = buildTopicRequest('Rente', 'Die Rente soll steigen.', passages);
+  const { questions } = buildProgramRequest('Rente', 'Die Rente soll steigen.', passages);
   assert.equal(Object.keys(questions).length, PARTIES.length * 3);
   assert.deepEqual(Object.keys(questions.spd_source.criteria), ['spd-0']);
 });
 
-test('answers are read back per party', () => {
-  const answers = {};
-  for (const { id } of PARTIES) {
-    answers[`${id}_match`] = { score: 3, legend: { 0: '', 1: '', 2: '', 3: '', 4: '' } };
-    answers[`${id}_covered`] = { noul: 0.8 };
-    answers[`${id}_source`] = { probabilities: { [`${id}-0`]: 0.3, [`${id}-1`]: 0.7 } };
-  }
-  assert.deepEqual(readTopic(answers).fdp, { match: 0.75, level: 3, covered: 0.8, source: 'fdp-1' });
+test('parties that did not vote are not asked about votes', () => {
+  const vote = {
+    id: 'vote-1',
+    date: '2025-06-01',
+    title: 'Gesetz',
+    description: 'x',
+    accepted: true,
+    results: { spd: { yes: 100 }, fdp: { no_show: 3 } },
+  };
+  const { questions } = buildVotesRequest('Rente', 'Die Rente soll steigen.', [vote]);
+  assert.deepEqual(Object.keys(questions), ['spd_match', 'spd_covered', 'spd_source']);
+});
+
+test('answers are read back per party, and absent parties read as null', () => {
+  const answers = {
+    fdp_match: { score: 3, legend: { 0: '', 1: '', 2: '', 3: '', 4: '' } },
+    fdp_covered: { noul: 0.8 },
+    fdp_source: { probabilities: { a: 0.3, b: 0.7 } },
+  };
+  const readings = readTopic(answers);
+  assert.deepEqual(readings.fdp, { match: 0.75, level: 3, covered: 0.8, source: 'b' });
+  assert.equal(readings.spd, null);
+});
+
+test('a party voting against its own program is flagged', () => {
+  assert.equal(diverges({ match: 1, covered: 0.9 }, { match: 0.25, covered: 0.9 }), true);
+  assert.equal(diverges({ match: 1, covered: 0.9 }, { match: 0.25, covered: 0.2 }), false);
+});
+
+test('a party vote is united only when three quarters vote the same way', () => {
+  assert.equal(positionOf({ yes: 80, no: 20 }).stance, 'dafür');
+  assert.equal(positionOf({ yes: 60, no: 40 }).stance, 'gespalten');
+  assert.equal(positionOf({ no_show: 5 }), null);
+  assert.equal(positionOf(undefined), null);
 });
 
 test('retrieval returns the closest passages of each party', () => {

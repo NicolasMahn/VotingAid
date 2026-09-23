@@ -1,2 +1,3 @@
 js/key.js
 node_modules/
+.cache/

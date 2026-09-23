@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Voting Aid</title>
-    <meta name="description" content="Schreib deine Meinung, Jev vergleicht sie mit den Wahlprogrammen zur Bundestagswahl 2025." />
+    <meta name="description" content="Schreib deine Meinung, Jev vergleicht sie mit den Wahlprogrammen zur Bundestagswahl 2025 und dem Abstimmungsverhalten im Bundestag." />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="css/theme.css" />
     <link rel="stylesheet" href="css/style.css" />
@@ -16,7 +16,7 @@
     <main>
       <p>
         Schreib zu den Themen, die dir wichtig sind, was du denkst. Jev vergleicht deine Meinung mit
-        den Wahlprogrammen zur Bundestagswahl 2025 und zeigt, welche Partei dir am nächsten ist.
+        den Wahlprogrammen zur Bundestagswahl 2025 und damit, wie die Parteien im Bundestag abgestimmt haben.
       </p>
 
       <ol id="topics"></ol>
@@ -34,13 +34,24 @@
         <button type="submit">Schlüssel verwenden</button>
       </form>
 
-      <ol id="results"></ol>
+      <section id="results" hidden>
+        <div id="views" class="actions">
+          <button type="button" class="quiet" data-view="program" aria-pressed="true">Wahlprogramme</button>
+          <button type="button" class="quiet" data-view="votes" aria-pressed="false">Abstimmungen im Bundestag</button>
+        </div>
+        <p id="votes-note" class="muted" hidden>
+          Nur namentliche Abstimmungen seit 2021, also ein kleiner, umstrittener Teil dessen, was der Bundestag
+          beschließt. Regierungsparteien stimmen fast immer gemeinsam ab und liegen hier deshalb oft gleichauf.
+          FDP und BSW sind seit 2025 nicht mehr im Bundestag.
+        </p>
+        <ol id="ranking"></ol>
+      </section>
     </main>
 
     <footer class="muted">
       <p>
         Deine Meinungen werden zum Vergleichen an OpenRouter und TypeSafe geschickt, sonst nirgendwohin.
-        Jev liest nur die passendsten Abschnitte jedes Programms, nicht das ganze. Prüf die Quellen,
+        Jev liest nur die passendsten Abschnitte und Abstimmungen, nicht alles. Prüf die Quellen,
         bevor du dich darauf verlässt.
       </p>
     </footer>
