@@ -110,6 +110,47 @@ export function buildVotesRequest(topic, opinion, votes) {
   };
 }
 
+export const STATEMENT_KINDS = {
+  rede: 'Rede im Bundestag',
+  fraktion: 'Website der Bundestagsfraktion',
+  partei: 'Website der Bundespartei',
+};
+
+/**
+ * The opinion plus, per party, the closest passages from speeches and the
+ * fraction's and party's websites. `statementsByParty` maps party ids to
+ * `{ doc, passage }` pairs.
+ */
+export function buildStatementsRequest(topic, opinion, statementsByParty) {
+  const statements = Object.fromEntries(
+    PARTIES.map(({ id, short }) => [
+      short,
+      (statementsByParty[id] ?? []).map(({ doc, passage }) => ({
+        id: doc.id,
+        kind: STATEMENT_KINDS[doc.kind],
+        speaker: [doc.speaker, doc.role].filter(Boolean).join(', ') || null,
+        date: doc.date,
+        context: doc.title,
+        text: passage,
+      })),
+    ]),
+  );
+  return {
+    model: MODEL,
+    state: {
+      person: { topic, opinion },
+      how_to_read:
+        'Statements by individual politicians do not always match the party line. ' +
+        'Speeches often argue against another party; judge what the speaker wants, not what they attack.',
+      statements,
+    },
+    questions: questionsFor(
+      (short) => `what politicians and official channels of ${short} have said in these statements`,
+      (party) => (statementsByParty[party] ?? []).map(({ doc }) => doc.id),
+    ),
+  };
+}
+
 const likeliest = (probabilities) =>
   Object.entries(probabilities).reduce((best, next) => (next[1] > best[1] ? next : best));
 

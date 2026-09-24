@@ -2,3 +2,4 @@ js/key.js
 node_modules/
 .cache/
 __pycache__/
+.venv/

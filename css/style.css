@@ -336,6 +336,15 @@ dialog a {
   color: var(--ink-muted);
 }
 
+.statement-meta {
+  font-size: 0.85rem;
+}
+
+.statement-context {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+}
+
 .divergence {
   font-size: 0.85rem;
   color: var(--warning);

@@ -25,7 +25,8 @@
     <main>
       <p>
         Schreib zu den Themen, die dir wichtig sind, was du denkst. Jev vergleicht deine Meinung mit
-        den Wahlprogrammen zur Bundestagswahl 2025 und damit, wie die Parteien im Bundestag abgestimmt haben.
+        den Wahlprogrammen zur Bundestagswahl 2025, mit ihren Abstimmungen im Bundestag und mit dem, was
+        ihre Politikerinnen und Politiker sagen.
       </p>
 
       <ol id="topics"></ol>
@@ -47,11 +48,17 @@
         <div id="views" class="actions">
           <button type="button" class="quiet" data-view="program" aria-pressed="true">Wahlprogramme</button>
           <button type="button" class="quiet" data-view="votes" aria-pressed="false">Abstimmungen im Bundestag</button>
+          <button type="button" class="quiet" data-view="statements" aria-pressed="false">Aussagen</button>
         </div>
         <p id="votes-note" class="muted" hidden>
           Nur namentliche Abstimmungen seit 2021, also ein kleiner, umstrittener Teil dessen, was der Bundestag
           beschließt. Regierungsparteien stimmen fast immer gemeinsam ab und liegen hier deshalb oft gleichauf.
           FDP und BSW sind seit 2025 nicht mehr im Bundestag.
+        </p>
+        <p id="statements-note" class="muted" hidden>
+          Reden im Bundestag seit März 2025 und Texte der Bundestagsfraktionen und Bundesparteien.
+          Einzelne Politikerinnen und Politiker vertreten nicht immer die Linie ihrer Partei.
+          FDP und BSW kommen nur über ihre Parteiwebsites vor.
         </p>
         <ol id="ranking"></ol>
         <div id="silent" hidden>
@@ -64,7 +71,7 @@
     <footer class="muted">
       <p>
         Deine Meinungen werden zum Vergleichen an OpenRouter und TypeSafe geschickt, sonst nirgendwohin.
-        Jev liest nur die passendsten Abschnitte und Abstimmungen, nicht alles. Prüf die Quellen,
+        Jev liest nur die passendsten Abschnitte, Abstimmungen und Aussagen, nicht alles. Prüf die Quellen,
         bevor du dich darauf verlässt.
       </p>
     </footer>
@@ -77,8 +84,10 @@
       <ul id="program-list"></ul>
       <p class="dialog-subtitle">Abstimmungen im Bundestag</p>
       <p id="votes-meta" class="muted">Wird geladen…</p>
+      <p class="dialog-subtitle">Aussagen</p>
+      <p id="statements-meta" class="muted">Wird geladen…</p>
       <p class="muted">
-        Beide Quellen sind in Abschnitte zerlegt. Jev bekommt pro Thema nur die passendsten davon zu sehen.
+        Alle Quellen sind in Abschnitte zerlegt. Jev bekommt pro Thema nur die passendsten davon zu sehen.
         Der Code liegt auf <a href="https://github.com/NicolasMahn/VotingAid" target="_blank" rel="noopener">GitHub</a>.
       </p>
     </dialog>

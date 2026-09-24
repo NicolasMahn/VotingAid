@@ -1,4 +1,5 @@
-"""Embedding helpers shared by the build scripts. Must match js/retrieval.js."""
+"""Embedding helpers shared by the build scripts. The defaults must match
+js/retrieval.js; build_statements.py uses its own model and size."""
 
 from __future__ import annotations
 
@@ -7,7 +8,7 @@ import json
 import os
 import urllib.request
 
-EMBEDDING_MODEL = "openai/text-embedding-3-large"
+EMBEDDING_MODEL = "voyageai/voyage-4-large"
 DIMENSIONS = 512
 BATCH = 100
 
@@ -16,10 +17,10 @@ def api_key() -> str:
     return os.environ.get("OPENROUTER_API_KEY") or os.environ["OPEN_ROUTER_KEY"]
 
 
-def _embed_batch(texts: list[str], key: str) -> list[list[float]]:
+def embed_batch(texts: list[str], key: str, model: str = EMBEDDING_MODEL, dimensions: int = DIMENSIONS) -> list[list[float]]:
     request = urllib.request.Request(
         "https://openrouter.ai/api/v1/embeddings",
-        data=json.dumps({"model": EMBEDDING_MODEL, "input": texts, "dimensions": DIMENSIONS}).encode(),
+        data=json.dumps({"model": model, "input": texts, "dimensions": dimensions}).encode(),
         headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
     )
     with urllib.request.urlopen(request, timeout=120) as response:
@@ -38,7 +39,7 @@ def embed_all(texts: list[str]) -> str:
     key = api_key()
     vectors = bytearray()
     for start in range(0, len(texts), BATCH):
-        for vector in _embed_batch(texts[start : start + BATCH], key):
+        for vector in embed_batch(texts[start : start + BATCH], key):
             vectors += _quantise(vector)
         print(f"embedded {min(start + BATCH, len(texts))} / {len(texts)}")
     return base64.b64encode(bytes(vectors)).decode()

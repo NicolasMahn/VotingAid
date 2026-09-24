@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Turns the party programs in programme/ into data/programme.json.
 
-Each page is split into passages of roughly PASSAGE_CHARS characters, never
+Each page is split into passages of about 1,000 characters, never
 across pages, so every passage can link to the exact PDF page. Every passage
 gets an embedding, stored as int8 to keep the file small; the browser embeds
 the person's opinion with the same model and finds the closest passages.
@@ -20,11 +20,11 @@ import subprocess
 from pathlib import Path
 
 from embeddings import index_file
+from passages import pack
 
 ROOT = Path(__file__).resolve().parent.parent
 PARTIES = ["afd", "bsw", "fdp", "gruene", "linke", "spd", "union"]
 
-PASSAGE_CHARS = 1000
 MIN_PASSAGE_CHARS = 200  # shorter leftovers are headings or page furniture
 
 
@@ -45,23 +45,8 @@ def paragraphs(page: str) -> list[str]:
     return cleaned
 
 
-def sentences(paragraph: str) -> list[str]:
-    # Some programs have no blank lines at all, so a "paragraph" can be a page.
-    if len(paragraph) <= PASSAGE_CHARS:
-        return [paragraph]
-    return re.split(r"(?<=[.!?])\s+(?=[A-ZÄÖÜ„•])", paragraph)
-
-
 def passages(page: str) -> list[str]:
-    result, current = [], ""
-    for piece in (s for p in paragraphs(page) for s in sentences(p)):
-        if current and len(current) + len(piece) > PASSAGE_CHARS:
-            result.append(current)
-            current = ""
-        current = f"{current} {piece}".strip()
-    if current:
-        result.append(current)
-    return [p for p in result if len(p) >= MIN_PASSAGE_CHARS]
+    return pack(paragraphs(page), MIN_PASSAGE_CHARS)
 
 
 def main() -> None:

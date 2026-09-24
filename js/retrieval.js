@@ -1,7 +1,11 @@
 // Finds the program passages and Bundestag votes closest to an opinion. Both
-// files and their int8 embeddings come from scripts/; the opinion is embedded
-// with the same model at the same size.
+// files and their int8 embeddings come from scripts/.
 const ENDPOINT = 'https://openrouter.ai/api/v1/embeddings';
+
+// Every database is built with this model. Its embeddings can be shortened by
+// truncating and renormalising, so one query at full size serves all of them.
+export const QUERY_MODEL = 'voyageai/voyage-4-large';
+export const QUERY_DIMENSIONS = 1024;
 
 export const PASSAGES_PER_PARTY = 4;
 export const VOTES_PER_TOPIC = 4;
@@ -18,15 +22,21 @@ export function loadIndex(file) {
   return { model: file.model, dimensions, items };
 }
 
-export async function embed(apiKey, index, text) {
+export async function embedQuery(apiKey, text) {
   const response = await fetch(ENDPOINT, {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: index.model, input: text, dimensions: index.dimensions }),
+    body: JSON.stringify({ model: QUERY_MODEL, input: text, dimensions: QUERY_DIMENSIONS }),
   });
   const payload = await response.json().catch(() => null);
   if (!response.ok) throw new Error(payload?.error?.message ?? response.statusText);
   return payload.data[0].embedding;
+}
+
+/** The query cut to a database's size; similarity ignores length, so no rescaling. */
+export function shorten(query, index) {
+  if (index.model !== QUERY_MODEL) throw new Error(`${index.model} was built with a different model`);
+  return query.slice(0, index.dimensions);
 }
 
 function similarity(query, queryNorm, passage) {
