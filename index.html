@@ -11,7 +11,16 @@
     <script type="module" src="js/app.js"></script>
   </head>
   <body>
-    <header>Voting Aid</header>
+    <header>
+      <span>Voting Aid</span>
+      <button id="open-sources" class="quiet" type="button" aria-haspopup="dialog">
+        <svg class="icon" viewBox="0 0 16 16" aria-hidden="true">
+          <circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5" />
+          <path d="M8 7v4.5M8 4.5v.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+        Quellen
+      </button>
+    </header>
 
     <main>
       <p>
@@ -45,6 +54,10 @@
           FDP und BSW sind seit 2025 nicht mehr im Bundestag.
         </p>
         <ol id="ranking"></ol>
+        <div id="silent" hidden>
+          <p id="silent-text" class="muted"></p>
+          <ul id="silent-parties"></ul>
+        </div>
       </section>
     </main>
 
@@ -55,6 +68,20 @@
         bevor du dich darauf verlässt.
       </p>
     </footer>
+
+    <dialog id="sources" aria-labelledby="sources-title">
+      <div class="dialog-head">
+        <p id="sources-title">Wahlprogramme zur Bundestagswahl 2025</p>
+        <button id="close-sources" class="quiet" type="button" aria-label="Schließen">✕</button>
+      </div>
+      <ul id="program-list"></ul>
+      <p class="dialog-subtitle">Abstimmungen im Bundestag</p>
+      <p id="votes-meta" class="muted">Wird geladen…</p>
+      <p class="muted">
+        Beide Quellen sind in Abschnitte zerlegt. Jev bekommt pro Thema nur die passendsten davon zu sehen.
+        Der Code liegt auf <a href="https://github.com/NicolasMahn/VotingAid" target="_blank" rel="noopener">GitHub</a>.
+      </p>
+    </dialog>
 
     <template id="topic-template">
       <li class="topic">

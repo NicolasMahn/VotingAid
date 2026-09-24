@@ -26,8 +26,24 @@ footer {
 }
 
 header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   font-weight: 700;
   font-size: 1.25rem;
+}
+
+header button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+
+.icon {
+  width: 1em;
+  height: 1em;
 }
 
 main {
@@ -174,6 +190,13 @@ a:focus-visible {
   font-weight: 700;
 }
 
+.party .coverage {
+  grid-column: 2 / 4;
+  margin-top: -0.4rem;
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+}
+
 .party .percent {
   text-align: right;
   font-variant-numeric: tabular-nums;
@@ -190,6 +213,92 @@ a:focus-visible {
   display: block;
   height: 100%;
   background: var(--party);
+}
+
+#silent {
+  margin-top: 1.25rem;
+  padding: 0.9rem 1rem;
+  border: 1px dashed var(--line);
+  border-radius: 0.6rem;
+}
+
+#silent p {
+  margin: 0 0 0.5rem;
+}
+
+#silent-parties {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#silent-parties li {
+  padding: 0.15rem 0.7rem;
+  border: 1px solid var(--party);
+  border-radius: 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* Sources */
+
+dialog {
+  width: min(40rem, calc(100% - 2rem));
+  max-height: calc(100% - 2rem);
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 0.8rem;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+dialog::backdrop {
+  background: var(--backdrop);
+}
+
+.dialog-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+#sources-title,
+.dialog-subtitle {
+  font-weight: 700;
+  margin: 0;
+}
+
+.dialog-subtitle {
+  margin-top: 1.25rem;
+}
+
+#program-list {
+  list-style: none;
+  padding: 0;
+}
+
+#program-list li {
+  padding: 0.6rem 0 0.6rem 0.8rem;
+  border-left: 3px solid var(--party);
+  margin: 0.6rem 0;
+}
+
+#program-list p {
+  margin: 0;
+}
+
+.program-title {
+  font-weight: 600;
+}
+
+#program-list a,
+dialog a {
+  font-size: 0.9rem;
+  color: var(--accent);
 }
 
 .finding {

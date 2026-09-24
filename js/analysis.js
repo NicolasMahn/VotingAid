@@ -136,7 +136,7 @@ export function readTopic(answers) {
   );
 }
 
-const isCovered = (reading) => reading && reading.covered >= COVERED;
+export const isCovered = (reading) => reading && reading.covered >= COVERED;
 
 /**
  * A party's overall match across topics, 0–1, or null when it is silent on

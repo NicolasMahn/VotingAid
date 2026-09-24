@@ -1,11 +1,11 @@
 import { askJev, findApiKey, isApiKey, rememberApiKey } from './jev.js';
 import { VOTES_PER_TOPIC, closest, closestPassages, embed, loadIndex } from './retrieval.js';
 import {
-  COVERED,
   LEVELS,
   buildProgramRequest,
   buildVotesRequest,
   diverges,
+  isCovered,
   overallMatch,
   readTopic,
 } from './analysis.js';
@@ -133,38 +133,51 @@ function showResults() {
   }
   $('votes-note').hidden = view !== 'votes';
 
-  const ranked = PARTIES.map((party) => ({
-    party,
-    overall: overallMatch(analysis.topics.map((topic) => topic[view][party.id])),
-  })).sort((a, b) => (b.overall ?? -1) - (a.overall ?? -1));
+  const scored = PARTIES.map((party) => {
+    const readings = analysis.topics.map((topic) => topic[view][party.id]);
+    return { party, overall: overallMatch(readings), covered: readings.filter(isCovered).length };
+  });
+  // Parties that say nothing about any topic are not ranked: a missing
+  // position is not a low match, and listing them last would suggest one.
+  const ranked = scored.filter(({ overall }) => overall !== null).sort((a, b) => b.overall - a.overall);
+  const silent = scored.filter(({ overall }) => overall === null);
 
-  $('ranking').replaceChildren(
-    ...ranked.map(({ party, overall }) => {
-      const item = element('li', `party party-${party.id}`);
-      const details = document.createElement('details');
-      const summary = document.createElement('summary');
-      const bar = element('span', 'bar');
-      const fill = document.createElement('span');
-      fill.style.width = `${Math.round((overall ?? 0) * 100)}%`;
-      bar.append(fill);
-      summary.append(
-        element('span', 'name', party.short),
-        bar,
-        element('span', 'percent', overall === null ? '–' : `${Math.round(overall * 100)} %`),
-      );
-      details.append(summary, element('p', 'muted', party.name));
-      for (const topic of analysis.topics) details.append(finding(topic, party));
-      item.append(details);
-      return item;
-    }),
+  $('ranking').replaceChildren(...ranked.map((entry) => rankedParty(entry)));
+  $('silent').hidden = !silent.length;
+  $('silent-text').textContent =
+    view === 'program'
+      ? 'Keine klare Position im Wahlprogramm zu deinen Themen:'
+      : 'Keine passende Abstimmung zu deinen Themen:';
+  $('silent-parties').replaceChildren(
+    ...silent.map(({ party }) => element('li', `party-${party.id}`, party.short)),
   );
+}
+
+function rankedParty({ party, overall, covered }) {
+  const item = element('li', `party party-${party.id}`);
+  const details = document.createElement('details');
+  const summary = document.createElement('summary');
+  const bar = element('span', 'bar');
+  const fill = document.createElement('span');
+  fill.style.width = `${Math.round(overall * 100)}%`;
+  bar.append(fill);
+  summary.append(element('span', 'name', party.short), bar, element('span', 'percent', `${Math.round(overall * 100)} %`));
+  const total = analysis.topics.length;
+  if (covered < total) {
+    const where = view === 'program' ? 'im Programm' : 'in Abstimmungen';
+    summary.append(element('span', 'coverage', `Nur ${covered} von ${total} Themen ${where} behandelt`));
+  }
+  details.append(summary, element('p', 'muted', party.name));
+  for (const topic of analysis.topics) details.append(finding(topic, party));
+  item.append(details);
+  return item;
 }
 
 function finding(topic, party) {
   const reading = topic[view][party.id];
   const block = element('div', 'finding');
   block.append(element('p', 'finding-topic', topic.topic));
-  if (!reading || reading.covered < COVERED) {
+  if (!isCovered(reading)) {
     const silence = view === 'program' ? 'Keine klare Position im Programm' : 'Keine passende Abstimmung';
     block.append(element('p', 'verdict silent', silence));
     return block;
@@ -181,9 +194,8 @@ function finding(topic, party) {
     );
   } else {
     const vote = analysis.votes.get(reading.source);
-    const date = new Date(vote.date).toLocaleDateString('de-DE');
     block.append(
-      element('p', 'vote-title', `${vote.title} (${date}, ${vote.accepted ? 'angenommen' : 'abgelehnt'})`),
+      element('p', 'vote-title', `${vote.title} (${vote.date}, ${vote.accepted ? 'angenommen' : 'abgelehnt'})`),
       element('p', 'vote-position', `${party.short}: ${describePosition(positionOf(vote.results[party.id]))}`),
       link(vote.url, 'Abstimmung auf abgeordnetenwatch.de'),
     );
@@ -225,6 +237,33 @@ for (const button of document.querySelectorAll('#views button')) {
     showResults();
   });
 }
+
+function fillSources(votes) {
+  $('program-list').replaceChildren(
+    ...PARTIES.map(({ id, short, program }) => {
+      const item = element('li', `party-${id}`);
+      item.append(
+        element('p', 'program-title', `${short}: ${program.title}`),
+        element('p', 'muted', program.adopted),
+        link(programUrl(id), `PDF herunterladen (${program.pages} Seiten, ${program.megabytes.toLocaleString('de-DE')} MB)`),
+      );
+      return item;
+    }),
+  );
+  const dates = votes.items.map((vote) => vote.date).sort();
+  $('votes-meta').replaceChildren(
+    `${votes.items.length} namentliche Abstimmungen von ${dates[0]} bis ${dates.at(-1)}, pro Partei ausgezählt. ` +
+      'Quelle: ',
+    link('https://www.abgeordnetenwatch.de/api', 'abgeordnetenwatch.de'),
+    ' (Lizenz CC0). FDP und BSW sind seit 2025 nicht mehr im Bundestag.',
+  );
+}
+
+$('open-sources').addEventListener('click', () => $('sources').showModal());
+$('close-sources').addEventListener('click', () => $('sources').close());
+// A click on the backdrop lands on the dialog element itself.
+$('sources').addEventListener('click', (event) => event.target === $('sources') && $('sources').close());
+votesReady.then(fillSources);
 
 const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
 (saved.length ? saved : [{}]).forEach(addTopic);
