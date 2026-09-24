@@ -126,6 +126,15 @@ def main() -> None:
         "from": dates[0],
         "to": dates[-1],
         "counts": {kind: sum(doc["kind"] == kind for doc in docs) for kind in ("rede", "fraktion", "partei")},
+        # Per website, since some only reach back a few months.
+        "websites": {
+            source: {
+                "party": next(doc["party"] for doc in docs if doc["source"] == source),
+                "count": sum(doc["source"] == source for doc in docs),
+                "from": min(doc["date"] for doc in docs if doc["source"] == source),
+            }
+            for source in sorted({doc["source"] for doc in docs if doc["kind"] != "rede"})
+        },
     }
     (OUT / "index.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")
     size = sum(f.stat().st_size for f in OUT.rglob("*") if f.is_file())

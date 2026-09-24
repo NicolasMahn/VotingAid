@@ -314,9 +314,15 @@ statementsReady.then(({ meta }) => {
   $('statements-meta').replaceChildren(
     `${rede.toLocaleString('de-DE')} Redebeiträge aus den `,
     link('https://www.bundestag.de/services/opendata', 'Plenarprotokollen des Bundestags'),
-    ` und ${(fraktion + partei).toLocaleString('de-DE')} Seiten der Websites von Bundestagsfraktionen und Bundesparteien, ` +
-      `von ${meta.from} bis ${meta.to}. Reden im Bundestag dürfen frei wiedergegeben werden (§ 48 UrhG); ` +
+    ` und ${(fraktion + partei).toLocaleString('de-DE')} Seiten von Websites der Bundestagsfraktionen und ` +
+      `Bundesparteien, bis ${meta.to}. Reden im Bundestag dürfen frei wiedergegeben werden (§ 48 UrhG); ` +
       'von Websites zeigen wir nur kurze Auszüge mit Link.',
+  );
+  // Some sites only reach back a few months, so each shows its own range.
+  $('website-list').replaceChildren(
+    ...Object.entries(meta.websites).map(([source, { party, count, from }]) =>
+      element('li', `party-${party}`, `${source}: ${count.toLocaleString('de-DE')} Seiten seit ${from}`),
+    ),
   );
 });
 

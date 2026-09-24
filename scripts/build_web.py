@@ -22,12 +22,13 @@ import hashlib
 import json
 import re
 import time
+import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor
 from email.utils import parsedate_to_datetime
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 
 import trafilatura
 
@@ -43,29 +44,38 @@ PAUSE_SECONDS = 1.5  # per site, unless its robots.txt asks for more; sites run 
 MIN_PASSAGE_CHARS = 300
 
 # Each site lists its pages in sitemaps (found in robots.txt when not given)
-# or, where the sitemap is missing or broken, in a paged RSS feed.
+# or, where the sitemap is missing or broken, in a paged RSS feed or paged
+# listing pages.
 SITES = [
     {"party": "union", "kind": "fraktion", "home": "https://www.cducsu.de/", "sitemaps": ["https://www.cducsu.de/sitemap.xml"]},
     {"party": "spd", "kind": "fraktion", "home": "https://www.spdfraktion.de/", "sitemaps": ["https://www.spdfraktion.de/sitemap.xml"]},
     {"party": "gruene", "kind": "fraktion", "home": "https://www.gruene-bundestag.de/"},
-    {"party": "linke", "kind": "fraktion", "home": "https://www.linksfraktion.de/"},
+    # Formerly linksfraktion.de; its sitemaps end in 2018 and it asks for 10 s between requests.
+    {"party": "linke", "kind": "fraktion", "home": "https://www.dielinkebt.de/", "max_pages": 300,
+     "listing": "https://www.dielinkebt.de/presse/pressemitteilungen/news/seite-{page}/", "first_page": 1,
+     "links": r'href="([^"]*/pressemitteilungen/detail/[^"]*)"', "listing_pages": 15},
     {"party": "afd", "kind": "fraktion", "home": "https://afdbundestag.de/"},
     {"party": "union", "kind": "partei", "home": "https://www.cdu.de/"},
     {"party": "spd", "kind": "partei", "home": "https://www.spd.de/", "sitemaps": ["https://www.spd.de/sitemap.xml"]},
     {"party": "gruene", "kind": "partei", "home": "https://www.gruene.de/"},
     {"party": "linke", "kind": "partei", "home": "https://www.die-linke.de/", "sitemaps": ["https://www.die-linke.de/sitemap.xml"]},
     {"party": "afd", "kind": "partei", "home": "https://www.afd.de/"},
+    # No sitemap, and the feed cannot be paged: only its newest 100 posts.
     {"party": "fdp", "kind": "partei", "home": "https://www.fdp.de/", "feed": "https://www.fdp.de/rss.xml?page={page}", "first_page": 0},
     {"party": "bsw", "kind": "partei", "home": "https://bsw-vg.de/", "feed": "https://bsw-vg.de/feed/?paged={page}", "first_page": 1},
 ]
 
-# Pages that are about people, events or the site itself rather than positions.
+# Pages that are about people, events, downloads or the site itself rather than positions.
 SKIP = re.compile(
-    r"/(termine?|veranstaltung|events?|abgeordnete|personen|kontakt|impressum|datenschutz|jobs?|stellen|karriere"
-    r"|shop|spenden?|mitglied|mitmachen|suche|search|en|tag|tags|kategorie|category|author|autor|page|feed"
-    r"|newsletter|login|presse/fotos|mediathek|video|podcast|sammlungen)(/|$)",
+    r"/(termine?|veranstaltung(en)?|events?|abgeordnete|personen|kontakt|impressum|datenschutz(erklaerung)?|jobs?"
+    r"|stellen|karriere|shop|spenden?|mitglied|mitmachen|suche|search|en|tag|tags|kategorie|category|author|autor"
+    r"|page|feed|login|presse/fotos|mediathek|video|podcast|sammlungen|fraktion|wir-im-bundestag|ueber-uns"
+    r"|unterstuetzen|service|downloads|app|home|startseite|netiquette|transparenz|404)(/|$)|newsletter|\.pdf$",
     re.IGNORECASE,
 )
+
+# Pages that list teasers, or ask for money, rather than state a position.
+NOT_A_STATEMENT = re.compile(r"Online-Spende|Bankverbindung|^%PDF")
 
 # Consent banners and embed placeholders that trafilatura keeps as text.
 BOILERPLATE = re.compile(
@@ -76,10 +86,16 @@ BOILERPLATE = re.compile(
 HEADERS = {"User-Agent": "VotingAid (github.com/NicolasMahn/VotingAid)"}
 
 
-def get(url: str) -> bytes | None:
+def get(url: str, retry: bool = True) -> bytes | None:
     try:
         with urllib.request.urlopen(urllib.request.Request(url, headers=HEADERS), timeout=60) as response:
             body = response.read()
+    except urllib.error.HTTPError as error:
+        if retry and (error.code == 429 or error.code >= 500):
+            time.sleep(30)  # throttled or briefly down: back off once
+            return get(url, retry=False)
+        print(f"  skipped {url}: {error}")
+        return None
     except Exception as error:  # a missing sitemap or a dead page is not fatal
         print(f"  skipped {url}: {error}")
         return None
@@ -113,13 +129,29 @@ def feed_entries(template: str, first_page: int, pause: float) -> list[tuple[str
     entries, number = [], first_page
     while True:
         body = get(template.format(page=number))
-        items = ET.fromstring(body).iter("item") if body else []
+        # Some feeds start with blank lines, which XML does not allow before the declaration.
+        items = ET.fromstring(body.lstrip()).iter("item") if body else []
         found = [(item.findtext("link", "").strip(), parsedate_to_datetime(item.findtext("pubDate")).date().isoformat()) for item in items]
-        entries += found
-        if not found or found[-1][1] < SINCE:
+        new = [entry for entry in found if entry not in entries]
+        entries += new
+        # Past its last page, a feed may repeat itself instead of ending.
+        if not new or new[-1][1] < SINCE:
             return entries
         number += 1
         time.sleep(pause)
+
+
+def listing_entries(site: dict, pause: float) -> list[tuple[str, str]]:
+    """Article links from paged listing pages, newest first; dates come from the articles."""
+    links = []
+    for number in range(site["first_page"], site["first_page"] + site["listing_pages"]):
+        body = get(site["listing"].format(page=number))
+        found = re.findall(site["links"], (body or b"").decode(errors="ignore"))
+        if not found:
+            break
+        links += [urljoin(site["home"], link) for link in found]
+        time.sleep(pause)
+    return [(link, "") for link in dict.fromkeys(links)]
 
 
 def robots_rules(home: str) -> tuple[list[str], float]:
@@ -135,9 +167,11 @@ def page(url: str, pause: float) -> dict:
     if cached.exists():
         return json.loads(cached.read_text(encoding="utf-8"))
     time.sleep(pause)
+    body = get(url)
     try:
-        html = trafilatura.fetch_url(url)
-        document = trafilatura.bare_extraction(html, with_metadata=True, favor_precision=True) if html else None
+        # The default balance, not favor_precision: on some sites precision picks
+        # the consent banner over the article.
+        document = trafilatura.bare_extraction(body.decode("utf-8", errors="replace"), with_metadata=True) if body else None
     except Exception as error:  # one broken page must not stop the site
         print(f"  skipped {url}: {error}")
         document = None
@@ -154,30 +188,38 @@ def collect(site: dict) -> list[dict]:
     listed, pause = robots_rules(site["home"])
     if "feed" in site:
         entries = feed_entries(site["feed"], site["first_page"], pause)
+    elif "listing" in site:
+        entries = listing_entries(site, pause)
     else:
         entries = [entry for sitemap in site.get("sitemaps") or listed for entry in sitemap_entries(sitemap, pause)]
     host = urlparse(site["home"]).netloc
     domain = host.removeprefix("www.")
     # Pages without a date in the listing are kept for now and filtered by their own date.
+    # Listings come newest first; a stable sort keeps that order where dates are missing.
     candidates = sorted(
-        {(url, date) for url, date in entries if urlparse(url).netloc.removeprefix("www.") == domain
-         and not SKIP.search(urlparse(url).path) and (not date or date >= SINCE)},
+        dict.fromkeys((url, date) for url, date in entries if urlparse(url).netloc.removeprefix("www.") == domain
+                      and not SKIP.search(urlparse(url).path) and (not date or date >= SINCE)),
         key=lambda entry: entry[1],
         reverse=True,
-    )[:MAX_PAGES_PER_SITE]
+    )[: site.get("max_pages", MAX_PAGES_PER_SITE)]
     items = []
     for url, _ in candidates:
         result = page(url, pause)
         date = result.get("date") or ""
         if date < SINCE:
             continue
-        paragraphs = [line.strip() for line in (result.get("text") or "").split("\n") if line.strip()]
+        text = result.get("text") or ""
+        if NOT_A_STATEMENT.search(text) or text.count("Weiterlesen") >= 2:
+            continue
+        paragraphs = [line.strip() for line in text.split("\n") if line.strip()]
         passages = pack([p for p in paragraphs if not BOILERPLATE.search(p)], MIN_PASSAGE_CHARS)
         if passages:
             items.append({
                 "kind": site["kind"],
                 "party": site["party"],
-                "speaker": result.get("author"),
+                # Page metadata names photographers as often as authors, so the
+                # source is the fraction or party; press releases name the speaker in the text.
+                "speaker": None,
                 "role": None,
                 "date": date,
                 "source": domain,
@@ -189,9 +231,18 @@ def collect(site: dict) -> list[dict]:
     return items
 
 
+def collect_safely(site: dict) -> list[dict]:
+    # One site failing costs that site, not the whole run; its pages stay cached.
+    try:
+        return collect(site)
+    except Exception as error:
+        print(f"{site['home']}: failed, {error!r}")
+        return []
+
+
 def main() -> None:
     with ThreadPoolExecutor(max_workers=len(SITES)) as pool:
-        items = [item for site_items in pool.map(collect, SITES) for item in site_items]
+        items = [item for site_items in pool.map(collect_safely, SITES) for item in site_items]
     # Fractions and parties often publish the same press release twice.
     unique = list({"\n".join(item["passages"]): item for item in items}.values())
     OUT.parent.mkdir(parents=True, exist_ok=True)

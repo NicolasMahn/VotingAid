@@ -28,7 +28,7 @@ const DESCRIPTION_CHARS = 1200;
 // questions: how well the evidence matches the opinion, whether it addresses
 // the issue at all, and which excerpt or vote shows it best. Keys are
 // namespaced by party (`spd_match`) so readTopic can split them back out.
-function partyQuestions(short, evidence, candidates) {
+function partyQuestions(short, evidence, candidates, coverage) {
   return {
     match: {
       type: 'score',
@@ -40,7 +40,7 @@ function partyQuestions(short, evidence, candidates) {
     },
     covered: {
       type: 'noul',
-      instructions: `${evidence(short)} takes a clear position on the specific issue in the person's opinion.`,
+      instructions: coverage(short, evidence(short)),
     },
     source: {
       type: 'choice',
@@ -50,12 +50,15 @@ function partyQuestions(short, evidence, candidates) {
   };
 }
 
-function questionsFor(evidence, candidatesOf) {
+const takesClearPosition = (short, evidence) =>
+  `${evidence} takes a clear position on the specific issue in the person's opinion.`;
+
+function questionsFor(evidence, candidatesOf, coverage = takesClearPosition) {
   const questions = {};
   for (const { id, short } of PARTIES) {
     const candidates = candidatesOf(id);
     if (!candidates.length) continue;
-    for (const [key, question] of Object.entries(partyQuestions(short, evidence, candidates))) {
+    for (const [key, question] of Object.entries(partyQuestions(short, evidence, candidates, coverage))) {
       questions[`${id}_${key}`] = question;
     }
   }
@@ -147,6 +150,10 @@ export function buildStatementsRequest(topic, opinion, statementsByParty) {
     questions: questionsFor(
       (short) => `what politicians and official channels of ${short} have said in these statements`,
       (party) => (statementsByParty[party] ?? []).map(({ doc }) => doc.id),
+      // Speeches often state a position by rebutting the other side rather than directly.
+      (short, evidence) =>
+        `${evidence} makes clear where ${short} stands on the issue in the person's opinion, ` +
+        'either directly or by rejecting the opposite view.',
     ),
   };
 }

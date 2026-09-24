@@ -291,6 +291,18 @@ dialog::backdrop {
   margin: 0;
 }
 
+#website-list {
+  font-size: 0.85rem;
+  padding-left: 0;
+  list-style: none;
+}
+
+#website-list li {
+  padding-left: 0.6rem;
+  border-left: 3px solid var(--party);
+  margin: 0.25rem 0;
+}
+
 .program-title {
   font-weight: 600;
 }
