@@ -26,7 +26,7 @@ test('the passage closest to the query is picked within a document', () => {
   const meta = { passageDimensions: 2 };
   const vectors = Int8Array.from([127, 0, 0, 127]);
   const doc = { passages: ['über Steuern', 'über Mieten'], vectors: Buffer.from(vectors.buffer).toString('base64') };
-  assert.equal(closestPassage({ meta }, doc, [0.1, 0.9, 0.5]), 'über Mieten');
+  assert.equal(closestPassage({ meta }, doc, [0.1, 0.9, 0.5]).text, 'über Mieten');
 });
 
 test('statements tell Jev who said what, and parties without any are skipped', () => {

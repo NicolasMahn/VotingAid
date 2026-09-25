@@ -3,13 +3,22 @@ import { describePosition, positionOf } from './votes.js';
 
 export const MODEL = '~typesafe/jev-latest';
 
-// Shown to people as they are; Jev judges against the same wording.
+// Shown to people. Jev judges against LEVEL_MEANINGS, which say the same by
+// position; bare labels left it free to read "Eher Widerspruch" as a weak
+// verdict on a tangential remark.
 export const LEVELS = [
   'Klarer Widerspruch',
   'Eher Widerspruch',
   'Teils, teils',
   'Eher Übereinstimmung',
   'Klare Übereinstimmung',
+];
+const LEVEL_MEANINGS = [
+  'Clear contradiction: the party clearly wants the opposite of what the person demands',
+  'Leaning against: the party tends to oppose what the person demands',
+  'Mixed: the party agrees in part, is ambivalent, or the material does not settle it',
+  'Leaning towards: the party tends to support what the person demands',
+  'Clear agreement: the party clearly wants what the person demands',
 ];
 
 // Below this, a party is treated as silent on a topic rather than as
@@ -28,30 +37,35 @@ const DESCRIPTION_CHARS = 1200;
 // questions: how well the evidence matches the opinion, whether it addresses
 // the issue at all, and which excerpt or vote shows it best. Keys are
 // namespaced by party (`spd_match`) so readTopic can split them back out.
+const capitalised = (text) => text[0].toUpperCase() + text.slice(1);
+
 function partyQuestions(short, evidence, candidates, coverage) {
   return {
     match: {
       type: 'score',
       instructions:
-        `How well does ${evidence(short)} agree with the person's opinion? ` +
-        'Judge only the material provided, not what you know about the party. ' +
-        'If it does not address the opinion, choose the middle level.',
-      criteria: LEVELS,
+        `Where does ${short} stand on what the person demands, judging by ${evidence(short)}? ` +
+        'Compare with the concrete demand, not the wider topic: a party that wants to restrict ' +
+        'what the person wants to expand contradicts them, while a party that wants to go further ' +
+        'in the same direction, or criticises a measure as too weak, agrees. Judge only the material provided, ' +
+        'not what you know about the party. If it does not address the demand, choose the ' +
+        'middle level; a separate question records that.',
+      criteria: LEVEL_MEANINGS,
     },
     covered: {
       type: 'noul',
-      instructions: coverage(short, evidence(short)),
+      instructions: capitalised(coverage(short, evidence(short))),
     },
     source: {
       type: 'choice',
-      instructions: `Which item best shows the position of ${short} on the person's opinion?`,
+      instructions: `Which item best shows where ${short} stands on what the person demands?`,
       criteria: Object.fromEntries(candidates.map((id) => [id, null])),
     },
   };
 }
 
 const takesClearPosition = (short, evidence) =>
-  `${evidence} takes a clear position on the specific issue in the person's opinion.`;
+  `${evidence} takes a clear position on the person's specific demand, not just on the wider topic.`;
 
 function questionsFor(evidence, candidatesOf, coverage = takesClearPosition) {
   const questions = {};
@@ -152,8 +166,9 @@ export function buildStatementsRequest(topic, opinion, statementsByParty) {
       (party) => (statementsByParty[party] ?? []).map(({ doc }) => doc.id),
       // Speeches often state a position by rebutting the other side rather than directly.
       (short, evidence) =>
-        `${evidence} makes clear where ${short} stands on the issue in the person's opinion, ` +
-        'either directly or by rejecting the opposite view.',
+        `${evidence} makes clear where ${short} stands on the person's specific demand, ` +
+        'either directly or by rejecting the opposite view. A question or remark that only ' +
+        'touches the topic does not count.',
     ),
   };
 }

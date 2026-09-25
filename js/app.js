@@ -1,6 +1,6 @@
 import { askJev, findApiKey, isApiKey, rememberApiKey } from './jev.js';
-import { VOTES_PER_TOPIC, closest, closestPassages, embedQuery, loadIndex, shorten } from './retrieval.js';
-import { closestDocuments, closestPassage, loadDocuments, loadStatements } from './statements.js';
+import { VOTES_PER_TOPIC, closest, closestPassages, embedOpinion, loadIndex, shorten } from './retrieval.js';
+import { DOCS_PER_PARTY, closestDocuments, closestPassage, loadDocuments, loadStatements } from './statements.js';
 import {
   LEVELS,
   STATEMENT_KINDS,
@@ -95,16 +95,20 @@ async function closestStatements(statements, query) {
   return Object.fromEntries(
     Object.entries(numbersByParty).map(([party, numbers]) => [
       party,
-      numbers.map((number) => {
-        const doc = docs.get(number);
-        return { doc, passage: closestPassage(statements, doc, query) };
-      }),
+      numbers
+        .map((number) => {
+          const doc = docs.get(number);
+          const { text, score } = closestPassage(statements, doc, query);
+          return { doc, passage: text, score };
+        })
+        .sort((a, b) => b.score - a.score)
+        .slice(0, DOCS_PER_PARTY),
     ]),
   );
 }
 
 async function analyseTopic(apiKey, { programs, votes, statements }, { topic, opinion }) {
-  const query = await embedQuery(apiKey, topic ? `${topic}: ${opinion}` : opinion);
+  const query = await embedOpinion(apiKey, topic, opinion);
   const passages = closestPassages(programs, shorten(query, programs));
   const closeVotes = closest(votes.items, shorten(query, votes), VOTES_PER_TOPIC);
   const found = await closestStatements(statements, query);
@@ -191,10 +195,14 @@ function rankedParty({ party, overall, covered }) {
   fill.style.width = `${Math.round(overall * 100)}%`;
   bar.append(fill);
   summary.append(element('span', 'name', party.short), bar, element('span', 'percent', `${Math.round(overall * 100)} %`));
+  // The percentage is a scale from contradiction (0) to agreement (100), which
+  // a bare number does not say: 27 % read as partial support.
+  const level = Math.round(overall * (LEVELS.length - 1));
+  const note = element('span', 'coverage');
+  note.append(element('span', `level-${level}`, LEVELS[level]));
   const total = analysis.topics.length;
-  if (covered < total) {
-    summary.append(element('span', 'coverage', `Nur ${covered} von ${total} Themen ${SILENCE[view].where} behandelt`));
-  }
+  if (covered < total) note.append(` · nur ${covered} von ${total} Themen ${SILENCE[view].where} behandelt`);
+  summary.append(note);
   details.append(summary, element('p', 'muted', party.name));
   for (const topic of analysis.topics) details.append(finding(topic, party));
   item.append(details);

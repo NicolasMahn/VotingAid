@@ -6,6 +6,9 @@ import { QUERY_MODEL } from './retrieval.js';
 // by Hamming distance, and only then fetches their shards.
 
 export const DOCS_PER_PARTY = 3;
+// Binary search on whole documents is coarse, so more candidates are fetched
+// and the best DOCS_PER_PARTY are kept by their closest passage.
+export const CANDIDATES_PER_PARTY = 8;
 const BASE = 'data/aussagen/';
 
 const POPCOUNT = Uint8Array.from({ length: 256 }, (_, byte) => byte.toString(2).replaceAll('0', '').length);
@@ -29,7 +32,7 @@ export function toBits(vector) {
 }
 
 /** The numbers of the `perParty` documents closest to `query`, per party id. */
-export function closestDocuments({ meta, index }, query, perParty = DOCS_PER_PARTY) {
+export function closestDocuments({ meta, index }, query, perParty = CANDIDATES_PER_PARTY) {
   const bits = toBits(query.slice(0, meta.dimensions));
   const stride = 1 + bits.length;
   const byParty = {};
@@ -58,7 +61,7 @@ export async function loadDocuments({ meta }, numbers) {
   return new Map(numbers.map((number) => [number, byId.get(`s${number}`)]));
 }
 
-/** The passage of a document closest to `query`, using its int8 passage vectors. */
+/** The passage of a document closest to `query`, and its similarity, using int8 passage vectors. */
 export function closestPassage({ meta }, doc, query) {
   const size = meta.passageDimensions;
   const short = query.slice(0, size);
@@ -72,5 +75,5 @@ export function closestPassage({ meta }, doc, query) {
     const score = dot / Math.hypot(...vector);
     if (score > bestScore) [best, bestScore] = [p, score];
   });
-  return doc.passages[best];
+  return { text: doc.passages[best], score: bestScore / Math.hypot(...short) };
 }

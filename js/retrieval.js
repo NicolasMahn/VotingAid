@@ -33,6 +33,20 @@ export async function embedQuery(apiKey, text) {
   return payload.data[0].embedding;
 }
 
+/**
+ * The search vector for an opinion: the mean of the topic's embedding and the
+ * embedding of topic and opinion together. Evidence should be found whichever
+ * way the person leans; the topic alone keeps "expand donations" and "ban
+ * donations" looking for the same passages, the opinion adds its specifics.
+ */
+export async function embedOpinion(apiKey, topic, opinion) {
+  if (!topic) return embedQuery(apiKey, opinion);
+  const [both, topicOnly] = await Promise.all([embedQuery(apiKey, `${topic}: ${opinion}`), embedQuery(apiKey, topic)]);
+  const unit = (v) => v.map((x) => x / Math.hypot(...v));
+  const [a, b] = [unit(both), unit(topicOnly)];
+  return a.map((x, i) => (x + b[i]) / 2);
+}
+
 /** The query cut to a database's size; similarity ignores length, so no rescaling. */
 export function shorten(query, index) {
   if (index.model !== QUERY_MODEL) throw new Error(`${index.model} was built with a different model`);
