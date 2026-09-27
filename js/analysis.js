@@ -1,11 +1,11 @@
 import { PARTIES } from './parties.js';
-import { describePosition, positionOf } from './votes.js';
+import { leanOf } from './votes.js';
 
 export const MODEL = '~typesafe/jev-latest';
 
-// Shown to people. Jev judges against LEVEL_MEANINGS, which say the same by
-// position; bare labels left it free to read "Eher Widerspruch" as a weak
-// verdict on a tangential remark.
+// Every reading places a party on one scale, from -1 (it wants the opposite of
+// what the person demands) to +1 (it wants the same). The page shows it as -10
+// to +10, and in words by LEVELS, from contradiction to agreement.
 export const LEVELS = [
   'Klarer Widerspruch',
   'Eher Widerspruch',
@@ -13,6 +13,8 @@ export const LEVELS = [
   'Eher Übereinstimmung',
   'Klare Übereinstimmung',
 ];
+// What Jev judges programs and statements against. Bare labels left it free to
+// read "Eher Widerspruch" as a weak verdict on a tangential remark.
 const LEVEL_MEANINGS = [
   'Clear contradiction: the party clearly wants the opposite of what the person demands',
   'Leaning against: the party tends to oppose what the person demands',
@@ -21,30 +23,32 @@ const LEVEL_MEANINGS = [
   'Clear agreement: the party clearly wants what the person demands',
 ];
 
+export const levelOf = (score) => Math.round(((score + 1) / 2) * (LEVELS.length - 1));
+
 // Below this, a party is treated as silent on a topic rather than as
-// disagreeing: Jev's match reading then says more about the excerpts we
-// happened to find than about the party.
+// disagreeing: its score then says more about the excerpts we happened to
+// find than about the party.
 export const COVERED = 0.5;
 
-// How far apart, on a 0–1 scale, program and votes must be to be flagged.
-const DIVERGENCE = 0.5;
+// How far apart program and votes must be to be flagged: a whole level of
+// the five either side, e.g. "Eher Übereinstimmung" against "Eher Widerspruch".
+const DIVERGENCE = 1;
 
 // Vote descriptions are written for the web and can run long.
 const DESCRIPTION_CHARS = 1200;
 
-// Programs and votes are judged in separate requests, so one cannot colour
-// the reading of the other. For each party Jev answers three narrow
-// questions: how well the evidence matches the opinion, whether it addresses
-// the issue at all, and which excerpt or vote shows it best. Keys are
-// namespaced by party (`spd_match`) so readTopic can split them back out.
 const capitalised = (text) => text[0].toUpperCase() + text.slice(1);
 
+// For programs and statements, Jev answers three narrow questions per party:
+// where the material places it, whether it addresses the demand at all, and
+// which item shows it best. Keys are namespaced by party (`spd_match`) so
+// readPartyAnswers can split them back out.
 function partyQuestions(short, evidence, candidates, coverage) {
   return {
     match: {
       type: 'score',
       instructions:
-        `Where does ${short} stand on what the person demands, judging by ${evidence(short)}? ` +
+        `Where does ${short} stand on what the person demands, judging by ${evidence}? ` +
         'Compare with the concrete demand, not the wider topic: a party that wants to restrict ' +
         'what the person wants to expand contradicts them, while a party that wants to go further ' +
         'in the same direction, or criticises a measure as too weak, agrees. Judge only the material provided, ' +
@@ -54,7 +58,7 @@ function partyQuestions(short, evidence, candidates, coverage) {
     },
     covered: {
       type: 'noul',
-      instructions: capitalised(coverage(short, evidence(short))),
+      instructions: capitalised(coverage(short, evidence)),
     },
     source: {
       type: 'choice',
@@ -64,15 +68,12 @@ function partyQuestions(short, evidence, candidates, coverage) {
   };
 }
 
-const takesClearPosition = (short, evidence) =>
-  `${evidence} takes a clear position on the person's specific demand, not just on the wider topic.`;
-
-function questionsFor(evidence, candidatesOf, coverage = takesClearPosition) {
+function questionsFor(evidenceOf, candidatesOf, coverage) {
   const questions = {};
   for (const { id, short } of PARTIES) {
     const candidates = candidatesOf(id);
     if (!candidates.length) continue;
-    for (const [key, question] of Object.entries(partyQuestions(short, evidence, candidates, coverage))) {
+    for (const [key, question] of Object.entries(partyQuestions(short, evidenceOf(short), candidates, coverage))) {
       questions[`${id}_${key}`] = question;
     }
   }
@@ -90,39 +91,7 @@ export function buildProgramRequest(topic, opinion, passagesByParty) {
     questions: questionsFor(
       (short) => `the program of ${short}, judged from its excerpts`,
       (party) => passagesByParty[party].map((passage) => passage.id),
-    ),
-  };
-}
-
-/**
- * The opinion plus the closest roll-call votes and how each party voted.
- * Parties are only asked about if they voted in at least one of them.
- */
-export function buildVotesRequest(topic, opinion, votes) {
-  const roll_call_votes = votes.map((vote) => ({
-    id: vote.id,
-    date: vote.date,
-    title: vote.title,
-    description: vote.description.slice(0, DESCRIPTION_CHARS),
-    passed: vote.accepted,
-    how_parties_voted: Object.fromEntries(
-      PARTIES.map(({ id, short }) => [short, describePosition(positionOf(vote.results[id]))]),
-    ),
-  }));
-  return {
-    model: MODEL,
-    state: {
-      person: { topic, opinion },
-      // Many votes are on a committee's recommendation to reject a motion,
-      // where voting for it means voting against the motion itself.
-      how_to_read:
-        'A party voting "dafür" supports what the vote title says. If the title starts with ' +
-        '"Ablehnung", voting "dafür" means rejecting the motion it names.',
-      roll_call_votes,
-    },
-    questions: questionsFor(
-      (short) => `how ${short} voted in these Bundestag roll-call votes`,
-      (party) => votes.filter((vote) => positionOf(vote.results[party])).map((vote) => vote.id),
+      (short, evidence) => `${evidence} takes a clear position on the person's specific demand, not just on the wider topic.`,
     ),
   };
 }
@@ -174,13 +143,13 @@ export function buildStatementsRequest(topic, opinion, statementsByParty) {
 }
 
 const likeliest = (probabilities) =>
-  Object.entries(probabilities).reduce((best, next) => (next[1] > best[1] ? next : best));
+  Object.entries(probabilities).reduce((best, next) => (next[1] > best[1] ? next : best))[0];
 
 /**
- * Per party: `{ match: 0–1, level, covered: 0–1, source: item id }`, or null
- * when the party was not asked about (it did not take part in any vote).
+ * Per party: `{ score: -1–1, covered: 0–1, sources: [item id] }`, or null
+ * when the party had no material to judge.
  */
-export function readTopic(answers) {
+export function readPartyAnswers(answers) {
   return Object.fromEntries(
     PARTIES.map(({ id }) => {
       const match = answers[`${id}_match`];
@@ -189,28 +158,105 @@ export function readTopic(answers) {
       return [
         id,
         {
-          match: match.score / topLevel,
-          level: Math.round(match.score),
+          score: (2 * match.score) / topLevel - 1,
           covered: answers[`${id}_covered`].noul,
-          source: likeliest(answers[`${id}_source`].probabilities)[0],
+          sources: [likeliest(answers[`${id}_source`].probabilities)],
         },
       ];
     }),
   );
 }
 
-export const isCovered = (reading) => reading && reading.covered >= COVERED;
+/**
+ * The opinion plus the closest roll-call votes. Jev is asked how the person
+ * would vote in each, without seeing how the parties voted; the parties are
+ * then compared with that in readVotes. Asking Jev per party instead made it
+ * judge the same vote differently for parties that voted the same way.
+ */
+export function buildVotesRequest(topic, opinion, votes) {
+  return {
+    model: MODEL,
+    state: {
+      person: { topic, opinion },
+      how_to_read:
+        'Voting yes means voting for what the title names, whatever the result: descriptions often ' +
+        'report that a motion was rejected, which is how others voted, not what the motion wants. ' +
+        'If a title starts with "Ablehnung", voting yes means rejecting the motion it names.',
+      roll_call_votes: votes.map(({ id, date, title, description }) => ({
+        id,
+        date,
+        title,
+        description: description.slice(0, DESCRIPTION_CHARS),
+      })),
+    },
+    questions: Object.fromEntries(
+      votes.map(({ id, title }) => [
+        id,
+        {
+          type: 'choice',
+          instructions:
+            `How would the person, given their opinion, vote in roll-call vote ${id} ("${title}")? ` +
+            'Judge by what the vote mainly decides, not by its topic or by side effects.',
+          criteria: {
+            yes: 'Yes: mainly, the vote puts into practice what the person demands, or goes in that direction',
+            no: 'No: mainly, the vote does the opposite of what the person demands, or blocks it',
+            // Omnibus laws touch many demands; voting against one says little about any of them.
+            bundled: 'Either: the vote touches the demand, but decides mostly other things, so the person could vote either way',
+            unrelated: 'Neither: the vote does not decide anything the person demands or opposes',
+          },
+        },
+      ]),
+    ),
+  };
+}
 
 /**
- * A party's overall match across topics, 0–1, or null when it is silent on
+ * How the person would vote in each vote: `{ lean: -1–1, clarity: 0–1 }`,
+ * where lean is +1 for a clear yes and clarity is how likely the vote decides
+ * the demand at all.
+ */
+export function readPersonVotes(answers) {
+  return Object.fromEntries(
+    Object.entries(answers).map(([id, { probabilities: { yes = 0, no = 0 } }]) => {
+      const clarity = yes + no;
+      return [id, { lean: clarity ? (yes - no) / clarity : 0, clarity }];
+    }),
+  );
+}
+
+/**
+ * Per party, the same shape as readPartyAnswers: each vote the party took part
+ * in counts by how clearly it decides the demand, and agrees as far as the
+ * party voted the way the person would. `sources` are those votes, clearest first.
+ */
+export function readVotes(person, votes) {
+  const relevant = votes.filter((vote) => person[vote.id]?.clarity >= COVERED);
+  return Object.fromEntries(
+    PARTIES.map(({ id }) => {
+      const voted = relevant
+        .map((vote) => ({ vote, party: leanOf(vote.results[id]), ...person[vote.id] }))
+        .filter(({ party }) => party !== null)
+        .sort((a, b) => b.clarity - a.clarity);
+      if (!voted.length) return [id, null];
+      const weight = voted.reduce((sum, { clarity }) => sum + clarity, 0);
+      const agreement = voted.reduce((sum, { clarity, lean, party }) => sum + clarity * lean * party, 0);
+      return [id, { score: agreement / weight, covered: voted[0].clarity, sources: voted.map(({ vote }) => vote.id) }];
+    }),
+  );
+}
+
+export const isCovered = (reading) => reading?.covered >= COVERED;
+
+/**
+ * A party's overall score across topics, -1–1, or null when it is silent on
  * all of them. Topics count by how clearly they are addressed, so one clear
  * topic outweighs several vague ones.
  */
-export function overallMatch(readings) {
+export function overallScore(readings) {
   let weighted = 0;
   let weight = 0;
   for (const reading of readings.filter(isCovered)) {
-    weighted += reading.covered * reading.match;
+    weighted += reading.covered * reading.score;
     weight += reading.covered;
   }
   return weight ? weighted / weight : null;
@@ -218,5 +264,5 @@ export function overallMatch(readings) {
 
 /** Whether a party votes clearly differently from what its program says. */
 export function diverges(program, votes) {
-  return isCovered(program) && isCovered(votes) && Math.abs(program.match - votes.match) >= DIVERGENCE;
+  return isCovered(program) && isCovered(votes) && Math.abs(program.score - votes.score) >= DIVERGENCE;
 }

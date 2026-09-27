@@ -1,5 +1,5 @@
 // The parties and their programs for the Bundestagswahl 2025. The order is the
-// order of the result list when scores tie. Colors live in css/style.css.
+// order of the result list when scores tie. Colors live in css/theme.css.
 // Adoption dates are from the programs themselves where they say so, and from
 // the parties' announcements otherwise; the FDP's only confirmed date is when
 // it published the program.

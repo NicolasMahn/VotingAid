@@ -44,12 +44,16 @@ shards, and picks the closest passage in each.
 For each topic, programs, votes and statements go to Jev in three separate
 requests, and the page ranks parties separately for each. Mixing them would blur
 the parties: coalition partners vote together whatever their programs say, and
-one politician's speech is not the party line. Per party, Jev answers three
-narrow questions: how well the material matches the opinion, whether it takes a
-clear position at all, and which passage, vote or statement shows it best. It
-returns probabilities, not prose. Every finding on the page cites its source.
+one politician's speech is not the party line. For programs and statements, Jev
+answers three narrow questions per party: where the material places it, whether
+it takes a clear position at all, and which passage or statement shows it best.
+For votes, Jev only judges how the person would vote in each one, without seeing
+the parties; the code then compares that with how each party voted, so parties
+that voted alike score alike. Jev returns probabilities, not prose. Every
+finding on the page cites its source.
 
-A party's match averages its topics, weighted by how clearly each is addressed;
+Scores run from -10 (the party wants the opposite) to +10 (it wants the same).
+A party's score averages its topics, weighted by how clearly each is addressed;
 topics it is silent on don't count, and parties silent on all of them are listed
 apart rather than ranked last. Where a party's votes and program disagree clearly
 on a topic, the page says so.

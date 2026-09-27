@@ -9,8 +9,11 @@ import {
   buildVotesRequest,
   diverges,
   isCovered,
-  overallMatch,
-  readTopic,
+  levelOf,
+  overallScore,
+  readPartyAnswers,
+  readPersonVotes,
+  readVotes,
 } from './analysis.js';
 import { PARTIES, programUrl } from './parties.js';
 import { SUGGESTIONS } from './suggestions.js';
@@ -117,11 +120,13 @@ async function analyseTopic(apiKey, { programs, votes, statements }, { topic, op
     askJev(apiKey, buildVotesRequest(topic, opinion, closeVotes)),
     askJev(apiKey, buildStatementsRequest(topic, opinion, found)),
   ]);
+  const personVotes = readPersonVotes(voteAnswers.answers);
   return {
     topic: topic || opinion,
-    program: readTopic(programAnswers.answers),
-    votes: readTopic(voteAnswers.answers),
-    statements: readTopic(statementAnswers.answers),
+    program: readPartyAnswers(programAnswers.answers),
+    votes: readVotes(personVotes, closeVotes),
+    statements: readPartyAnswers(statementAnswers.answers),
+    personVotes,
     found: Object.values(found).flat(),
   };
 }
@@ -171,10 +176,10 @@ function showResults() {
 
   const scored = PARTIES.map((party) => {
     const readings = analysis.topics.map((topic) => topic[view][party.id]);
-    return { party, overall: overallMatch(readings), covered: readings.filter(isCovered).length };
+    return { party, overall: overallScore(readings), covered: readings.filter(isCovered).length };
   });
   // Parties that say nothing about any topic are not ranked: a missing
-  // position is not a low match, and listing them last would suggest one.
+  // position is not a low score, and listing them last would suggest one.
   const ranked = scored.filter(({ overall }) => overall !== null).sort((a, b) => b.overall - a.overall);
   const silent = scored.filter(({ overall }) => overall === null);
 
@@ -190,19 +195,11 @@ function rankedParty({ party, overall, covered }) {
   const item = element('li', `party party-${party.id}`);
   const details = document.createElement('details');
   const summary = document.createElement('summary');
-  const bar = element('span', 'bar');
-  const fill = document.createElement('span');
-  fill.style.width = `${Math.round(overall * 100)}%`;
-  bar.append(fill);
-  summary.append(element('span', 'name', party.short), bar, element('span', 'percent', `${Math.round(overall * 100)} %`));
-  // The percentage is a scale from contradiction (0) to agreement (100), which
-  // a bare number does not say: 27 % read as partial support.
-  const level = Math.round(overall * (LEVELS.length - 1));
-  const note = element('span', 'coverage');
-  note.append(element('span', `level-${level}`, LEVELS[level]));
+  summary.append(element('span', 'name', party.short), scoreBar(overall), element('span', 'score', formatScore(overall)));
   const total = analysis.topics.length;
-  if (covered < total) note.append(` · nur ${covered} von ${total} Themen ${SILENCE[view].where} behandelt`);
-  summary.append(note);
+  if (covered < total) {
+    summary.append(element('span', 'coverage', `nur ${covered} von ${total} Themen ${SILENCE[view].where} behandelt`));
+  }
   details.append(summary, element('p', 'muted', party.name));
   for (const topic of analysis.topics) details.append(finding(topic, party));
   item.append(details);
@@ -217,27 +214,53 @@ function finding(topic, party) {
     block.append(element('p', 'verdict silent', SILENCE[view].one));
     return block;
   }
-  block.append(element('p', `verdict level-${reading.level}`, LEVELS[reading.level]));
-  if (diverges(topic.program[party.id], topic.votes[party.id])) {
+  const level = levelOf(reading.score);
+  block.append(element('p', `verdict level-${level}`, `${formatScore(reading.score)} · ${LEVELS[level]}`));
+  if (view !== 'statements' && diverges(topic.program[party.id], topic.votes[party.id])) {
     block.append(element('p', 'divergence', 'Programm und Abstimmungen passen hier nicht zusammen'));
   }
   if (view === 'program') {
-    const passage = analysis.passages.get(reading.source);
+    const passage = analysis.passages.get(reading.sources[0]);
     block.append(
       element('blockquote', '', passage.text),
       link(programUrl(party.id, passage.page), `Wahlprogramm ${party.short}, Seite ${passage.page}`),
     );
   } else if (view === 'votes') {
-    const vote = analysis.votes.get(reading.source);
-    block.append(
-      element('p', 'vote-title', `${vote.title} (${vote.date}, ${vote.accepted ? 'angenommen' : 'abgelehnt'})`),
-      element('p', 'vote-position', `${party.short}: ${describePosition(positionOf(vote.results[party.id]))}`),
-      link(vote.url, 'Abstimmung auf abgeordnetenwatch.de'),
-    );
+    // All of them, since every one counts towards the score.
+    for (const id of reading.sources) {
+      block.append(...voteSource(analysis.votes.get(id), topic.personVotes[id], party));
+    }
   } else {
-    block.append(...statementSource(analysis.statements.get(reading.source)));
+    block.append(...statementSource(analysis.statements.get(reading.sources[0])));
   }
   return block;
+}
+
+/** The vote, how the person would vote in it, how the party did, and a link. */
+function voteSource(vote, person, party) {
+  const yours = person.lean > 0 ? 'dafür' : 'dagegen';
+  return [
+    element('p', 'vote-title', `${vote.title} (${vote.date}, ${vote.accepted ? 'angenommen' : 'abgelehnt'})`),
+    element('p', 'vote-position', `Deine Meinung spricht ${yours}. ${party.short}: ${describePosition(positionOf(vote.results[party.id]))}`),
+    link(vote.url, 'Abstimmung auf abgeordnetenwatch.de'),
+  ];
+}
+
+/** A bar from the middle: left for contradiction, right for agreement. */
+function scoreBar(score) {
+  const bar = element('span', 'bar');
+  const fill = document.createElement('span');
+  fill.style.left = `${50 + Math.min(score, 0) * 50}%`;
+  fill.style.width = `${Math.abs(score) * 50}%`;
+  bar.append(fill);
+  return bar;
+}
+
+/** -1–1 as -10 to +10, with a real minus sign. */
+function formatScore(score) {
+  const points = Math.round(score * 10);
+  if (points > 0) return `+${points}`;
+  return points < 0 ? `−${-points}` : '0';
 }
 
 /** The quote, who said it, when and where, and a link to the full source. */

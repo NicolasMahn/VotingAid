@@ -1,5 +1,5 @@
-"""Embedding helpers shared by the build scripts. The defaults must match
-js/retrieval.js; build_statements.py uses its own model and size."""
+"""Embedding helpers shared by the build scripts. The model must match
+js/retrieval.js; build_statements.py embeds at a larger size of its own."""
 
 from __future__ import annotations
 

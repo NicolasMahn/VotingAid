@@ -24,3 +24,14 @@ export function describePosition(position) {
   if (!position) return 'nicht abgestimmt';
   return `${position.stance} (${position.yes} ja, ${position.no} nein, ${position.abstain} Enthaltungen)`;
 }
+
+/**
+ * How a party voted as one number: +1 all yes, -1 all no, 0 for abstaining
+ * or an even split; null when it did not vote.
+ */
+export function leanOf(counts) {
+  const position = positionOf(counts);
+  if (!position) return null;
+  const { yes, no, abstain } = position;
+  return (yes - no) / (yes + no + abstain);
+}

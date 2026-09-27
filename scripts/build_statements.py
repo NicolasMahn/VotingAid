@@ -8,7 +8,7 @@ distance, then fetches only their shards and picks the closest passage within
 each using small int8 vectors.
 
 Every passage is embedded once at DIMENSIONS; a document's vector is the mean
-of its passages. OpenAI's v3 embeddings can be shortened by truncating and
+of its passages. The model's embeddings can be shortened by truncating and
 renormalising, so the passage vectors are cut to PASSAGE_DIMENSIONS and the
 browser does the same with the query. Embeddings are cached in
 .cache/embeddings.sqlite, so a rerun only pays for new text.

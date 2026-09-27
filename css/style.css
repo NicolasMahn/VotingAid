@@ -197,21 +197,33 @@ a:focus-visible {
   color: var(--ink-muted);
 }
 
-.party .percent {
+.party .score {
   text-align: right;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
+/* Scores run from -10 on the left to +10 on the right; the line marks 0. */
 .bar {
+  position: relative;
   height: 0.7rem;
   border-radius: 1rem;
   background: var(--line);
-  overflow: hidden;
+}
+
+.bar::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -0.2rem;
+  bottom: -0.2rem;
+  border-left: 2px solid var(--ink-muted);
 }
 
 .bar span {
-  display: block;
+  position: absolute;
   height: 100%;
+  border-radius: 1rem;
   background: var(--party);
 }
 
@@ -367,7 +379,7 @@ dialog a {
   font-weight: 600;
 }
 
-/* How well a program matches an opinion, from Klarer Widerspruch (0) to Klare Übereinstimmung (4). */
+/* LEVELS in js/analysis.js, from Klarer Widerspruch (0) to Klare Übereinstimmung (4). */
 .level-0 { color: var(--disagree-strong); }
 .level-1 { color: var(--disagree); }
 .level-2 { color: var(--neutral); }
@@ -377,7 +389,7 @@ dialog a {
 
 /* Party colors */
 .party-afd { --party: var(--afd-blue); }
-.party-bsw { --party: var(--bsw-purple); }
+.party-bsw { --party: var(--bsw-orange); }
 .party-fdp { --party: var(--fdp-yellow); }
 .party-gruene { --party: var(--gruene-green); }
 .party-linke { --party: var(--linke-magenta); }
