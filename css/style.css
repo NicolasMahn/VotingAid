@@ -314,8 +314,23 @@ h1 {
   font-size: 1.15rem;
 }
 
-.lead .info-button {
-  margin-left: 0.3rem;
+/* The way into how it all works, quiet beside the instruction. */
+a.how-to {
+  display: inline-flex;
+  align-items: center;
+  height: var(--control-sm);
+  margin-top: 0.6rem;
+  padding: 0 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 1.2rem;
+  background: var(--card);
+  color: var(--ink);
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+a.how-to:hover {
+  border-color: var(--accent);
 }
 
 .topic {
