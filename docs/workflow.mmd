@@ -13,7 +13,7 @@ flowchart TB
     prel[Sagt der Abschnitt etwas<br/>zur Forderung?]:::jev
     pgate{passt, ab 0,5?}
     pmatch[Wo steht die Partei<br/>zur Forderung?]:::jev
-    psource[Welcher Abschnitt zeigt<br/>die Position am klarsten?]:::jev
+    psource[Zitat auswählen:<br/>welcher Abschnitt zeigt die Position am klarsten?]:::jev
     pdb -.-> psearch --> prel --> pgate -->|ja| pmatch --> psource
   end
 
@@ -33,7 +33,7 @@ flowchart TB
     srel[Sagt die Aussage etwas<br/>zur Forderung?]:::jev
     sgate{passt, ab 0,5?}
     smatch[Wo steht die Partei<br/>zur Forderung?]:::jev
-    ssource[Welche Aussage zeigt<br/>die Position am klarsten?]:::jev
+    ssource[Zitat auswählen:<br/>welche Aussage zeigt die Position am klarsten?]:::jev
     sdb -.-> ssearch --> srel --> sgate -->|ja| smatch --> ssource
   end
 
