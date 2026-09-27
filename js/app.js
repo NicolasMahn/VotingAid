@@ -4,6 +4,7 @@ import { DOCS_PER_PARTY, closestDocuments, closestPassage, loadDocuments, loadSt
 import {
   buildMatchRequest,
   buildRelevanceRequest,
+  buildSourceRequest,
   buildVoteDirectionRequest,
   buildVoteRelevanceRequest,
   evidenceOf,
@@ -96,14 +97,22 @@ async function closestStatements(statements, query) {
   );
 }
 
-/** Where each party stands in one source: first which items are to the point, then only those are judged. */
+/**
+ * Where each party stands in one source: first which items are to the point,
+ * then only those are judged, and alongside, which of them to quote.
+ */
 async function judge(apiKey, source, topic, opinion, found) {
   const evidence = evidenceOf(source, found);
   const relevance = await askJev(apiKey, buildRelevanceRequest(source, topic, opinion, evidence));
   const relevant = relevantEvidence(evidence, relevance.answers);
   if (!Object.values(relevant).some((items) => items.length)) return readPartyAnswers({}, relevant);
-  const { answers } = await askJev(apiKey, buildMatchRequest(source, topic, opinion, relevant));
-  return readPartyAnswers(answers, relevant);
+  const sourceRequest = buildSourceRequest(source, topic, opinion, relevant);
+  const [match, quote] = await Promise.all([
+    askJev(apiKey, buildMatchRequest(source, topic, opinion, relevant)),
+    // Nothing to choose when every party has at most one relevant item.
+    Object.keys(sourceRequest.questions).length ? askJev(apiKey, sourceRequest) : { answers: {} },
+  ]);
+  return readPartyAnswers(match.answers, relevant, quote.answers);
 }
 
 /** How the person would vote: first which votes decide the demand, then which way a yes goes in those. */

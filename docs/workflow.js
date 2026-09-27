@@ -5,6 +5,7 @@ import {
   COVERED,
   buildMatchRequest,
   buildRelevanceRequest,
+  buildSourceRequest,
   buildVoteDirectionRequest,
   buildVoteRelevanceRequest,
   evidenceOf,
@@ -45,7 +46,7 @@ const votes = [
 
 // Made-up answers to step 1. The step 2 examples are built from the items
 // that pass them, as the app does, so the panels tell one consistent story.
-const EXAMPLE_RELEVANCE = { 'spd-12': 0.91, 'spd-31': 0.74, 'spd-40': 0.18, s42: 0.87, s77: 0.21, 'vote-1': 0.88, 'vote-2': 0.12, 'hand-3': 0.93 };
+const EXAMPLE_RELEVANCE = { 'spd-12': 0.91, 'spd-31': 0.74, 'spd-40': 0.18, s42: 0.87, s77: 0.64, 'vote-1': 0.88, 'vote-2': 0.12, 'hand-3': 0.93 };
 const relevanceAnswers = Object.fromEntries(Object.entries(EXAMPLE_RELEVANCE).map(([id, noul]) => [id, { noul }]));
 
 const programEvidence = evidenceOf('program', { spd: passages });
@@ -58,6 +59,8 @@ const REQUESTS = {
   'vote-direction': buildVoteDirectionRequest(TOPIC, OPINION, relevantVotes(votes, relevanceAnswers)),
   'statements-relevance': buildRelevanceRequest('statements', TOPIC, OPINION, statementEvidence),
   'statements-match': buildMatchRequest('statements', TOPIC, OPINION, relevantEvidence(statementEvidence, relevanceAnswers)),
+  'program-source': buildSourceRequest('program', TOPIC, OPINION, relevantEvidence(programEvidence, relevanceAnswers)),
+  'statements-source': buildSourceRequest('statements', TOPIC, OPINION, relevantEvidence(statementEvidence, relevanceAnswers)),
 };
 
 // Made-up answers to step 2: the first option is the likeliest.
@@ -178,7 +181,11 @@ function question([key, spec]) {
 }
 
 function prompt(request) {
+  const quoting = Object.keys(request.questions).every((key) => key.endsWith('_source'));
   return [
+    quoting
+      ? element('p', '', 'Das Zitat, das die App unter dem Wert als Beleg zeigt. Die Anfrage läuft gleichzeitig mit Schritt 2 und ändert den Wert nicht.')
+      : null,
     element('p', 'muted', 'So bekommt Jev die Aufgabe, gebaut vom Code der App für ein Beispiel. Die Antworten sind ausgedacht.'),
     element('p', 'meta', 'Jev liest'),
     ...state(request.state),

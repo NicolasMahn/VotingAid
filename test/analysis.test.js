@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   buildMatchRequest,
   buildRelevanceRequest,
+  buildSourceRequest,
   buildVoteDirectionRequest,
   buildVoteRelevanceRequest,
   combinedScore,
@@ -51,15 +52,15 @@ test('only excerpts that address the demand are judged, and parties without any 
   });
   const { state, questions } = buildMatchRequest('program', 'Rente', 'Die Rente soll steigen.', relevant);
   assert.deepEqual(state.auszuege.SPD.map(({ id }) => id), ['spd-0']);
-  // One item needs no choice of source.
-  assert.deepEqual(Object.keys(questions).sort(), ['afd_match', 'afd_source', 'spd_match']);
+  assert.deepEqual(Object.keys(questions).sort(), ['afd_match', 'spd_match']);
+  // Which excerpt to quote is its own request, and only where there is a choice.
+  assert.deepEqual(Object.keys(buildSourceRequest('program', 'Rente', 'x', relevant).questions), ['afd_source']);
 
   const answers = {
     spd_match: { score: 3, legend: { 0: '', 1: '', 2: '', 3: '', 4: '' } },
     afd_match: { score: 0, legend: { 0: '', 1: '', 2: '', 3: '', 4: '' } },
-    afd_source: { probabilities: { 'afd-0': 0.3, 'afd-1': 0.7 } },
   };
-  const readings = readPartyAnswers(answers, relevant);
+  const readings = readPartyAnswers(answers, relevant, { afd_source: { probabilities: { 'afd-0': 0.3, 'afd-1': 0.7 } } });
   assert.deepEqual(readings.spd, { score: 0.5, covered: 0.9, sources: ['spd-0'] });
   assert.deepEqual(readings.afd, { score: -1, covered: 0.7, sources: ['afd-1'] });
   assert.equal(levelOf(readings.spd.score), 3);

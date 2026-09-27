@@ -13,7 +13,8 @@ flowchart TB
     prel[Sagt der Abschnitt etwas<br/>zur Forderung?]:::jev
     pgate{passt, ab 0,5?}
     pmatch[Wo steht die Partei<br/>zur Forderung?]:::jev
-    pdb -.-> psearch --> prel --> pgate -->|ja| pmatch
+    psource[Welcher Abschnitt zeigt<br/>die Position am klarsten?]:::jev
+    pdb -.-> psearch --> prel --> pgate -->|ja| pmatch --> psource
   end
 
   subgraph Abstimmungen
@@ -32,12 +33,13 @@ flowchart TB
     srel[Sagt die Aussage etwas<br/>zur Forderung?]:::jev
     sgate{passt, ab 0,5?}
     smatch[Wo steht die Partei<br/>zur Forderung?]:::jev
-    sdb -.-> ssearch --> srel --> sgate -->|ja| smatch
+    ssource[Welche Aussage zeigt<br/>die Position am klarsten?]:::jev
+    sdb -.-> ssearch --> srel --> sgate -->|ja| smatch --> ssource
   end
 
   split --> psearch & vsearch & ssearch
   join{+}
-  pmatch & vcompare & smatch --> join
+  psource & vcompare & ssource --> join
   pgate -->|nein| pdrop(((fällt weg)))
   vgate -->|nein| vdrop(((fällt weg)))
   sgate -->|nein| sdrop(((fällt weg)))

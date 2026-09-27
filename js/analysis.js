@@ -133,15 +133,31 @@ export function buildMatchRequest(source, topic, opinion, relevant) {
         'Partei weißt.',
       criteria: LEVEL_MEANINGS,
     };
-    if (items.length > 1) {
-      questions[`${id}_source`] = {
-        type: 'choice',
-        instructions: `Welcher Auszug zeigt am besten, wo ${short} zur Forderung der Person steht?`,
-        criteria: Object.fromEntries(items.map((item) => [item.id, null])),
-      };
-    }
   }
   const items = byShortName(mapParties((id) => relevant[id].map(({ relevance, ...item }) => item)));
+  return {
+    model: MODEL,
+    state: { person: { thema: topic, meinung: opinion }, lesehinweis: SOURCES[source].howToRead, auszuege: items },
+    questions,
+  };
+}
+
+/**
+ * Step three: which of a party's relevant items the page quotes as evidence.
+ * Asked only for parties with more than one; runs alongside step two.
+ */
+export function buildSourceRequest(source, topic, opinion, relevant) {
+  const questions = {};
+  for (const { id, short } of PARTIES) {
+    const items = relevant[id];
+    if (items.length < 2) continue;
+    questions[`${id}_source`] = {
+      type: 'choice',
+      instructions: `Welcher Auszug zeigt am klarsten, wo ${short} zur Forderung der Person steht?`,
+      criteria: Object.fromEntries(items.map((item) => [item.id, null])),
+    };
+  }
+  const items = byShortName(mapParties((id) => (relevant[id].length < 2 ? [] : relevant[id].map(({ relevance, ...item }) => item))));
   return {
     model: MODEL,
     state: { person: { thema: topic, meinung: opinion }, lesehinweis: SOURCES[source].howToRead, auszuege: items },
@@ -157,12 +173,12 @@ const likeliest = (probabilities) =>
  * when none of its items addressed the demand. Covered is how clearly its
  * most relevant item does.
  */
-export function readPartyAnswers(answers, relevant) {
+export function readPartyAnswers(answers, relevant, sourceAnswers = {}) {
   return mapParties((id) => {
     const match = answers[`${id}_match`];
     if (!match || !relevant[id].length) return null;
     const topLevel = Object.keys(match.legend).length - 1;
-    const source = answers[`${id}_source`];
+    const source = sourceAnswers[`${id}_source`];
     return {
       score: (2 * match.score) / topLevel - 1,
       covered: Math.max(...relevant[id].map(({ relevance }) => relevance)),
