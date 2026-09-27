@@ -65,7 +65,8 @@ alike. Jev returns probabilities, not prose. Every
 finding on the page cites its source.
 
 Scores run from -10 (the party wants the opposite) to +10 (it wants the same).
-A party's score averages its topics, weighted by how clearly each is addressed;
+A party's score averages its topics, weighted by how clearly each is addressed
+and by how much the person says a topic counts (×1, ×2 or ×4);
 topics it is silent on don't count, and parties silent on all of them come last,
 greyed out, with no score rather than a low one. Where a party's votes and program disagree clearly
 on a topic, the page says so.

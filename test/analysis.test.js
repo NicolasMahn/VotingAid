@@ -29,6 +29,12 @@ test('a party silent on every topic has no score rather than zero', () => {
   assert.equal(overallScore([{ score: 0, covered: 0.1 }]), null);
 });
 
+test('a topic the person weighs four times counts four times as much', () => {
+  const readings = [{ score: 1, covered: 1 }, { score: -1, covered: 1 }];
+  assert.equal(overallScore(readings), 0);
+  assert.equal(overallScore(readings, [4, 1]), 0.6);
+});
+
 test('clearly addressed topics weigh more than vaguely addressed ones', () => {
   assert.equal(overallScore([{ score: 1, covered: 1 }, { score: -1, covered: 0.5 }]), 1 / 3);
 });

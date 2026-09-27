@@ -51,6 +51,20 @@
         <button id="analyse" type="button">Analysieren</button>
       </div>
       <p id="status" class="muted" role="status"></p>
+      <!-- While Jev works: a ranking taking shape, and how far it has got. -->
+      <div id="thinking" hidden>
+        <div class="hero-bars thinking" aria-hidden="true">
+          <span class="demo-1" style="--size: 34%"></span>
+          <span class="demo-5 left" style="--size: 22%"></span>
+          <span class="demo-3" style="--size: 18%"></span>
+          <span class="demo-7 left" style="--size: 30%"></span>
+          <span class="demo-6" style="--size: 12%"></span>
+          <span class="demo-2 left" style="--size: 9%"></span>
+          <span class="demo-4" style="--size: 26%"></span>
+        </div>
+        <p id="thinking-count" role="status"></p>
+        <p class="muted">Programme, Abstimmungen und Aussagen, Thema für Thema.</p>
+      </div>
 
       <form id="key" class="actions" hidden>
         <p class="muted">Diese Seite braucht einen OpenRouter-Schlüssel, um Jev zu fragen. Er wird nur in diesem Browser gespeichert.</p>
@@ -122,21 +136,23 @@
     </dialog>
 
     <template id="topic-template">
-      <li class="topic">
-        <input class="topic-name" placeholder="Thema" aria-label="Thema" />
-        <textarea class="topic-opinion" rows="2" maxlength="1000" placeholder="Was soll passieren?" aria-label="Was soll passieren?"></textarea>
-        <div class="actions">
-          <button class="suggest quiet" type="button">
+      <li class="topic" data-weight="1">
+        <div class="topic-head">
+          <input class="topic-name" placeholder="Thema" aria-label="Thema" />
+          <button class="suggest quiet icon-only" type="button" aria-label="Thema vorschlagen" title="Thema vorschlagen">
             <svg class="icon" viewBox="0 0 16 16" aria-hidden="true">
               <rect x="2" y="2" width="12" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.5" />
               <circle cx="5.5" cy="5.5" r="1.1" fill="currentColor" />
               <circle cx="10.5" cy="10.5" r="1.1" fill="currentColor" />
               <circle cx="8" cy="8" r="1.1" fill="currentColor" />
             </svg>
-            Thema vorschlagen
           </button>
+        </div>
+        <textarea class="topic-opinion" rows="2" maxlength="1000" placeholder="Was soll passieren?" aria-label="Was soll passieren?"></textarea>
+        <div class="actions">
+          <button class="weight quiet" type="button" title="Wie stark dieses Thema im Ergebnis zählt">Zählt ×1</button>
           <span class="spacer"></span>
-          <button class="remove quiet icon-only" type="button" aria-label="Thema entfernen">
+          <button class="remove quiet icon-only" type="button" aria-label="Thema entfernen" title="Thema entfernen">
             <svg class="icon" viewBox="0 0 16 16" aria-hidden="true">
               <path d="M2.5 4h11M6 4V2.5h4V4M4 4l.7 9.5h6.6L12 4M6.8 6.5v5M9.2 6.5v5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
             </svg>

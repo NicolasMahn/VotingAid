@@ -307,8 +307,51 @@ h1 {
   background: var(--paper);
 }
 
+.topic-head {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .topic-name {
+  flex: 1;
   font-weight: 600;
+}
+
+/* Beside the title, away from where one reaches when done. */
+.topic .suggest {
+  flex: none;
+  padding: 0 0.75rem;
+}
+
+/* How much a topic counts: the card takes on more accent the more it counts. */
+.topic[data-weight="2"] {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  background: color-mix(in srgb, var(--accent) 5%, var(--card));
+}
+
+.topic[data-weight="4"] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--card));
+}
+
+.topic[data-weight="2"] .weight {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.topic[data-weight="4"] .weight {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.topic .remove {
+  border-color: color-mix(in srgb, var(--danger) 45%, var(--line));
+  color: var(--danger);
+}
+
+.topic .remove:hover {
+  border-color: var(--danger);
 }
 
 .topic .actions {
@@ -534,10 +577,20 @@ a.how:hover {
 }
 
 .topics tbody th {
+  /* Room for two lines on every row, so rows keep one height whatever the title. */
+  height: 3.3rem;
   text-align: left;
   font-weight: 600;
   padding: 0.25rem 0.5rem 0.25rem 0;
   border-top: 1px solid var(--line);
+}
+
+.topics tbody th span {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
 }
 
 .topics td {
@@ -629,9 +682,41 @@ a.how:hover {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  justify-content: space-between;
   gap: 0.25rem 1rem;
   margin-top: 0.5rem;
+}
+
+/* The whole passage first, the source at the end of the line. */
+.quote figcaption .text-button {
+  order: -1;
+}
+
+.quote figcaption a.source {
+  margin-left: auto;
+}
+
+/* Until the key sentences arrive: lines in place of the quote, so it does not jump. */
+.quote blockquote.loading {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.3rem 0;
+}
+
+.quote blockquote.loading span {
+  height: 0.8rem;
+  border-radius: 0.4rem;
+  background: var(--line);
+  animation: pulse 1.2s ease-in-out infinite alternate;
+}
+
+.quote blockquote.loading span:last-child {
+  width: 60%;
+}
+
+@keyframes pulse {
+  to {
+    opacity: 0.4;
+  }
 }
 
 /* Sources read as citations, not as calls to action. */
@@ -650,8 +735,10 @@ a.source:hover {
   padding: 0;
   border: none;
   background: none;
-  color: var(--accent);
+  color: var(--ink);
   font-size: 0.85rem;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
 .vote-list {
@@ -833,3 +920,45 @@ a.pdf {
 .party-linke { --party: var(--linke-magenta); }
 .party-spd { --party: var(--spd-red); }
 .party-union { --party: var(--union-black); }
+
+/* While Jev works: the start page's bars, growing and shrinking as if the ranking were taking shape. */
+#thinking {
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 0.9rem;
+  background: var(--card);
+  text-align: center;
+}
+
+#thinking p {
+  margin: 0.25rem 0 0;
+}
+
+#thinking-count {
+  font-weight: 600;
+}
+
+.hero-bars.thinking {
+  margin: 0.5rem 0 1.25rem;
+}
+
+.hero-bars.thinking span {
+  animation: think 1.6s ease-in-out infinite alternate;
+}
+
+.hero-bars.thinking span:nth-child(2n) { animation-duration: 1.2s; }
+.hero-bars.thinking span:nth-child(3n) { animation-duration: 2s; }
+
+@keyframes think {
+  from {
+    transform: scaleX(0.25);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-bars.thinking span,
+  .quote blockquote.loading span {
+    animation: none;
+  }
+}

@@ -39,12 +39,21 @@ export function showAnalysis(result, key) {
   $('results').scrollIntoView({ behavior: 'smooth' });
 }
 
+/** Counts a topic anew after the person changed its weight; nothing on screen, nothing to do. */
+export function reweigh(key, weight) {
+  const topic = analysis?.topics.find((candidate) => candidate.key === key);
+  if (!topic) return;
+  topic.weight = weight;
+  render();
+}
+
 function render() {
   $('results').hidden = false;
   renderWeights();
+  const topicWeights = analysis.topics.map((topic) => topic.weight);
   const scored = PARTIES.map((party) => {
     const bySource = Object.fromEntries(
-      SOURCES.map((source) => [source, overallScore(analysis.topics.map((topic) => topic[source][party.id]))]),
+      SOURCES.map((source) => [source, overallScore(analysis.topics.map((topic) => topic[source][party.id]), topicWeights)]),
     );
     return { party, overall: combinedScore(bySource, weights) };
   });
@@ -96,7 +105,11 @@ function rankedParty({ party, overall }) {
   item.dataset.party = party.id;
   const details = document.createElement('details');
   details.open = openParties.has(party.id);
-  details.addEventListener('toggle', () => (details.open ? openParties.add(party.id) : openParties.delete(party.id)));
+  details.addEventListener('toggle', () => {
+    if (!details.open) return openParties.delete(party.id);
+    openParties.add(party.id);
+    prefetchQuotes(party);
+  });
   const summary = document.createElement('summary');
   summary.append(element('span', 'name', party.short), scoreBar(overall), element('span', 'score', formatScore(overall)));
   details.append(summary, topicTable(party));
@@ -114,7 +127,9 @@ function topicTable(party) {
   const body = element('tbody');
   analysis.topics.forEach((topic, index) => {
     const row = element('tr');
-    const name = element('th', '', topic.topic);
+    const name = element('th');
+    name.append(element('span', '', topic.topic));
+    name.title = topic.topic;
     name.scope = 'row';
     row.append(name);
     const cell = `${index}:`;
@@ -193,20 +208,24 @@ function statementCitation(doc) {
   return `${who}, Rede im Bundestag, ${doc.date}`;
 }
 
-/** One vote: whether the party voted as the person would, what it was, and how both voted. */
+/** One vote: whether the party voted towards the demand, what it was, and how the party voted. */
 function voteItem(topic, vote, party) {
   const position = positionOf(vote.results[party.id]);
   const agreement = topic.voteDirections[vote.id].lean * leanOf(vote.results[party.id]);
   const [kind, mark, label] =
-    agreement > AGREES ? ['agree', '✓', 'wie du'] : agreement < -AGREES ? ['disagree', '✗', 'anders als du'] : ['neutral', '~', 'weder noch'];
+    agreement > AGREES
+      ? ['agree', '✓', 'für die Forderung']
+      : agreement < -AGREES
+        ? ['disagree', '✗', 'gegen die Forderung']
+        : ['neutral', '~', 'weder dafür noch dagegen'];
   const item = element('li', `vote ${kind}`);
   const badge = element('span', 'badge', mark);
   badge.setAttribute('aria-label', `${party.short} stimmte ${label}`);
   const text = element('div');
-  const yours = topic.voteDirections[vote.id].lean > 0 ? 'dafür' : 'dagegen';
+  // How the party voted, not how the person would: that is theirs to judge.
   // Votes by show of hands record each fraction's stance, not its members' votes.
   const how = vote.show_of_hands ? 'per Handzeichen' : describePosition(position);
-  const meta = element('p', 'vote-meta', `Du ${yours} · ${party.short} ${position.stance} · ${vote.date}${vote.show_of_hands ? ' · per Handzeichen' : ''}`);
+  const meta = element('p', 'vote-meta', `${party.short} ${position.stance} · ${vote.date}${vote.show_of_hands ? ' · per Handzeichen' : ''}`);
   meta.title = how;
   text.append(sourceLink(vote.url, vote.title), meta);
   item.append(badge, text);
@@ -222,20 +241,40 @@ function voteItem(topic, vote, party) {
 // Quotes inside a quote take single marks.
 const inner = (text) => text.replaceAll('„', '‚').replaceAll('“', '‘');
 
+function keySentences(topic, text) {
+  const id = `${topic.key}\n${text}`;
+  if (!excerpts.has(id)) excerpts.set(id, excerpt(apiKey, topic.query, text).catch(() => null));
+  return excerpts.get(id);
+}
+
+/** Starts finding the key sentences of a party's quotes, so they are ready when opened. */
+function prefetchQuotes(party) {
+  for (const topic of analysis.topics) {
+    const program = topic.program[party.id];
+    if (isCovered(program)) keySentences(topic, analysis.passages.get(program.sources[0]).text);
+    const said = topic.statements[party.id];
+    if (isCovered(said)) keySentences(topic, analysis.statements.get(said.sources[0]).passage);
+  }
+}
+
 function quote(topic, text, citation, url) {
   const figure = element('figure', 'quote');
-  const block = element('blockquote', 'clamped', `„${inner(text)}“`);
+  // Placeholder lines until the key sentences are there; the passage itself would jump.
+  const block = element('blockquote', 'loading');
+  block.append(element('span'), element('span'), element('span'));
   const caption = element('figcaption');
   caption.append(sourceLink(url, citation));
   figure.append(block, caption);
-  const id = `${topic.key}\n${text}`;
-  if (!excerpts.has(id)) excerpts.set(id, excerpt(apiKey, topic.query, text).catch(() => null));
-  excerpts.get(id).then((found) => found && showKeySentences(block, caption, found));
+  keySentences(topic, text).then((found) => {
+    if (found) return showKeySentences(block, caption, found);
+    block.className = 'clamped';
+    block.textContent = `„${inner(text)}“`;
+  });
   return figure;
 }
 
 function showKeySentences(block, caption, { sentences, key }) {
-  block.classList.remove('clamped');
+  block.className = '';
   const parts = [];
   sentences.forEach((sentence, i) => {
     if (key.includes(i)) parts.push(inner(sentence));

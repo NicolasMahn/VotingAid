@@ -10,6 +10,7 @@
   --accent: #1f4fd1;
   --accent-ink: #ffffff;
   --warning: #a15c00;
+  --danger: #c62828;
   --backdrop: rgba(0, 0, 0, 0.45);
   --highlight: #fff1a8;
   --shadow: rgba(20, 22, 27, 0.08);
@@ -55,6 +56,7 @@
     --accent: #6d8dff;
     --accent-ink: #0d0f14;
     --warning: #f0b35a;
+    --danger: #ff8a80;
     --highlight: #5a4a12;
     --shadow: rgba(0, 0, 0, 0.4);
 

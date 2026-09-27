@@ -306,15 +306,18 @@ export const isCovered = (reading) => reading?.covered >= COVERED;
 /**
  * A party's overall score across topics, -1–1, or null when it is silent on
  * all of them. Topics count by how clearly they are addressed, so one clear
- * topic outweighs several vague ones.
+ * topic outweighs several vague ones, and by the weight the person gave each
+ * topic (`topicWeights`, in the same order; 1 when left out).
  */
-export function overallScore(readings) {
+export function overallScore(readings, topicWeights = []) {
   let weighted = 0;
   let weight = 0;
-  for (const reading of readings.filter(isCovered)) {
-    weighted += reading.covered * reading.score;
-    weight += reading.covered;
-  }
+  readings.forEach((reading, i) => {
+    if (!isCovered(reading)) return;
+    const counts = reading.covered * (topicWeights[i] ?? 1);
+    weighted += counts * reading.score;
+    weight += counts;
+  });
   return weight ? weighted / weight : null;
 }
 

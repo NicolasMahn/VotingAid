@@ -14,12 +14,14 @@ import {
   relevantVotes,
 } from './analysis.js';
 import { PARTIES, programUrl } from './parties.js';
-import { element, link, showAnalysis } from './results.js';
+import { element, link, reweigh, showAnalysis } from './results.js';
 import { SUGGESTIONS } from './suggestions.js';
 
 const STORAGE_KEY = 'votingaid.topics';
 // Every topic is one embedding and three Jev requests on a shared, capped key.
 const MAX_TOPICS = 12;
+// How much a topic counts in the result; the button cycles through them.
+const TOPIC_WEIGHTS = [1, 2, 4];
 
 const $ = (id) => document.getElementById(id);
 const topicList = $('topics');
@@ -37,18 +39,33 @@ function readTopics() {
   return [...topicList.children].map((item) => ({
     topic: item.querySelector('.topic-name').value.trim(),
     opinion: item.querySelector('.topic-opinion').value.trim(),
+    weight: Number(item.dataset.weight),
   }));
+}
+
+function setWeight(item, weight) {
+  item.dataset.weight = weight;
+  item.querySelector('.weight').textContent = `Zählt ×${weight}`;
 }
 
 function saveTopics() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(readTopics()));
 }
 
-function addTopic({ topic = '', opinion = '' } = {}) {
+function addTopic({ topic = '', opinion = '', weight = 1 } = {}) {
   const item = $('topic-template').content.firstElementChild.cloneNode(true);
   item.querySelector('.topic-name').value = topic;
   item.querySelector('.topic-opinion').value = opinion;
+  setWeight(item, weight);
   item.querySelector('.suggest').addEventListener('click', () => suggest(item));
+  item.querySelector('.weight').addEventListener('click', () => {
+    const next = TOPIC_WEIGHTS[(TOPIC_WEIGHTS.indexOf(Number(item.dataset.weight)) + 1) % TOPIC_WEIGHTS.length];
+    setWeight(item, next);
+    saveTopics();
+    // An analysis on screen counts the topic anew, without asking Jev again.
+    const { topic: name, opinion: said } = readTopics()[[...topicList.children].indexOf(item)];
+    reweigh(`${name}: ${said}`, next);
+  });
   item.querySelector('.remove').addEventListener('click', () => {
     item.remove();
     if (!topicList.children.length) addTopic();
@@ -97,34 +114,45 @@ async function closestStatements(statements, query) {
   );
 }
 
+// Questions Jev has answered in the running analysis, shown while it works.
+let answered = 0;
+
+/** askJev, counting the questions it answers for the waiting screen. */
+async function ask(apiKey, request) {
+  const response = await askJev(apiKey, request);
+  answered += Object.keys(request.questions).length;
+  $('thinking-count').textContent = `Jev hat ${answered.toLocaleString('de-DE')} Fragen beantwortet.`;
+  return response;
+}
+
 /**
  * Where each party stands in one source: first which items are to the point,
  * then only those are judged, and alongside, which of them to quote.
  */
 async function judge(apiKey, source, topic, opinion, found) {
   const evidence = evidenceOf(source, found);
-  const relevance = await askJev(apiKey, buildRelevanceRequest(source, topic, opinion, evidence));
+  const relevance = await ask(apiKey, buildRelevanceRequest(source, topic, opinion, evidence));
   const relevant = relevantEvidence(evidence, relevance.answers);
   if (!Object.values(relevant).some((items) => items.length)) return readPartyAnswers({}, relevant);
   const sourceRequest = buildSourceRequest(source, topic, opinion, relevant);
   const [match, quote] = await Promise.all([
-    askJev(apiKey, buildMatchRequest(source, topic, opinion, relevant)),
+    ask(apiKey, buildMatchRequest(source, topic, opinion, relevant)),
     // Nothing to choose when every party has at most one relevant item.
-    Object.keys(sourceRequest.questions).length ? askJev(apiKey, sourceRequest) : { answers: {} },
+    Object.keys(sourceRequest.questions).length ? ask(apiKey, sourceRequest) : { answers: {} },
   ]);
   return readPartyAnswers(match.answers, relevant, quote.answers);
 }
 
 /** How the person would vote: first which votes decide the demand, then which way a yes goes in those. */
 async function judgeVotes(apiKey, topic, opinion, votes) {
-  const relevance = await askJev(apiKey, buildVoteRelevanceRequest(topic, opinion, votes));
+  const relevance = await ask(apiKey, buildVoteRelevanceRequest(topic, opinion, votes));
   const relevant = relevantVotes(votes, relevance.answers);
   if (!relevant.length) return {};
-  const { answers } = await askJev(apiKey, buildVoteDirectionRequest(topic, opinion, relevant));
+  const { answers } = await ask(apiKey, buildVoteDirectionRequest(topic, opinion, relevant));
   return readVoteDirections(relevant, answers);
 }
 
-async function analyseTopic(apiKey, { programs, votes, statements }, { topic, opinion }) {
+async function analyseTopic(apiKey, { programs, votes, statements }, { topic, opinion, weight }) {
   const query = await embedOpinion(apiKey, topic, opinion);
   const passages = closestPassages(programs, shorten(query, programs));
   const closeVotes = closest(votes.items, shorten(query, votes), VOTES_PER_TOPIC);
@@ -138,6 +166,7 @@ async function analyseTopic(apiKey, { programs, votes, statements }, { topic, op
     topic: topic || opinion,
     // Key sentences are cached per opinion.
     key: `${topic}: ${opinion}`,
+    weight,
     query,
     program: programReadings,
     statements: statementReadings,
@@ -162,7 +191,11 @@ async function analyse() {
 
   $('analyse').disabled = true;
   $('results').hidden = true;
-  $('status').textContent = 'Jev vergleicht deine Meinung mit Programmen, Abstimmungen und Aussagen. Das dauert einen Moment…';
+  $('status').textContent = '';
+  answered = 0;
+  $('thinking-count').textContent = 'Jev sucht passende Stellen …';
+  $('thinking').hidden = false;
+  $('thinking').scrollIntoView({ behavior: 'smooth', block: 'center' });
   try {
     const [programs, votes, statements] = await Promise.all([programsReady, votesReady, statementsReady]);
     const sources = { programs, votes, statements };
@@ -178,6 +211,7 @@ async function analyse() {
     $('status').textContent = `Das hat nicht geklappt: ${error.message}`;
   } finally {
     $('analyse').disabled = false;
+    $('thinking').hidden = true;
   }
 }
 
