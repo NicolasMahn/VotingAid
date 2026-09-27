@@ -19,15 +19,16 @@
     <main>
       <div class="hero">
         <h1>Welche Partei will, was du willst?</h1>
-        <!-- A results chart in miniature: what the page is about, at a glance. -->
+        <!-- A results chart in miniature. Made-up parties in colors no real party
+             uses, so the picture suggests no result. -->
         <div class="hero-bars" aria-hidden="true">
-          <span class="party-gruene" style="--from: 50%; --to: 88%"></span>
-          <span class="party-spd" style="--from: 50%; --to: 78%"></span>
-          <span class="party-linke" style="--from: 50%; --to: 70%"></span>
-          <span class="party-union" style="--from: 42%; --to: 50%"></span>
-          <span class="party-bsw" style="--from: 30%; --to: 50%"></span>
-          <span class="party-fdp" style="--from: 24%; --to: 50%"></span>
-          <span class="party-afd" style="--from: 10%; --to: 50%"></span>
+          <span class="demo-1" style="--size: 34%"></span>
+          <span class="demo-2 left" style="--size: 22%"></span>
+          <span class="demo-3" style="--size: 18%"></span>
+          <span class="demo-4 left" style="--size: 40%"></span>
+          <span class="demo-5" style="--size: 27%"></span>
+          <span class="demo-6 left" style="--size: 9%"></span>
+          <span class="demo-7" style="--size: 12%"></span>
         </div>
         <p class="lead">
           Schreib zu ein paar Themen, was passieren soll.
@@ -35,14 +36,11 @@
         </p>
       </div>
       <div id="info-start" class="info" popover>
-        <p>
-          Je konkreter, desto besser: „Der Mindestlohn soll auf 15 Euro steigen“ sagt mehr als „Mindestlohn ist
-          wichtig“.
-        </p>
-        <p>
-          Jev vergleicht deine Sätze mit den Wahlprogrammen zur Bundestagswahl 2025, den Abstimmungen im Bundestag
-          und dem, was Politikerinnen und Politiker sagen, und zeigt dir die Belege.
-        </p>
+        <ul>
+          <li><strong>Konkret schreiben.</strong> „Der Mindestlohn soll auf 15 Euro steigen“ statt „Mindestlohn ist wichtig“.</li>
+          <li><strong>Drei Quellen.</strong> Wahlprogramme 2025, Abstimmungen im Bundestag und Aussagen von Politikerinnen und Politikern.</li>
+          <li><strong>Mit Belegen.</strong> Zu jedem Wert siehst du, woher er kommt.</li>
+        </ul>
       </div>
 
       <ol id="topics"></ol>
@@ -62,6 +60,10 @@
 
       <section id="results" hidden>
         <div class="results-head">
+          <button class="legend" type="button" popovertarget="info-scores">
+            <span class="info-button" aria-hidden="true">i</span>
+            −10 bis +10
+          </button>
           <button id="toggle-weights" class="quiet" type="button" aria-expanded="false" aria-controls="weights">
             <svg class="icon" viewBox="0 0 16 16" aria-hidden="true">
               <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
@@ -77,14 +79,11 @@
           <button class="info-button" type="button" popovertarget="info-weights" aria-label="Was ist die Gewichtung?">i</button>
         </div>
         <div id="info-weights" class="info" popover>
-          <p>
-            Der Wert einer Partei mittelt drei Quellen: ihr Wahlprogramm, ihre Abstimmungen im Bundestag und ihre
-            Aussagen. Hier legst du fest, wie stark jede zählt. „Aus“ lässt eine Quelle weg.
-          </p>
-          <p>
-            Namentliche Abstimmungen sind nur ein kleiner Teil dessen, was der Bundestag beschließt, und Koalitionen
-            stimmen meist gemeinsam ab. Bei Aussagen vertreten Einzelne nicht immer die Linie ihrer Partei.
-          </p>
+          <ul>
+            <li><strong>Ein Wert aus drei Quellen.</strong> Hier stellst du ein, wie stark jede zählt.</li>
+            <li><strong>Abstimmungen</strong> sind nur die namentlichen, und Koalitionen stimmen meist gemeinsam ab.</li>
+            <li><strong>Aussagen</strong> stammen von Einzelnen, die nicht immer die Parteilinie vertreten.</li>
+          </ul>
         </div>
         <ol id="ranking"></ol>
         <div id="silent" hidden>
@@ -92,11 +91,13 @@
           <ul id="silent-parties"></ul>
         </div>
         <div id="info-scores" class="info" popover>
-          <p>
-            Jeder Wert zeigt, wie gut die Partei bei einem Thema zu dir passt, getrennt nach Quelle: −10 heißt, sie
-            will das Gegenteil, +10, sie will dasselbe. Ein Strich heißt, die Quelle sagt dazu nichts Klares.
-          </p>
-          <p>Tipp auf einen Wert, um die Belege zu sehen.</p>
+          <div class="scale" aria-hidden="true"><span></span></div>
+          <p class="scale-labels"><span><strong>−10</strong> will das Gegenteil</span><span><strong>+10</strong> will dasselbe</span></p>
+          <ul>
+            <li><strong>Tipp auf eine Partei</strong> für ihre Werte je Thema und Quelle.</li>
+            <li><strong>Tipp auf einen Wert</strong> für die Belege.</li>
+            <li><strong>Ein Strich</strong> heißt, die Quelle sagt dazu nichts Klares.</li>
+          </ul>
         </div>
       </section>
     </main>

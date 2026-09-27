@@ -101,13 +101,7 @@ function rankedParty({ party, overall }) {
 function topicTable(party) {
   const table = element('table', 'topics');
   const head = element('tr');
-  const corner = element('td');
-  const info = element('button', 'info-button', 'i');
-  info.type = 'button';
-  info.setAttribute('popovertarget', 'info-scores');
-  info.setAttribute('aria-label', 'Was bedeuten die Werte?');
-  corner.append(info);
-  head.append(corner, ...SOURCES.map((source) => element('th', weights[source] ? '' : 'off', SOURCE_NAMES[source])));
+  head.append(element('td'), ...SOURCES.map((source) => element('th', weights[source] ? '' : 'off', SOURCE_NAMES[source])));
   table.append(element('thead'));
   table.tHead.append(head);
   const body = element('tbody');

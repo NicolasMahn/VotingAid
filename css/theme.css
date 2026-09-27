@@ -26,6 +26,15 @@
   --linke-magenta: #be3075;
   --spd-red: #e3000f;
   --union-black: #1b1d22;
+
+  /* The made-up parties of the start page: colors no real party uses. */
+  --demo-teal: #1aa39a;
+  --demo-violet: #7b5cd6;
+  --demo-coral: #ff7a66;
+  --demo-sky: #5bb8f0;
+  --demo-olive: #8a9a3b;
+  --demo-rose: #e76fa8;
+  --demo-slate: #58708a;
 }
 
 @media (prefers-color-scheme: dark) {

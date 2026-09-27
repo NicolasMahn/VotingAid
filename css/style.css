@@ -146,13 +146,57 @@ a:focus-visible {
 }
 
 .info {
-  max-width: min(24rem, calc(100% - 2rem));
-  padding: 0.25rem 1.1rem;
+  max-width: min(22rem, calc(100% - 2rem));
+  padding: 1rem 1.1rem;
   border: 1px solid var(--line);
-  border-radius: 0.8rem;
+  border-radius: 0.9rem;
   background: var(--card);
   color: var(--ink);
   font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+/* Short points, each led by its key words, rather than a block of text. */
+.info ul {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.info li {
+  padding-left: 0.8rem;
+  border-left: 3px solid var(--line);
+}
+
+/* The -10 to +10 scale, drawn as in the results. */
+.scale {
+  position: relative;
+  height: 0.6rem;
+  border-radius: 1rem;
+  background: linear-gradient(to right, var(--disagree-strong), var(--line) 50%, var(--agree-strong));
+}
+
+.scale span {
+  position: absolute;
+  left: 50%;
+  top: -0.25rem;
+  bottom: -0.25rem;
+  border-left: 2px solid var(--ink-muted);
+}
+
+.scale-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0.4rem 0 1rem;
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+}
+
+.scale-labels span:last-child {
+  text-align: right;
 }
 
 .info::backdrop {
@@ -188,13 +232,22 @@ h1 {
   border-left: 2px solid var(--ink-muted);
 }
 
+/* Each bar grows out of the zero line, to the right unless it is .left. Only
+   the outer end is round, as in the results. */
 .hero-bars span {
   height: 0.55rem;
-  margin-left: var(--from);
-  width: calc(var(--to) - var(--from));
-  border-radius: 1rem;
-  background: var(--party);
+  width: var(--size);
+  margin-left: 50%;
+  border-radius: 0 1rem 1rem 0;
+  background: var(--demo);
+  transform-origin: left;
   animation: grow 0.8s ease-out both;
+}
+
+.hero-bars span.left {
+  margin-left: calc(50% - var(--size));
+  border-radius: 1rem 0 0 1rem;
+  transform-origin: right;
 }
 
 .hero-bars span:nth-child(2) { animation-delay: 0.05s; }
@@ -204,10 +257,17 @@ h1 {
 .hero-bars span:nth-child(6) { animation-delay: 0.25s; }
 .hero-bars span:nth-child(7) { animation-delay: 0.3s; }
 
+.demo-1 { --demo: var(--demo-teal); }
+.demo-2 { --demo: var(--demo-coral); }
+.demo-3 { --demo: var(--demo-violet); }
+.demo-4 { --demo: var(--demo-olive); }
+.demo-5 { --demo: var(--demo-sky); }
+.demo-6 { --demo: var(--demo-rose); }
+.demo-7 { --demo: var(--demo-slate); }
+
 @keyframes grow {
   from {
-    opacity: 0;
-    transform: scaleX(0.2);
+    transform: scaleX(0);
   }
 }
 
@@ -280,8 +340,17 @@ h1 {
 
 .results-head {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 0.5rem;
+}
+
+button.legend {
+  padding: 0.35rem 0;
+  border: none;
+  background: none;
+  color: var(--ink-muted);
+  font-size: 0.9rem;
 }
 
 .results-head button {
