@@ -284,8 +284,17 @@ export function correctPersonVotes(person, corrections) {
 /** Jev's reading of how the person would vote, in the words of correctPersonVotes. */
 export const choiceOf = ({ lean, clarity }) => (clarity < COVERED ? 'skip' : lean > 0 ? 'yes' : 'no');
 
-/** The mean of the sources that say something, or null when none does. */
-export function combinedScore(scores) {
-  const known = scores.filter((score) => score !== null);
-  return known.length ? known.reduce((sum, score) => sum + score, 0) / known.length : null;
+/**
+ * The weighted mean of the sources that say something, or null when none
+ * does. `scores` and `weights` are keyed by source.
+ */
+export function combinedScore(scores, weights) {
+  let weighted = 0;
+  let total = 0;
+  for (const [source, score] of Object.entries(scores)) {
+    if (score === null || !weights[source]) continue;
+    weighted += weights[source] * score;
+    total += weights[source];
+  }
+  return total ? weighted / total : null;
 }

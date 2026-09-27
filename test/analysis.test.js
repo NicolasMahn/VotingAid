@@ -84,9 +84,11 @@ test('a correction by the person overrides Jev, and a skipped vote no longer cou
   assert.equal(Object.hasOwn(corrected, 'vote-9'), false);
 });
 
-test('the overview averages the sources that say something', () => {
-  assert.equal(combinedScore([1, null, 0]), 0.5);
-  assert.equal(combinedScore([null, null]), null);
+test('sources are averaged by their weight, and silent or switched-off sources do not count', () => {
+  const weights = { program: 1, votes: 2, statements: 1 };
+  assert.equal(combinedScore({ program: 1, votes: -0.5, statements: null }, weights), 0);
+  assert.equal(combinedScore({ program: 1, votes: -1, statements: null }, { ...weights, votes: 0 }), 1);
+  assert.equal(combinedScore({ program: null, votes: null, statements: null }, weights), null);
 });
 
 test('a party voting against its own program is flagged', () => {

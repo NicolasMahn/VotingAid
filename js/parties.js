@@ -1,8 +1,7 @@
 // The parties and their programs for the Bundestagswahl 2025. The order is the
 // order of the result list when scores tie. Colors live in css/theme.css.
-// Adoption dates are from the programs themselves where they say so, and from
-// the parties' announcements otherwise; the FDP's only confirmed date is when
-// it published the program.
+// Names are the official ones; adoption dates are from the programs themselves
+// where they say so, and from the parties' announcements otherwise.
 export const PARTIES = [
   {
     id: 'afd',
@@ -13,14 +12,16 @@ export const PARTIES = [
   {
     id: 'bsw',
     short: 'BSW',
-    name: 'Bündnis Sahra Wagenknecht',
+    name: 'Bündnis Sahra Wagenknecht – Vernunft und Gerechtigkeit',
+    // Approved 2025-12-06; the short name stays BSW.
+    renamed: { from: '2026-10-01', to: 'Bündnis Soziale Gerechtigkeit und Wirtschaftliche Vernunft' },
     program: { title: 'Unser Land verdient mehr!', adopted: 'Beschlossen 2025-01-12, Bundesparteitag in Bonn', pages: 45, megabytes: 1.2 },
   },
   {
     id: 'fdp',
     short: 'FDP',
     name: 'Freie Demokratische Partei',
-    program: { title: 'Alles lässt sich ändern', adopted: 'Veröffentlicht 2024-12', pages: 52, megabytes: 0.8 },
+    program: { title: 'Alles lässt sich ändern', adopted: 'Beschlossen 2024-12-17 vom Bundesvorstand', pages: 52, megabytes: 0.8 },
   },
   {
     id: 'gruene',
@@ -43,8 +44,8 @@ export const PARTIES = [
   {
     id: 'union',
     short: 'CDU/CSU',
-    name: 'CDU/CSU',
-    program: { title: 'Politikwechsel für Deutschland', adopted: 'Beschlossen 2024-12-17 von den Vorständen von CDU und CSU', pages: 82, megabytes: 3.3 },
+    name: 'Christlich Demokratische Union Deutschlands und Christlich-Soziale Union in Bayern',
+    program: { title: 'Politikwechsel für Deutschland', adopted: 'Beschlossen 2024-12-17 von den Vorständen von CDU und CSU in Berlin', pages: 82, megabytes: 3.3 },
   },
 ];
 

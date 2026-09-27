@@ -162,34 +162,62 @@ a:focus-visible {
   margin-top: 1.5rem;
 }
 
-/* One segmented control; two rows of two on phones. */
-#views {
+.intro {
+  font-size: 1.05rem;
+}
+
+.results-head {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+.results-head button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  padding: 0.35rem 0.8rem;
+}
+
+#weights {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.25rem;
-  padding: 0.25rem;
-  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
   border: 1px solid var(--line);
   border-radius: 0.8rem;
   background: var(--card);
 }
 
-#views button {
-  padding: 0.55rem 0.4rem;
-  border: none;
-  background: transparent;
-  color: var(--ink);
+.weight {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
   font-size: 0.95rem;
 }
 
-#views button[aria-pressed="true"] {
-  background: var(--accent);
-  color: var(--accent-ink);
-  font-weight: 600;
+.segmented {
+  display: flex;
+  gap: 0.2rem;
+  padding: 0.2rem;
+  border: 1px solid var(--line);
+  border-radius: 0.6rem;
 }
 
-.intro {
-  font-size: 1.05rem;
+.segmented button {
+  padding: 0.25rem 0.7rem;
+  border: none;
+  border-radius: 0.45rem;
+  background: transparent;
+  color: var(--ink);
+  font-size: 0.85rem;
+}
+
+.segmented button[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 
 .party {
@@ -198,7 +226,7 @@ a:focus-visible {
 
 .party summary {
   display: grid;
-  grid-template-columns: 5.5rem 1fr 3.5rem;
+  grid-template-columns: 5.5rem 1fr 3.8rem;
   gap: 0.75rem;
   align-items: center;
   padding: 0.8rem 0;
@@ -210,19 +238,23 @@ a:focus-visible {
   display: none;
 }
 
+/* The score column carries a chevron, so rows read as something to open. */
+.party .score::after {
+  content: "›";
+  display: inline-block;
+  width: 0.8rem;
+  margin-left: 0.3rem;
+  text-align: center;
+  color: var(--ink-muted);
+  transition: transform 0.15s;
+}
+
+.party details[open] .score::after {
+  transform: rotate(90deg);
+}
+
 .party .name {
   font-weight: 700;
-}
-
-.party .coverage {
-  grid-column: 2 / 4;
-  margin-top: -0.4rem;
-  font-size: 0.8rem;
-  color: var(--ink-muted);
-}
-
-.nowrap {
-  white-space: nowrap;
 }
 
 .party .score {
@@ -251,8 +283,13 @@ a:focus-visible {
 .bar span {
   position: absolute;
   height: 100%;
-  border-radius: 1rem;
+  border-radius: 0 1rem 1rem 0;
   background: var(--party);
+}
+
+/* Only the outer end is round; the end at the zero line is straight. */
+.bar span.against {
+  border-radius: 1rem 0 0 1rem;
 }
 
 #silent {
@@ -299,21 +336,14 @@ dialog::backdrop {
   background: var(--backdrop);
 }
 
-.dialog-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
+#close-sources {
+  float: right;
+  margin: 0 0 0.5rem 0.75rem;
+  padding: 0.4rem 0.8rem;
 }
 
-#sources-title,
-.dialog-subtitle {
-  font-weight: 700;
-  margin: 0;
-}
-
-.dialog-subtitle {
-  margin-top: 1.25rem;
+dialog > p:first-of-type {
+  margin-top: 0;
 }
 
 #program-list {
@@ -353,70 +383,105 @@ dialog a {
   color: var(--accent);
 }
 
-.finding {
-  margin: 0 0 1.25rem;
-  padding-left: 0.9rem;
+/* A party's topics by source. */
+.topics {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+}
+
+.topics thead td {
+  border-top: none;
+}
+
+.topics thead th {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--ink-muted);
+  padding: 0 0.1rem 0.3rem;
+}
+
+.topics tbody th {
+  text-align: left;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem 0.25rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.topics td {
+  width: 22%;
+  text-align: center;
+  padding: 0.25rem 0.1rem;
+  border-top: 1px solid var(--line);
+}
+
+.topics .off {
+  opacity: 0.35;
+}
+
+.cell {
+  width: 100%;
+  padding: 0.35rem 0;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--neutral);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.cell[aria-expanded="true"] {
+  border-color: var(--accent);
+  outline: 1px solid var(--accent);
+}
+
+.topics .evidence td {
+  width: auto;
+  text-align: left;
+  border-top: none;
+  padding: 0.3rem 0 0.9rem 0.8rem;
   border-left: 3px solid var(--party);
 }
 
-.finding p {
-  margin: 0;
+.evidence p {
+  margin: 0.2rem 0;
 }
 
-.finding-topic {
-  font-weight: 600;
-}
-
-.finding blockquote {
+.evidence blockquote {
   margin: 0.4rem 0;
-  font-size: 0.9rem;
   color: var(--ink-muted);
 }
 
-.finding blockquote.clamped {
+.evidence blockquote.clamped {
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 6;
-  line-clamp: 6;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
   overflow: hidden;
+}
+
+.evidence mark {
+  background: var(--highlight);
+  color: var(--ink);
+}
+
+.evidence a {
+  font-size: 0.85rem;
+  color: var(--accent);
 }
 
 button.more {
   display: block;
-  margin: -0.2rem 0 0.4rem;
+  margin: 0 0 0.4rem;
   padding: 0.2rem 0.6rem;
   font-size: 0.85rem;
 }
 
-.source-scores {
-  list-style: none;
-  padding: 0;
-  margin: 0.3rem 0 0;
-  display: grid;
-  gap: 0.3rem;
-}
-
-/* Each source's score, and the way to its evidence. */
-.source-score {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.45rem 0.7rem;
-  font-size: 0.9rem;
-  text-align: left;
-}
-
-.source-score span:last-child {
-  font-weight: 600;
-  white-space: nowrap;
-}
-
 .vote {
-  margin: 0.6rem 0 0.9rem;
+  margin: 0.5rem 0 0.9rem;
 }
 
-.vote.skipped .vote-title,
+.vote.skipped > a,
 .vote.skipped .vote-position {
   text-decoration: line-through;
   color: var(--ink-muted);
@@ -442,27 +507,9 @@ button.more {
   color: var(--accent-ink);
 }
 
-.finding a {
-  font-size: 0.85rem;
-  color: var(--accent);
-}
-
-.vote-title {
-  margin-top: 0.4rem !important;
-  font-size: 0.9rem;
-}
-
-.vote-position {
-  font-size: 0.9rem;
-  color: var(--ink-muted);
-}
-
+.vote-position,
 .statement-meta {
   font-size: 0.85rem;
-}
-
-.statement-context {
-  font-size: 0.8rem;
   color: var(--ink-muted);
 }
 
@@ -472,7 +519,6 @@ button.more {
 }
 
 .verdict {
-  font-size: 0.9rem;
   font-weight: 600;
 }
 
@@ -487,16 +533,12 @@ button.more {
     padding: 0.75rem 1rem;
   }
 
-  #views {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .party summary {
-    grid-template-columns: 4.8rem 1fr 2.4rem;
+    grid-template-columns: 4.8rem 1fr 3rem;
     gap: 0.6rem;
   }
 
-  .source-score {
+  .topics {
     font-size: 0.85rem;
   }
 
@@ -516,7 +558,6 @@ button.more {
 .level-2 { color: var(--neutral); }
 .level-3 { color: var(--agree); }
 .level-4 { color: var(--agree-strong); }
-.silent { color: var(--neutral); font-weight: 400; }
 
 /* Party colors */
 .party-afd { --party: var(--afd-blue); }

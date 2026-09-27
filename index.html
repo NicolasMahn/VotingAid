@@ -18,7 +18,7 @@
           <circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5" />
           <path d="M8 7v4.5M8 4.5v.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
         </svg>
-        Quellen
+        Info
       </button>
     </header>
 
@@ -43,37 +43,27 @@
       <p id="status" class="muted" role="status"></p>
 
       <form id="key" class="actions" hidden>
-        <p class="muted">Diese Seite braucht einen OpenRouter-Schlüssel, um Jev zu fragen. Er bleibt in diesem Browser.</p>
+        <p class="muted">Diese Seite braucht einen OpenRouter-Schlüssel, um Jev zu fragen. Er wird nur in diesem Browser gespeichert.</p>
         <input id="key-input" type="password" placeholder="sk-or-…" autocomplete="off" required />
         <button type="submit">Schlüssel verwenden</button>
       </form>
 
       <section id="results" hidden>
-        <div id="views">
-          <button type="button" data-view="overview" aria-pressed="true">Überblick</button>
-          <button type="button" data-view="program" aria-pressed="false">Programme</button>
-          <button type="button" data-view="votes" aria-pressed="false">Abstimmungen</button>
-          <button type="button" data-view="statements" aria-pressed="false">Aussagen</button>
+        <div class="results-head">
+          <button id="toggle-weights" class="quiet" type="button" aria-expanded="false" aria-controls="weights">
+            <svg class="icon" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+              <circle cx="5" cy="4" r="1.8" fill="var(--paper)" stroke="currentColor" stroke-width="1.5" />
+              <circle cx="11" cy="8" r="1.8" fill="var(--paper)" stroke="currentColor" stroke-width="1.5" />
+              <circle cx="7" cy="12" r="1.8" fill="var(--paper)" stroke="currentColor" stroke-width="1.5" />
+            </svg>
+            Gewichtung
+          </button>
         </div>
-        <p class="muted">
-          −10 heißt, die Partei will das Gegenteil von dir, +10, sie will dasselbe. Tipp auf eine Partei, um die
-          Belege zu sehen.
-        </p>
-        <p class="muted" data-note="overview">
-          Der Mittelwert aus Programm, Abstimmungen und Aussagen, soweit sie etwas zu deinen Themen sagen.
-        </p>
-        <p class="muted" data-note="votes" hidden>
-          Namentliche Abstimmungen seit 2021, ein kleiner Teil dessen, was der Bundestag beschließt.
-          Koalitionen stimmen meist gemeinsam ab. Liegt Jev falsch, wie du abstimmen würdest, korrigier es
-          bei der Abstimmung.
-        </p>
-        <p class="muted" data-note="statements" hidden>
-          Reden im Bundestag seit März 2025 und Texte der Fraktionen und Bundesparteien. Einzelne
-          Politikerinnen und Politiker vertreten nicht immer die Parteilinie.
-        </p>
+        <div id="weights" hidden></div>
         <ol id="ranking"></ol>
         <div id="silent" hidden>
-          <p id="silent-text" class="muted"></p>
+          <p class="muted">Zu deinen Themen findet sich nichts von:</p>
           <ul id="silent-parties"></ul>
         </div>
       </section>
@@ -81,26 +71,37 @@
 
     <footer class="muted">
       <p>
-        Deine Meinungen werden zum Vergleichen an OpenRouter und TypeSafe geschickt, sonst nirgendwohin.
+        Deine Meinungen werden zum Vergleichen an OpenRouter, TypeSafe und Voyage AI geschickt, sonst nirgendwohin.
         Jev liest nur die passendsten Abschnitte, Abstimmungen und Aussagen, nicht alles. Prüf die Quellen,
         bevor du dich darauf verlässt.
       </p>
     </footer>
 
-    <dialog id="sources" aria-labelledby="sources-title">
-      <div class="dialog-head">
-        <p id="sources-title">Wahlprogramme zur Bundestagswahl 2025</p>
-        <button id="close-sources" class="quiet" type="button" aria-label="Schließen">✕</button>
-      </div>
+    <dialog id="sources" aria-label="Info">
+      <button id="close-sources" class="quiet" type="button" aria-label="Schließen">✕</button>
+      <p>
+        Jede Partei bekommt einen Wert von −10 bis +10: −10 heißt, sie will das Gegenteil von dem, was du
+        willst, +10, sie will dasselbe. Der Wert mittelt drei Quellen, ihr Wahlprogramm, ihre Abstimmungen im
+        Bundestag und ihre Aussagen. Wie stark jede zählt, stellst du unter „Gewichtung“ ein. Tipp bei einer
+        Partei auf einen Wert, um die Belege zu sehen.
+      </p>
+      <p>
+        Bei Abstimmungen schätzt Jev, wie du mit deiner Meinung abstimmen würdest, und vergleicht das mit den
+        Parteien. Liegt Jev falsch, korrigier es direkt bei der Abstimmung. Namentliche Abstimmungen sind nur
+        ein kleiner Teil dessen, was der Bundestag beschließt, und Koalitionen stimmen meist gemeinsam ab.
+      </p>
+      <p>
+        Aussagen sind Reden im Bundestag und Texte der Fraktionen und Bundesparteien. Einzelne Politikerinnen
+        und Politiker vertreten nicht immer die Linie ihrer Partei.
+      </p>
+      <p>Die Wahlprogramme zur Bundestagswahl 2025:</p>
       <ul id="program-list"></ul>
-      <p class="dialog-subtitle">Abstimmungen im Bundestag</p>
-      <p id="votes-meta" class="muted">Wird geladen…</p>
-      <p class="dialog-subtitle">Aussagen</p>
-      <p id="statements-meta" class="muted">Wird geladen…</p>
+      <p id="votes-meta" class="muted">Abstimmungen werden geladen…</p>
+      <p id="statements-meta" class="muted">Aussagen werden geladen…</p>
       <ul id="website-list" class="muted"></ul>
       <p class="muted">
-        Alle Quellen sind in Abschnitte zerlegt. Jev bekommt pro Thema nur die passendsten davon zu sehen.
-        Der Code liegt auf <a href="https://github.com/NicolasMahn/VotingAid" target="_blank" rel="noopener">GitHub</a>.
+        Jev bekommt pro Thema nur die passendsten Abschnitte, Abstimmungen und Aussagen zu sehen. Der Code liegt
+        auf <a href="https://github.com/NicolasMahn/VotingAid" target="_blank" rel="noopener">GitHub</a>.
       </p>
     </dialog>
 

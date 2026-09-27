@@ -16,17 +16,17 @@ Three databases, all static files built by `scripts/`:
 - `data/programme.json`: the seven programs in `programme/`, split into
   ~1,000-character passages that never cross a page (2,025 passages).
   `build_programs.py`.
-- `data/abstimmungen.json`: every roll-call vote of the Bundestag since 2021 from
+- `data/abstimmungen.json`: the roll-call votes of the 20th and 21st Bundestag (from 2021-11) from
   the [abgeordnetenwatch.de API](https://www.abgeordnetenwatch.de/api) (CC0),
-  counted per party. `build_votes.py`.
-- `data/aussagen/`: every speech in the Bundestag since March 2025, from the
+  counted per parliamentary group; members without one are left out. `build_votes.py`.
+- `data/aussagen/`: the speeches of the covered parties' members in the Bundestag since 2025-03-25, from the
   [plenary protocols](https://www.bundestag.de/services/opendata), plus pages from
   the websites of the Bundestag fractions and the federal parties.
   `build_speeches.py` and `build_web.py` collect, `build_statements.py` embeds.
 
 Federal politics is the boundary: speeches in the Bundestag are federal by
 definition, and only fraction and federal party sites are crawled, not state
-associations. Speeches in public parliamentary debates may be reproduced freely
+associations. Speeches in public parliamentary debates may be reproduced with attribution
 (§ 48 UrhG); from websites we only show short passages with a link. Press
 interviews are left out, because hosting them would mean republishing other
 people's articles.
@@ -43,7 +43,7 @@ shards, and picks the closest passage in each.
 
 For each topic, programs, votes and statements go to Jev in three separate
 requests, and the page ranks parties separately for each. Mixing them would blur
-the parties: coalition partners vote together whatever their programs say, and
+the parties: coalition partners usually vote together whatever their programs say, and
 one politician's speech is not the party line. For programs and statements, Jev
 answers three narrow questions per party: where the material places it, whether
 it takes a clear position at all, and which passage or statement shows it best.
@@ -58,15 +58,18 @@ topics it is silent on don't count, and parties silent on all of them are listed
 apart rather than ranked last. Where a party's votes and program disagree clearly
 on a topic, the page says so.
 
-The page opens on an overview: per party, the mean of the three sources that
-say something, with each source's score next to it and a way into its
-evidence. Where Jev misjudges how the person would vote in a roll-call vote,
+The page shows one ranking, the weighted mean of the three sources; people can
+set each source to off, normal or double. Opening a party shows its topics by
+source, and each score opens its evidence in place. Quotes open on their two
+sentences closest to the opinion, found by embedding the passage's sentences
+when it is first opened; they are the party's own words, not a generated
+summary. Where Jev misjudges how the person would vote in a roll-call vote,
 they can correct it, or take the vote out; the scores update without asking Jev
 again, and the correction is kept in the browser for that opinion.
 
-The three views are not equally strong. Roll-call votes are a small, contested
+The three sources are not equally strong. Roll-call votes are a small, contested
 subset of what the Bundestag decides. FDP and BSW have not been in the Bundestag
-since 2025, so they have no votes since then and appear in statements only
+since 2025-03-25, so they have no votes since then and appear in statements only
 through their party websites.
 
 ## Run locally
@@ -106,6 +109,7 @@ Anyone can read it from there, so use a separate key with a low credit limit.
 - `js/analysis.js`: what Jev is asked about programs, votes and statements, and how answers become a match.
 - `js/parties.js`: the parties and links into their programs.
 - `js/suggestions.js`: the "Thema vorschlagen" topics from the original.
-- `js/results.js`: the overview, the three source views and vote corrections.
+- `js/results.js`: the ranking, weights, evidence and vote corrections.
+- `js/excerpt.js`: the key sentences of a quote.
 - `js/app.js`: the topic form, running the analysis, and the sources dialog.
 - `css/theme.css`: every raw color value, including party colors.

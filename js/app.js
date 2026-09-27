@@ -100,6 +100,7 @@ async function analyseTopic(apiKey, { programs, votes, statements }, { topic, op
     topic: topic || opinion,
     // Corrections to how the person would vote are kept per opinion.
     key: `${topic}: ${opinion}`,
+    query,
     program: readPartyAnswers(programAnswers.answers),
     statements: readPartyAnswers(statementAnswers.answers),
     jevVotes: readPersonVotes(voteAnswers.answers),
@@ -133,7 +134,7 @@ async function analyse() {
       passages: new Map(programs.items.map((item) => [item.id, item])),
       votes: new Map(votes.items.map((item) => [item.id, item])),
       statements: new Map(topicResults.flatMap((topic) => topic.found).map((found) => [found.doc.id, found])),
-    });
+    }, apiKey);
     $('status').textContent = '';
   } catch (error) {
     $('status').textContent = `Das hat nicht geklappt: ${error.message}`;
@@ -158,11 +159,16 @@ $('key').addEventListener('submit', (event) => {
 
 function fillSources(votes) {
   $('program-list').replaceChildren(
-    ...PARTIES.map(({ id, short, program }) => {
+    ...PARTIES.map(({ id, short, name, renamed, program }) => {
       const item = element('li', `party-${id}`);
+      let fullName = name;
+      if (renamed) {
+        const done = new Date().toISOString().slice(0, 10) >= renamed.from;
+        fullName = done ? `${renamed.to} (früher ${name})` : `${name} (ab ${renamed.from}: ${renamed.to})`;
+      }
       item.append(
         element('p', 'program-title', `${short}: ${program.title}`),
-        element('p', 'muted', program.adopted),
+        element('p', 'muted', `${fullName}. ${program.adopted}.`),
         link(programUrl(id), `PDF herunterladen (${program.pages} Seiten, ${program.megabytes.toLocaleString('de-DE')} MB)`),
       );
       return item;
@@ -170,10 +176,10 @@ function fillSources(votes) {
   );
   const dates = votes.items.map((vote) => vote.date).sort();
   $('votes-meta').replaceChildren(
-    `${votes.items.length} namentliche Abstimmungen von ${dates[0]} bis ${dates.at(-1)}, pro Partei ausgezählt. ` +
+    `${votes.items.length} namentliche Abstimmungen von ${dates[0]} bis ${dates.at(-1)}, pro Fraktion ausgezählt. ` +
       'Quelle: ',
     link('https://www.abgeordnetenwatch.de/api', 'abgeordnetenwatch.de'),
-    ' (Lizenz CC0). FDP und BSW sind seit 2025 nicht mehr im Bundestag.',
+    ' (Lizenz CC0). FDP und BSW sind seit 2025-03-25 nicht mehr im Bundestag.',
   );
 }
 
@@ -188,7 +194,7 @@ statementsReady.then(({ meta }) => {
     `${rede.toLocaleString('de-DE')} Redebeiträge aus den `,
     link('https://www.bundestag.de/services/opendata', 'Plenarprotokollen des Bundestags'),
     ` und ${(fraktion + partei).toLocaleString('de-DE')} Seiten von Websites der Bundestagsfraktionen und ` +
-      `Bundesparteien, bis ${meta.to}. Reden im Bundestag dürfen frei wiedergegeben werden (§ 48 UrhG); ` +
+      `Bundesparteien, bis ${meta.to}. Reden aus öffentlichen Debatten des Bundestags dürfen mit Quellenangabe wiedergegeben werden (§ 48 UrhG); ` +
       'von Websites zeigen wir nur kurze Auszüge mit Link.',
   );
   // Some sites only reach back a few months, so each shows its own range.

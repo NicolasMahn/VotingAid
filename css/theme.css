@@ -11,6 +11,7 @@
   --accent-ink: #ffffff;
   --warning: #a15c00;
   --backdrop: rgba(0, 0, 0, 0.45);
+  --highlight: #fff1a8;
 
   --disagree-strong: #b3261e;
   --disagree: #d9776f;
@@ -37,6 +38,7 @@
     --accent: #6d8dff;
     --accent-ink: #0d0f14;
     --warning: #f0b35a;
+    --highlight: #5a4a12;
 
     --disagree-strong: #ff8a80;
     --disagree: #e3a39d;

@@ -23,16 +23,19 @@ export function loadIndex(file) {
   return { model: file.model, dimensions, items };
 }
 
-export async function embedQuery(apiKey, text) {
+/** One embedding per text, in order, at QUERY_DIMENSIONS. */
+export async function embedTexts(apiKey, texts) {
   const response = await fetch(ENDPOINT, {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: QUERY_MODEL, input: text, dimensions: QUERY_DIMENSIONS }),
+    body: JSON.stringify({ model: QUERY_MODEL, input: texts, dimensions: QUERY_DIMENSIONS }),
   });
   const payload = await response.json().catch(() => null);
   if (!response.ok) throw new Error(payload?.error?.message ?? response.statusText);
-  return payload.data[0].embedding;
+  return payload.data.sort((a, b) => a.index - b.index).map((item) => item.embedding);
 }
+
+export const embedQuery = async (apiKey, text) => (await embedTexts(apiKey, [text]))[0];
 
 /**
  * The search vector for an opinion: the mean of the topic's embedding and the
@@ -53,6 +56,12 @@ export function shorten(query, index) {
   if (index.model !== QUERY_MODEL) throw new Error(`${index.model} was built with a different model`);
   return query.slice(0, index.dimensions);
 }
+
+export const cosine = (a, b) => {
+  let dot = 0;
+  for (let i = 0; i < a.length; i++) dot += a[i] * b[i];
+  return dot / (Math.hypot(...a) * Math.hypot(...b));
+};
 
 function similarity(query, queryNorm, passage) {
   let dot = 0;

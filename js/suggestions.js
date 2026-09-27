@@ -3,7 +3,7 @@
 export const SUGGESTIONS = {
   'Unterstützung der Ukraine': 'Die Ukraine soll…',
   'Erneuerbare Energien': 'Erneuerbare Energien sollen…',
-  Bürgergeld: 'Das Bürgergeld soll…',
+  Grundsicherung: 'Die Grundsicherung (früher Bürgergeld) soll…',
   'Tempolimit auf Autobahnen': 'Ein Tempolimit auf Autobahnen soll…',
   Asyl: 'Asylsuchende sollen…',
   Mietpreisbremse: 'Die Mietpreisbremse soll…',
