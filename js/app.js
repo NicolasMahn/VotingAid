@@ -283,4 +283,4 @@ statementsReady.then(({ meta }) => {
 const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
 (saved.length ? saved : [{}]).forEach(addTopic);
 
-$('start-tour').addEventListener('click', startTour);
+for (const button of document.querySelectorAll('.tour-button')) button.addEventListener('click', startTour);

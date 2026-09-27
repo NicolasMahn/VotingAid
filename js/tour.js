@@ -15,7 +15,7 @@ const STEPS = [
   {
     target: '#ranking > li:first-child',
     results: true,
-    text: 'Jede Partei bekommt einen Wert: −10 heißt, sie will das Gegenteil, +10, sie will dasselbe. Tipp auf eine Partei, um ihre Belege zu sehen.',
+    text: 'Jede Partei bekommt einen Wert: −10 heißt, sie will das Gegenteil, +10, sie will dasselbe. Tipp auf eine Partei für ihre Werte je Thema und Quelle, und auf einen Wert für die Belege. Ein Strich heißt, die Quelle sagt dazu nichts Klares.',
   },
   { target: '#toggle-weights', results: true, text: 'Hier stellst du ein, wie stark Programme, Abstimmungen und Aussagen zählen.' },
   { target: 'a.how', results: true, text: 'Wie das Ergebnis genau entsteht, zeigt der Ablauf, mit jedem Prompt an Jev.' },

@@ -153,40 +153,20 @@ a:focus-visible {
   flex: 1;
 }
 
-/* A small round "i" that opens an explanation where it is needed. */
+/* The round "i" in the header that opens the about dialog. */
 .info-button {
   flex: none;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: var(--control-sm);
+  height: var(--control-sm);
   padding: 0;
   border: 1.5px solid var(--ink-muted);
   border-radius: 50%;
   background: transparent;
   color: var(--ink-muted);
-  font: italic 700 0.8rem/1 Georgia, serif;
-  vertical-align: middle;
-}
-
-.info-button.large,
-.results-head .info-button {
-  width: var(--control-sm);
-  height: var(--control-sm);
-  font-size: 1.05rem;
-}
-
-.info {
-  max-width: min(22rem, calc(100% - 2rem));
-  padding: 1rem 1.1rem;
-  border: 1px solid var(--line);
-  border-radius: 0.9rem;
-  background: var(--card);
-  color: var(--ink);
-  font-size: 0.95rem;
-  line-height: 1.45;
+  font: italic 700 1.05rem/1 Georgia, serif;
 }
 
 /* Short points, each led by its key words, rather than a block of text. */
-.info ul,
 .points {
   display: grid;
   gap: 0.7rem;
@@ -195,43 +175,9 @@ a:focus-visible {
   list-style: none;
 }
 
-.info li,
 .points li {
   padding-left: 0.8rem;
   border-left: 3px solid var(--line);
-}
-
-/* The -10 to +10 scale, drawn as in the results. */
-.scale {
-  position: relative;
-  height: 0.6rem;
-  border-radius: 1rem;
-  background: linear-gradient(to right, var(--disagree-strong), var(--line) 50%, var(--agree-strong));
-}
-
-.scale span {
-  position: absolute;
-  left: 50%;
-  top: -0.25rem;
-  bottom: -0.25rem;
-  border-left: 2px solid var(--ink-muted);
-}
-
-.scale-labels {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  margin: 0.4rem 0 1rem;
-  font-size: 0.85rem;
-  color: var(--ink-muted);
-}
-
-.scale-labels span:last-child {
-  text-align: right;
-}
-
-.info::backdrop {
-  background: var(--backdrop);
 }
 
 /* Start */
@@ -310,16 +256,14 @@ h1 {
 }
 
 .lead {
-  margin: 0;
+  margin: 0 0 0.6rem;
   font-size: 1.15rem;
 }
 
 /* The way into the guided tour, quiet beneath the instruction. */
 button.how-to {
   height: var(--control-sm);
-  margin-top: 0.6rem;
   padding: 0 0.9rem;
-  border-radius: 1.2rem;
   background: var(--card);
   font-size: 0.9rem;
 }

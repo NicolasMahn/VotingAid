@@ -13,7 +13,7 @@
   <body>
     <header>
       <span class="brand"><img src="favicon.svg" alt="" width="32" height="32" />Voting Aid</span>
-      <button id="open-sources" class="info-button large" type="button" aria-haspopup="dialog" aria-label="Über Voting Aid und die Quellen">i</button>
+      <button id="open-sources" class="info-button" type="button" aria-haspopup="dialog" aria-label="Über Voting Aid und die Quellen">i</button>
     </header>
 
     <main>
@@ -31,7 +31,7 @@
           <span class="demo-4 left" style="--size: 40%"></span>
         </div>
         <p class="lead">Schreib zu ein paar Themen, was passieren soll.</p>
-        <button id="start-tour" class="how-to quiet" type="button">Kurze Tour</button>
+        <button class="tour-button how-to quiet" type="button">Kurze Tour</button>
       </div>
       <ol id="topics"></ol>
 
@@ -64,7 +64,7 @@
 
       <section id="results" hidden>
         <div class="results-head">
-          <button class="info-button" type="button" popovertarget="info-scores" aria-label="Was bedeuten die Werte?">i</button>
+          <button class="tour-button how-to quiet" type="button">Kurze Tour</button>
           <button id="toggle-weights" class="quiet" type="button" aria-expanded="false" aria-controls="weights">
             <svg class="icon" viewBox="0 0 16 16" aria-hidden="true">
               <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
@@ -78,15 +78,6 @@
         <div id="weights" hidden></div>
         <ol id="ranking"></ol>
         <a class="how" href="docs/workflow.html">Wie kommt dieses Ergebnis zustande? →</a>
-        <div id="info-scores" class="info" popover>
-          <div class="scale" aria-hidden="true"><span></span></div>
-          <p class="scale-labels"><span><strong>−10</strong> will das Gegenteil</span><span><strong>+10</strong> will dasselbe</span></p>
-          <ul>
-            <li><strong>Tipp auf eine Partei</strong> für ihre Werte je Thema und Quelle.</li>
-            <li><strong>Tipp auf einen Wert</strong> für die Belege.</li>
-            <li><strong>Ein Strich</strong> heißt, die Quelle sagt dazu nichts Klares.</li>
-          </ul>
-        </div>
       </section>
     </main>
 
