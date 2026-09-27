@@ -60,10 +60,7 @@
 
       <section id="results" hidden>
         <div class="results-head">
-          <button class="legend" type="button" popovertarget="info-scores">
-            <span class="info-button" aria-hidden="true">i</span>
-            −10 bis +10
-          </button>
+          <button class="info-button" type="button" popovertarget="info-scores" aria-label="Was bedeuten die Werte?">i</button>
           <button id="toggle-weights" class="quiet" type="button" aria-expanded="false" aria-controls="weights">
             <svg class="icon" viewBox="0 0 16 16" aria-hidden="true">
               <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
@@ -74,22 +71,8 @@
             Gewichtung
           </button>
         </div>
-        <div id="weights" hidden>
-          <div id="weight-rows"></div>
-          <button class="info-button" type="button" popovertarget="info-weights" aria-label="Was ist die Gewichtung?">i</button>
-        </div>
-        <div id="info-weights" class="info" popover>
-          <ul>
-            <li><strong>Ein Wert aus drei Quellen.</strong> Hier stellst du ein, wie stark jede zählt.</li>
-            <li><strong>Abstimmungen</strong> sind nur die namentlichen, und Koalitionen stimmen meist gemeinsam ab.</li>
-            <li><strong>Aussagen</strong> stammen von Einzelnen, die nicht immer die Parteilinie vertreten.</li>
-          </ul>
-        </div>
+        <div id="weights" hidden></div>
         <ol id="ranking"></ol>
-        <div id="silent" hidden>
-          <p class="muted">Zu deinen Themen findet sich nichts von:</p>
-          <ul id="silent-parties"></ul>
-        </div>
         <div id="info-scores" class="info" popover>
           <div class="scale" aria-hidden="true"><span></span></div>
           <p class="scale-labels"><span><strong>−10</strong> will das Gegenteil</span><span><strong>+10</strong> will dasselbe</span></p>
@@ -102,24 +85,35 @@
       </section>
     </main>
 
-    <footer class="muted">
-      <p>
-        Deine Meinungen gehen nur zum Vergleichen an OpenRouter, TypeSafe und Voyage AI. Jev liest die passendsten
-        Stellen, nicht alles: Prüf die Belege, bevor du dich darauf verlässt.
-      </p>
-    </footer>
-
-    <dialog id="sources" aria-label="Über Voting Aid und die Quellen">
-      <button id="close-sources" class="quiet" type="button" aria-label="Schließen">✕</button>
-      <p>
-        Voting Aid vergleicht deine Meinung mit drei Quellen: den Wahlprogrammen zur Bundestagswahl 2025, den
-        namentlichen Abstimmungen im Bundestag und Aussagen von Politikerinnen und Politikern. Das Urteil fällt
-        Jev, ein Entscheidungsmodell von TypeSafe; die Seite zeigt zu jedem Wert die Belege.
-      </p>
-      <ul id="program-list"></ul>
-      <p id="votes-meta" class="muted">Abstimmungen werden geladen…</p>
-      <p id="statements-meta" class="muted">Aussagen werden geladen…</p>
-      <ul id="website-list" class="muted"></ul>
+    <dialog id="sources" aria-label="Über Voting Aid">
+      <div class="dialog-top">
+        <span class="brand small"><img src="favicon.svg" alt="" width="24" height="24" />Voting Aid</span>
+        <button id="close-sources" class="quiet" type="button" aria-label="Schließen">✕</button>
+      </div>
+      <ul class="points">
+        <li>
+          <strong>Drei Quellen.</strong> Die Wahlprogramme zur Bundestagswahl 2025, namentliche Abstimmungen im
+          Bundestag und Aussagen von Politikerinnen und Politikern.
+        </li>
+        <li>
+          <strong>Jev urteilt.</strong> Das Entscheidungsmodell von TypeSafe liest die passendsten Stellen, nicht
+          alles. Prüf die Belege, bevor du dich darauf verlässt.
+        </li>
+        <li>
+          <strong>Deine Daten.</strong> Deine Meinungen gehen nur zum Vergleichen an OpenRouter, TypeSafe und
+          Voyage AI. Gespeichert werden sie nur in deinem Browser.
+        </li>
+      </ul>
+      <details class="disclosure">
+        <summary>Wahlprogramme herunterladen</summary>
+        <ul id="program-list"></ul>
+      </details>
+      <details class="disclosure">
+        <summary>Abstimmungen und Aussagen</summary>
+        <p id="votes-meta" class="muted">Abstimmungen werden geladen…</p>
+        <p id="statements-meta" class="muted">Aussagen werden geladen…</p>
+        <ul id="website-list" class="muted"></ul>
+      </details>
       <p class="muted">
         Der Code liegt auf <a href="https://github.com/NicolasMahn/VotingAid" target="_blank" rel="noopener">GitHub</a>.
       </p>

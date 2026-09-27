@@ -52,13 +52,11 @@ function render() {
   // position is not a low score, and listing them last would suggest one.
   const ranked = scored.filter(({ overall }) => overall !== null).sort((a, b) => b.overall - a.overall);
   const silent = scored.filter(({ overall }) => overall === null);
-  $('ranking').replaceChildren(...ranked.map(rankedParty));
-  $('silent').hidden = !silent.length;
-  $('silent-parties').replaceChildren(...silent.map(({ party }) => element('li', `party-${party.id}`, party.short)));
+  $('ranking').replaceChildren(...ranked.map(rankedParty), ...silent.map(silentParty));
 }
 
 function renderWeights() {
-  $('weight-rows').replaceChildren(
+  $('weights').replaceChildren(
     ...SOURCES.map((source) => {
       const row = element('div', 'weight');
       const group = element('div', 'segmented');
@@ -82,6 +80,15 @@ function renderWeights() {
       return row;
     }),
   );
+}
+
+/** A party with nothing on the person's topics: last, and visibly without a score. */
+function silentParty({ party }) {
+  const item = element('li', `party silent party-${party.id}`);
+  const row = element('div', 'row');
+  row.append(element('span', 'name', party.short), element('span', 'bar empty', 'nichts Passendes gefunden'), element('span', 'score', '–'));
+  item.append(row);
+  return item;
 }
 
 function rankedParty({ party, overall }) {

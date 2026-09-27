@@ -17,8 +17,7 @@ body {
 }
 
 header,
-main,
-footer {
+main {
   width: 100%;
   max-width: 42rem;
   margin: 0 auto;
@@ -29,6 +28,10 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.brand.small {
+  font-size: 1.15rem;
 }
 
 .brand {
@@ -157,7 +160,8 @@ a:focus-visible {
 }
 
 /* Short points, each led by its key words, rather than a block of text. */
-.info ul {
+.info ul,
+.points {
   display: grid;
   gap: 0.7rem;
   margin: 0;
@@ -165,7 +169,8 @@ a:focus-visible {
   list-style: none;
 }
 
-.info li {
+.info li,
+.points li {
   padding-left: 0.8rem;
   border-left: 3px solid var(--line);
 }
@@ -207,6 +212,7 @@ a:focus-visible {
 
 .hero {
   margin: 1.5rem 0 1rem;
+  text-align: center;
 }
 
 h1 {
@@ -345,34 +351,21 @@ h1 {
   margin-bottom: 0.5rem;
 }
 
-button.legend {
-  padding: 0.35rem 0;
-  border: none;
-  background: none;
-  color: var(--ink-muted);
-  font-size: 0.9rem;
-}
 
-.results-head button {
+
+#toggle-weights {
   font-size: 0.9rem;
   padding: 0.35rem 0.8rem;
 }
 
 #weights {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
+  display: grid;
+  gap: 0.5rem;
   margin-bottom: 1rem;
   padding: 0.75rem;
   border: 1px solid var(--line);
   border-radius: 0.8rem;
   background: var(--card);
-}
-
-#weight-rows {
-  flex: 1;
-  display: grid;
-  gap: 0.5rem;
 }
 
 .weight {
@@ -477,32 +470,35 @@ button.legend {
   border-radius: 1rem 0 0 1rem;
 }
 
-#silent {
-  margin-top: 1.25rem;
-  padding: 0.9rem 1rem;
-  border: 1px dashed var(--line);
-  border-radius: 0.6rem;
+/* Parties with nothing on the person's topics come last, greyed, with a
+   hatched bar where the score would be. */
+.party.silent .row {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr 3.8rem;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.8rem 0;
+  color: var(--ink-muted);
 }
 
-#silent p {
-  margin: 0 0 0.5rem;
+.bar.empty {
+  height: 1.3rem;
+  display: grid;
+  place-items: center;
+  background: repeating-linear-gradient(135deg, var(--line) 0 3px, transparent 3px 8px);
+  font-size: 0.75rem;
 }
 
-#silent-parties {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.bar.empty::after {
+  content: none;
 }
 
-#silent-parties li {
-  padding: 0.15rem 0.7rem;
-  border: 1px solid var(--party);
-  border-radius: 1rem;
-  font-size: 0.9rem;
-  font-weight: 600;
+.party.silent .score {
+  padding-right: 1.1rem;
+}
+
+.party.silent .score::after {
+  content: none;
 }
 
 /* A party's topics by source. */
@@ -703,14 +699,26 @@ dialog::backdrop {
   background: var(--backdrop);
 }
 
+.dialog-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
 #close-sources {
-  float: right;
-  margin: 0 0 0.5rem 0.75rem;
   padding: 0.4rem 0.8rem;
 }
 
-dialog > p:first-of-type {
-  margin-top: 0;
+.disclosure {
+  margin: 1rem 0;
+  border-top: 1px solid var(--line);
+  padding-top: 0.75rem;
+}
+
+.disclosure summary {
+  cursor: pointer;
+  font-weight: 600;
 }
 
 dialog a {
@@ -724,9 +732,23 @@ dialog a {
 }
 
 #program-list li {
-  padding: 0.6rem 0 0.6rem 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0 0.5rem 0.8rem;
   border-left: 3px solid var(--party);
   margin: 0.6rem 0;
+}
+
+a.pdf {
+  flex: none;
+  padding: 0.25rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  color: var(--ink);
+  font-size: 0.85rem;
+  text-decoration: none;
 }
 
 #program-list p {
@@ -755,12 +777,12 @@ dialog a {
   }
 
   header,
-  main,
-  footer {
+  main {
     padding: 0.75rem 1rem;
   }
 
-  .party summary {
+  .party summary,
+  .party.silent .row {
     grid-template-columns: 4.8rem 1fr 3rem;
     gap: 0.6rem;
   }

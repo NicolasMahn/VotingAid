@@ -166,11 +166,12 @@ function fillSources(votes) {
         const done = new Date().toISOString().slice(0, 10) >= renamed.from;
         fullName = done ? `${renamed.to} (früher ${name})` : `${name} (ab ${renamed.from}: ${renamed.to})`;
       }
-      item.append(
-        element('p', 'program-title', `${short}: ${program.title}`),
-        element('p', 'muted', `${fullName}. ${program.adopted}.`),
-        link(programUrl(id), `PDF herunterladen (${program.pages} Seiten, ${program.megabytes.toLocaleString('de-DE')} MB)`),
-      );
+      const text = element('div');
+      text.append(element('p', 'program-title', `${short}: ${program.title}`), element('p', 'muted', `${fullName}. ${program.adopted}.`));
+      const pdf = link(programUrl(id), 'PDF');
+      pdf.className = 'pdf';
+      pdf.title = `${program.pages} Seiten, ${program.megabytes.toLocaleString('de-DE')} MB`;
+      item.append(text, pdf);
       return item;
     }),
   );

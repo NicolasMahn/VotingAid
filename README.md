@@ -54,8 +54,8 @@ finding on the page cites its source.
 
 Scores run from -10 (the party wants the opposite) to +10 (it wants the same).
 A party's score averages its topics, weighted by how clearly each is addressed;
-topics it is silent on don't count, and parties silent on all of them are listed
-apart rather than ranked last. Where a party's votes and program disagree clearly
+topics it is silent on don't count, and parties silent on all of them come last,
+greyed out, with no score rather than a low one. Where a party's votes and program disagree clearly
 on a topic, the page says so.
 
 The page shows one ranking, the weighted mean of the three sources; people can
