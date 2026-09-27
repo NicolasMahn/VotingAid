@@ -7,11 +7,12 @@ import { cosine, embedTexts } from './retrieval.js';
 const KEY_SENTENCES = 2;
 
 // A sentence ends after a word of two or more letters, so "z. B." does not
-// end one; ordinals like "1. Januar" do not either.
-const SENTENCE_END = /(?<=\p{L}{2}[.!?]|[)"“”][.!?])\s+(?=[A-ZÄÖÜ„•])/u;
+// end one; ordinals like "1. Januar" do not either. Bullets, common in
+// programs, start a new one and are dropped.
+const SENTENCE_END = /(?<=\p{L}{2}[.!?]|[)"“”][.!?])\s+(?=[A-ZÄÖÜ„])|\s*[✔✓•●▪]\s*/u;
 
 /** A passage split into sentences. */
-export const sentencesOf = (text) => text.split(SENTENCE_END);
+export const sentencesOf = (text) => text.split(SENTENCE_END).filter(Boolean);
 
 /** The indices of the `count` highest scores, in reading order. */
 export function keyIndices(scores, count = KEY_SENTENCES) {

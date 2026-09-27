@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Voting Aid</title>
-    <meta name="description" content="Schreib deine Meinung, Jev vergleicht sie mit den Wahlprogrammen zur Bundestagswahl 2025, dem Abstimmungsverhalten im Bundestag und den Aussagen der Parteien." />
+    <meta name="description" content="Welche Partei will, was du willst? Jev vergleicht deine Meinung mit den Wahlprogrammen zur Bundestagswahl 2025, den Abstimmungen im Bundestag und den Aussagen der Parteien." />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="css/theme.css" />
     <link rel="stylesheet" href="css/style.css" />
@@ -12,31 +12,43 @@
   </head>
   <body>
     <header>
-      <span>Voting Aid</span>
-      <button id="open-sources" class="quiet" type="button" aria-haspopup="dialog">
-        <svg class="icon" viewBox="0 0 16 16" aria-hidden="true">
-          <circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5" />
-          <path d="M8 7v4.5M8 4.5v.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-        </svg>
-        Info
-      </button>
+      <span class="brand"><img src="favicon.svg" alt="" width="32" height="32" />Voting Aid</span>
+      <button id="open-sources" class="info-button large" type="button" aria-haspopup="dialog" aria-label="Über Voting Aid und die Quellen">i</button>
     </header>
 
     <main>
-      <p class="intro">
-        Welche Partei will, was du willst? Nimm ein paar Themen, die dir wichtig sind, und schreib zu jedem
-        in einem Satz, was passieren soll. Je konkreter, desto besser: „Der Mindestlohn soll auf 15 Euro
-        steigen“ statt „Mindestlohn ist wichtig“.
-      </p>
-      <p class="muted">
-        Jev vergleicht das mit den Wahlprogrammen zur Bundestagswahl 2025, den Abstimmungen im Bundestag und
-        dem, was Politikerinnen und Politiker sagen.
-      </p>
+      <div class="hero">
+        <h1>Welche Partei will, was du willst?</h1>
+        <!-- A results chart in miniature: what the page is about, at a glance. -->
+        <div class="hero-bars" aria-hidden="true">
+          <span class="party-gruene" style="--from: 50%; --to: 88%"></span>
+          <span class="party-spd" style="--from: 50%; --to: 78%"></span>
+          <span class="party-linke" style="--from: 50%; --to: 70%"></span>
+          <span class="party-union" style="--from: 42%; --to: 50%"></span>
+          <span class="party-bsw" style="--from: 30%; --to: 50%"></span>
+          <span class="party-fdp" style="--from: 24%; --to: 50%"></span>
+          <span class="party-afd" style="--from: 10%; --to: 50%"></span>
+        </div>
+        <p class="lead">
+          Schreib zu ein paar Themen, was passieren soll.
+          <button class="info-button" type="button" popovertarget="info-start" aria-label="Wie funktioniert das?">i</button>
+        </p>
+      </div>
+      <div id="info-start" class="info" popover>
+        <p>
+          Je konkreter, desto besser: „Der Mindestlohn soll auf 15 Euro steigen“ sagt mehr als „Mindestlohn ist
+          wichtig“.
+        </p>
+        <p>
+          Jev vergleicht deine Sätze mit den Wahlprogrammen zur Bundestagswahl 2025, den Abstimmungen im Bundestag
+          und dem, was Politikerinnen und Politiker sagen, und zeigt dir die Belege.
+        </p>
+      </div>
 
       <ol id="topics"></ol>
 
       <div class="actions">
-        <button id="add" class="quiet" type="button">Weiteres Thema</button>
+        <button id="add" class="quiet" type="button">+ Thema</button>
         <span class="spacer"></span>
         <button id="analyse" type="button">Analysieren</button>
       </div>
@@ -60,59 +72,78 @@
             Gewichtung
           </button>
         </div>
-        <div id="weights" hidden></div>
+        <div id="weights" hidden>
+          <div id="weight-rows"></div>
+          <button class="info-button" type="button" popovertarget="info-weights" aria-label="Was ist die Gewichtung?">i</button>
+        </div>
+        <div id="info-weights" class="info" popover>
+          <p>
+            Der Wert einer Partei mittelt drei Quellen: ihr Wahlprogramm, ihre Abstimmungen im Bundestag und ihre
+            Aussagen. Hier legst du fest, wie stark jede zählt. „Aus“ lässt eine Quelle weg.
+          </p>
+          <p>
+            Namentliche Abstimmungen sind nur ein kleiner Teil dessen, was der Bundestag beschließt, und Koalitionen
+            stimmen meist gemeinsam ab. Bei Aussagen vertreten Einzelne nicht immer die Linie ihrer Partei.
+          </p>
+        </div>
         <ol id="ranking"></ol>
         <div id="silent" hidden>
           <p class="muted">Zu deinen Themen findet sich nichts von:</p>
           <ul id="silent-parties"></ul>
+        </div>
+        <div id="info-scores" class="info" popover>
+          <p>
+            Jeder Wert zeigt, wie gut die Partei bei einem Thema zu dir passt, getrennt nach Quelle: −10 heißt, sie
+            will das Gegenteil, +10, sie will dasselbe. Ein Strich heißt, die Quelle sagt dazu nichts Klares.
+          </p>
+          <p>Tipp auf einen Wert, um die Belege zu sehen.</p>
         </div>
       </section>
     </main>
 
     <footer class="muted">
       <p>
-        Deine Meinungen werden zum Vergleichen an OpenRouter, TypeSafe und Voyage AI geschickt, sonst nirgendwohin.
-        Jev liest nur die passendsten Abschnitte, Abstimmungen und Aussagen, nicht alles. Prüf die Quellen,
-        bevor du dich darauf verlässt.
+        Deine Meinungen gehen nur zum Vergleichen an OpenRouter, TypeSafe und Voyage AI. Jev liest die passendsten
+        Stellen, nicht alles: Prüf die Belege, bevor du dich darauf verlässt.
       </p>
     </footer>
 
-    <dialog id="sources" aria-label="Info">
+    <dialog id="sources" aria-label="Über Voting Aid und die Quellen">
       <button id="close-sources" class="quiet" type="button" aria-label="Schließen">✕</button>
       <p>
-        Jede Partei bekommt einen Wert von −10 bis +10: −10 heißt, sie will das Gegenteil von dem, was du
-        willst, +10, sie will dasselbe. Der Wert mittelt drei Quellen, ihr Wahlprogramm, ihre Abstimmungen im
-        Bundestag und ihre Aussagen. Wie stark jede zählt, stellst du unter „Gewichtung“ ein. Tipp bei einer
-        Partei auf einen Wert, um die Belege zu sehen.
+        Voting Aid vergleicht deine Meinung mit drei Quellen: den Wahlprogrammen zur Bundestagswahl 2025, den
+        namentlichen Abstimmungen im Bundestag und Aussagen von Politikerinnen und Politikern. Das Urteil fällt
+        Jev, ein Entscheidungsmodell von TypeSafe; die Seite zeigt zu jedem Wert die Belege.
       </p>
-      <p>
-        Bei Abstimmungen schätzt Jev, wie du mit deiner Meinung abstimmen würdest, und vergleicht das mit den
-        Parteien. Liegt Jev falsch, korrigier es direkt bei der Abstimmung. Namentliche Abstimmungen sind nur
-        ein kleiner Teil dessen, was der Bundestag beschließt, und Koalitionen stimmen meist gemeinsam ab.
-      </p>
-      <p>
-        Aussagen sind Reden im Bundestag und Texte der Fraktionen und Bundesparteien. Einzelne Politikerinnen
-        und Politiker vertreten nicht immer die Linie ihrer Partei.
-      </p>
-      <p>Die Wahlprogramme zur Bundestagswahl 2025:</p>
       <ul id="program-list"></ul>
       <p id="votes-meta" class="muted">Abstimmungen werden geladen…</p>
       <p id="statements-meta" class="muted">Aussagen werden geladen…</p>
       <ul id="website-list" class="muted"></ul>
       <p class="muted">
-        Jev bekommt pro Thema nur die passendsten Abschnitte, Abstimmungen und Aussagen zu sehen. Der Code liegt
-        auf <a href="https://github.com/NicolasMahn/VotingAid" target="_blank" rel="noopener">GitHub</a>.
+        Der Code liegt auf <a href="https://github.com/NicolasMahn/VotingAid" target="_blank" rel="noopener">GitHub</a>.
       </p>
     </dialog>
 
     <template id="topic-template">
       <li class="topic">
-        <input class="topic-name" placeholder="Thema, z. B. Mietpreisbremse" aria-label="Thema" />
-        <textarea class="topic-opinion" rows="3" maxlength="1000" placeholder="Was soll passieren?" aria-label="Deine Meinung"></textarea>
+        <input class="topic-name" placeholder="Thema" aria-label="Thema" />
+        <textarea class="topic-opinion" rows="2" maxlength="1000" placeholder="Was soll passieren?" aria-label="Was soll passieren?"></textarea>
         <div class="actions">
-          <button class="suggest quiet" type="button">Thema vorschlagen</button>
+          <button class="suggest quiet" type="button">
+            <svg class="icon" viewBox="0 0 16 16" aria-hidden="true">
+              <rect x="2" y="2" width="12" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.5" />
+              <circle cx="5.5" cy="5.5" r="1.1" fill="currentColor" />
+              <circle cx="10.5" cy="10.5" r="1.1" fill="currentColor" />
+              <circle cx="8" cy="8" r="1.1" fill="currentColor" />
+            </svg>
+            Thema vorschlagen
+          </button>
           <span class="spacer"></span>
-          <button class="remove quiet" type="button">Entfernen</button>
+          <button class="remove quiet icon-only" type="button" aria-label="Thema entfernen">
+            <svg class="icon" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M2.5 4h11M6 4V2.5h4V4M4 4l.7 9.5h6.6L12 4M6.8 6.5v5M9.2 6.5v5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
         </div>
       </li>
     </template>

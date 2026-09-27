@@ -59,11 +59,11 @@ function updateButtons() {
 
 function suggest(item) {
   const taken = new Set(readTopics().map(({ topic }) => topic));
-  const free = Object.keys(SUGGESTIONS).filter((topic) => !taken.has(topic));
-  const topic = free[Math.floor(Math.random() * free.length)];
-  item.querySelector('.topic-name').value = topic;
+  const free = SUGGESTIONS.filter((topic) => !taken.has(topic));
+  item.querySelector('.topic-name').value = free[Math.floor(Math.random() * free.length)];
+  // The old opinion belonged to the old topic.
   const opinion = item.querySelector('.topic-opinion');
-  opinion.value = SUGGESTIONS[topic].replace('…', ' ');
+  opinion.value = '';
   opinion.focus();
   saveTopics();
 }

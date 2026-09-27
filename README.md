@@ -60,12 +60,12 @@ on a topic, the page says so.
 
 The page shows one ranking, the weighted mean of the three sources; people can
 set each source to off, normal or double. Opening a party shows its topics by
-source, and each score opens its evidence in place. Quotes open on their two
-sentences closest to the opinion, found by embedding the passage's sentences
-when it is first opened; they are the party's own words, not a generated
-summary. Where Jev misjudges how the person would vote in a roll-call vote,
-they can correct it, or take the vote out; the scores update without asking Jev
-again, and the correction is kept in the browser for that opinion.
+source, and each score opens its evidence in place: for programs and
+statements a quote of the two sentences closest to the opinion, with […] where
+text is left out and the whole passage one tap away; for votes, whether the
+party voted as the person would, vote by vote. The key sentences are found by
+embedding the passage's sentences when it is first opened; they are the
+party's own words, not a generated summary.
 
 The three sources are not equally strong. Roll-call votes are a small, contested
 subset of what the Bundestag decides. FDP and BSW have not been in the Bundestag
@@ -108,7 +108,7 @@ Anyone can read it from there, so use a separate key with a low credit limit.
 - `js/votes.js`: how a party voted, from per-member counts.
 - `js/analysis.js`: what Jev is asked about programs, votes and statements, and how answers become a match.
 - `js/parties.js`: the parties and links into their programs.
-- `js/suggestions.js`: the "Thema vorschlagen" topics from the original.
+- `js/suggestions.js`: the "Thema vorschlagen" topics, as of 2026-09.
 - `js/results.js`: the ranking, weights, evidence and vote corrections.
 - `js/excerpt.js`: the key sentences of a quote.
 - `js/app.js`: the topic form, running the analysis, and the sources dialog.

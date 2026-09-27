@@ -1,36 +1,25 @@
 // The results: one ranking that weighs programs, votes and statements, and
 // per party a table of topics by source, each opening onto its evidence.
-import {
-  LEVELS,
-  STATEMENT_KINDS,
-  choiceOf,
-  combinedScore,
-  correctPersonVotes,
-  diverges,
-  isCovered,
-  levelOf,
-  overallScore,
-  readVotes,
-} from './analysis.js';
+import { LEVELS, combinedScore, diverges, isCovered, levelOf, overallScore, readVotes } from './analysis.js';
 import { excerpt } from './excerpt.js';
 import { PARTIES, programUrl } from './parties.js';
-import { describePosition, positionOf } from './votes.js';
+import { describePosition, leanOf, positionOf } from './votes.js';
 
-const CORRECTIONS_KEY = 'votingaid.voteCorrections';
 const WEIGHTS_KEY = 'votingaid.weights';
 
 const SOURCES = ['program', 'votes', 'statements'];
 const SOURCE_NAMES = { program: 'Programm', votes: 'Abstimmungen', statements: 'Aussagen' };
 const WEIGHTS = { 0: 'aus', 1: 'normal', 2: 'doppelt' };
-const CHOICES = { yes: 'dafür', no: 'dagegen', skip: 'zählt nicht' };
+const WEBSITE_KINDS = { fraktion: 'Bundestagsfraktion', partei: 'Bundespartei' };
+// Above this, a party voted as the person would: a mostly united vote in the
+// same direction. Abstaining or splitting counts as neither.
+const AGREES = 0.3;
 
 const $ = (id) => document.getElementById(id);
 
-// The last analysis, kept so weighing and correcting need no new requests.
+// The last analysis, kept so weighing needs no new requests.
 let analysis = null;
 let apiKey = null;
-// Per opinion, how the person says they would vote where Jev read it wrong.
-const corrections = JSON.parse(localStorage.getItem(CORRECTIONS_KEY) ?? '{}');
 const weights = { program: 1, votes: 1, statements: 1, ...JSON.parse(localStorage.getItem(WEIGHTS_KEY) ?? '{}') };
 // What is open survives re-rendering: party ids, and per party one "topic:source" cell.
 const openParties = new Set();
@@ -45,23 +34,9 @@ export function showAnalysis(result, key) {
   openParties.clear();
   openCells.clear();
   excerpts.clear();
-  for (const topic of analysis.topics) applyCorrections(topic);
+  for (const topic of analysis.topics) topic.votes = readVotes(topic.jevVotes, topic.closeVotes);
   render();
   $('results').scrollIntoView({ behavior: 'smooth' });
-}
-
-function applyCorrections(topic) {
-  topic.person = correctPersonVotes(topic.jevVotes, corrections[topic.key] ?? {});
-  topic.votes = readVotes(topic.person, topic.closeVotes);
-}
-
-function correct(topic, voteId, choice) {
-  const own = (corrections[topic.key] ??= {});
-  // Agreeing with Jev again removes the correction.
-  if (choice === choiceOf(topic.jevVotes[voteId])) delete own[voteId];
-  else own[voteId] = choice;
-  localStorage.setItem(CORRECTIONS_KEY, JSON.stringify(corrections));
-  applyCorrections(topic);
 }
 
 function render() {
@@ -83,7 +58,7 @@ function render() {
 }
 
 function renderWeights() {
-  $('weights').replaceChildren(
+  $('weight-rows').replaceChildren(
     ...SOURCES.map((source) => {
       const row = element('div', 'weight');
       const group = element('div', 'segmented');
@@ -126,7 +101,13 @@ function rankedParty({ party, overall }) {
 function topicTable(party) {
   const table = element('table', 'topics');
   const head = element('tr');
-  head.append(element('td'), ...SOURCES.map((source) => element('th', weights[source] ? '' : 'off', SOURCE_NAMES[source])));
+  const corner = element('td');
+  const info = element('button', 'info-button', 'i');
+  info.type = 'button';
+  info.setAttribute('popovertarget', 'info-scores');
+  info.setAttribute('aria-label', 'Was bedeuten die Werte?');
+  corner.append(info);
+  head.append(corner, ...SOURCES.map((source) => element('th', weights[source] ? '' : 'off', SOURCE_NAMES[source])));
   table.append(element('thead'));
   table.tHead.append(head);
   const body = element('tbody');
@@ -165,7 +146,9 @@ function topicTable(party) {
       const evidenceRow = element('tr', 'evidence');
       const td = element('td');
       td.colSpan = SOURCES.length + 1;
-      td.append(...evidence(topic, party, openSource));
+      const card = element('div', 'evidence-card');
+      card.append(...evidence(topic, party, openSource));
+      td.append(card);
       evidenceRow.append(td);
       body.append(evidenceRow);
     }
@@ -176,117 +159,102 @@ function topicTable(party) {
 
 function evidence(topic, party, source) {
   const reading = topic[source][party.id];
-  const nodes = [];
-  if (isCovered(reading)) {
-    const level = levelOf(reading.score);
-    nodes.push(element('p', `verdict level-${level}`, `${SOURCE_NAMES[source]}: ${LEVELS[level]}`));
-    if (source !== 'statements' && diverges(topic.program[party.id], topic.votes[party.id])) {
-      nodes.push(element('p', 'divergence', 'Programm und Abstimmungen passen hier nicht zusammen.'));
-    }
+  if (!isCovered(reading)) {
+    const none = {
+      program: 'Das Wahlprogramm bezieht dazu keine klare Position.',
+      votes: `${party.short} hat über nichts Passendes namentlich abgestimmt.`,
+      statements: 'Keine passende Aussage gefunden.',
+    };
+    return [element('p', 'muted', none[source])];
   }
-  if (source === 'votes') {
-    // Every vote that counts, plus the ones the person took out, so they can put them back.
-    const skipped = Object.entries(corrections[topic.key] ?? {})
-      .filter(([id, choice]) => choice === 'skip' && positionOf(analysis.votes.get(id)?.results[party.id]))
-      .map(([id]) => id);
-    // In Jev's order, so a correction does not move the vote just corrected.
-    const shown = [...(reading?.sources ?? []), ...skipped].sort((a, b) => topic.jevVotes[b].clarity - topic.jevVotes[a].clarity);
-    if (!shown.length) nodes.push(element('p', 'muted', `${party.short} hat über nichts Passendes abgestimmt.`));
-    for (const id of shown) nodes.push(voteSource(topic, analysis.votes.get(id), party));
-  } else if (!isCovered(reading)) {
-    nodes.push(element('p', 'muted', source === 'program' ? 'Das Wahlprogramm bezieht dazu keine klare Position.' : 'Keine passende Aussage gefunden.'));
-  } else if (source === 'program') {
+  const level = levelOf(reading.score);
+  const nodes = [element('p', `verdict level-${level}`, LEVELS[level])];
+  if (source !== 'statements' && diverges(topic.program[party.id], topic.votes[party.id])) {
+    nodes.push(element('p', 'divergence', 'Programm und Abstimmungen passen hier nicht zusammen.'));
+  }
+  if (source === 'program') {
     const passage = analysis.passages.get(reading.sources[0]);
-    nodes.push(quote(topic, passage.text), link(programUrl(party.id, passage.page), `Wahlprogramm ${party.short}, Seite ${passage.page}`));
+    nodes.push(quote(topic, passage.text, `Wahlprogramm, Seite ${passage.page}`, programUrl(party.id, passage.page)));
+  } else if (source === 'statements') {
+    const { doc, passage } = analysis.statements.get(reading.sources[0]);
+    nodes.push(quote(topic, passage, statementCitation(doc), doc.url));
   } else {
-    nodes.push(...statementSource(topic, analysis.statements.get(reading.sources[0])));
+    const list = element('ul', 'vote-list');
+    list.append(...reading.sources.map((id) => voteItem(topic, analysis.votes.get(id), party)));
+    nodes.push(list);
   }
   return nodes;
 }
 
-/** The vote, how the person would vote in it, which they can correct, and how the party voted. */
-function voteSource(topic, vote, party) {
-  const block = element('div', 'vote');
-  block.dataset.vote = vote.id;
-  const choice = choiceOf(topic.person[vote.id]);
-  const jev = choiceOf(topic.jevVotes[vote.id]);
-  if (choice === 'skip') block.classList.add('skipped');
-
-  const choices = element('div', 'choices');
-  choices.setAttribute('role', 'group');
-  choices.setAttribute('aria-label', `Wie würdest du bei „${vote.title}“ abstimmen?`);
-  choices.append(element('span', 'muted', 'Du:'));
-  for (const [value, label] of Object.entries(CHOICES)) {
-    const button = element('button', 'quiet', label);
-    button.type = 'button';
-    button.setAttribute('aria-pressed', String(value === choice));
-    button.addEventListener('click', () => {
-      correct(topic, vote.id, value);
-      keepInView(`[data-party="${party.id}"] [data-vote="${vote.id}"]`, render);
-    });
-    choices.append(button);
-  }
-  if (choice !== jev) choices.append(element('span', 'muted', `Jev schätzte: ${CHOICES[jev]}`));
-
-  block.append(
-    link(vote.url, `${vote.title} (${vote.date}, ${vote.accepted ? 'angenommen' : 'abgelehnt'})`),
-    choices,
-    element('p', 'vote-position', `${party.short}: ${describePosition(positionOf(vote.results[party.id]))}`),
-  );
-  return block;
+function statementCitation(doc) {
+  if (doc.kind !== 'rede') return `${WEBSITE_KINDS[doc.kind]}, ${doc.source}, ${doc.date}`;
+  const who = doc.role ? `${doc.speaker} (${doc.role})` : doc.speaker;
+  return `${who}, Rede im Bundestag, ${doc.date}`;
 }
 
-/** Re-renders, then scrolls so the element matching `selector` stays where it was on screen. */
-function keepInView(selector, update) {
-  const before = document.querySelector(selector).getBoundingClientRect().top;
-  update();
-  const moved = document.querySelector(selector);
-  if (moved) window.scrollBy(0, moved.getBoundingClientRect().top - before);
-}
-
-/** The quote, who said it, when and where, and a link to the full source. */
-function statementSource(topic, { doc, passage }) {
-  const who = [doc.speaker, doc.role].filter(Boolean).join(', ');
-  const meta = [who, STATEMENT_KINDS[doc.kind], doc.date].filter(Boolean).join(' · ');
-  const label = doc.kind === 'rede' ? `${doc.source}: ${shortened(doc.title, 120)}` : `${doc.source}: ${doc.title}`;
-  return [quote(topic, passage), element('p', 'statement-meta', meta), link(doc.url, label)];
+/** One vote: whether the party voted as the person would, what it was, and how both voted. */
+function voteItem(topic, vote, party) {
+  const position = positionOf(vote.results[party.id]);
+  const agreement = topic.jevVotes[vote.id].lean * leanOf(vote.results[party.id]);
+  const [kind, mark, label] =
+    agreement > AGREES ? ['agree', '✓', 'wie du'] : agreement < -AGREES ? ['disagree', '✗', 'anders als du'] : ['neutral', '~', 'weder noch'];
+  const item = element('li', `vote ${kind}`);
+  const badge = element('span', 'badge', mark);
+  badge.setAttribute('aria-label', `${party.short} stimmte ${label}`);
+  const text = element('div');
+  const yours = topic.jevVotes[vote.id].lean > 0 ? 'dafür' : 'dagegen';
+  const meta = element('p', 'vote-meta', `Du ${yours} · ${party.short} ${position.stance} · ${vote.date}`);
+  meta.title = describePosition(position);
+  text.append(sourceLink(vote.url, vote.title), meta);
+  item.append(badge, text);
+  return item;
 }
 
 /**
- * The passage's key sentences, with a button for the whole passage. Until
- * they are found, and if that fails, the passage shows cut to a few lines.
+ * A quote in the party's own words: its key sentences, with […] where text
+ * is left out, and the source beneath. The whole passage is one tap away.
+ * Until the key sentences are found, and if that fails, the passage shows
+ * whole, cut to a few lines.
  */
-function quote(topic, text) {
-  const block = element('blockquote', 'clamped', text);
+// Quotes inside a quote take single marks.
+const inner = (text) => text.replaceAll('„', '‚').replaceAll('“', '‘');
+
+function quote(topic, text, citation, url) {
+  const figure = element('figure', 'quote');
+  const block = element('blockquote', 'clamped', `„${inner(text)}“`);
+  const caption = element('figcaption');
+  caption.append(sourceLink(url, citation));
+  figure.append(block, caption);
   const id = `${topic.key}\n${text}`;
   if (!excerpts.has(id)) excerpts.set(id, excerpt(apiKey, topic.query, text).catch(() => null));
-  excerpts.get(id).then((found) => found && showKeySentences(block, found));
-  return block;
+  excerpts.get(id).then((found) => found && showKeySentences(block, caption, found));
+  return figure;
 }
 
-function showKeySentences(block, { sentences, key }) {
-  const whole = key.length === sentences.length;
+function showKeySentences(block, caption, { sentences, key }) {
   block.classList.remove('clamped');
   const parts = [];
   sentences.forEach((sentence, i) => {
-    if (!key.includes(i)) {
-      if (parts.at(-1) !== '…') parts.push('…');
-      return;
-    }
-    parts.push(sentence);
+    if (key.includes(i)) parts.push(inner(sentence));
+    else if (parts.at(-1) !== '[…]') parts.push('[…]');
   });
-  block.textContent = parts.join(' ');
-  if (whole || block.nextElementSibling?.classList.contains('more')) return;
-  const more = element('button', 'more quiet', 'Ganzen Abschnitt lesen');
-  more.type = 'button';
-  more.addEventListener('click', () => {
+  block.textContent = `„${parts.join(' ')}“`;
+  if (key.length === sentences.length) return;
+  const whole = element('button', 'text-button', 'Ganzer Abschnitt');
+  whole.type = 'button';
+  whole.addEventListener('click', () => {
     // The whole passage, with the key sentences marked.
-    block.replaceChildren(
-      ...sentences.flatMap((sentence, i) => [key.includes(i) ? element('mark', '', sentence) : sentence, ' ']),
-    );
-    more.remove();
+    block.replaceChildren('„', ...sentences.flatMap((sentence, i) => [i ? ' ' : '', key.includes(i) ? element('mark', '', inner(sentence)) : inner(sentence)]), '“');
+    whole.remove();
   });
-  block.after(more);
+  caption.append(whole);
+}
+
+/** A link that reads as a source, not as a call to action. */
+function sourceLink(href, text) {
+  const node = link(href, `${text} ↗`);
+  node.className = 'source';
+  return node;
 }
 
 /** A bar from the middle: left for contradiction, right for agreement. */
@@ -304,11 +272,6 @@ function formatScore(score) {
   const points = Math.round(score * 10);
   if (points > 0) return `+${points}`;
   return points < 0 ? `−${-points}` : '0';
-}
-
-function shortened(text, length) {
-  if (text.length <= length) return text;
-  return `${text.slice(0, text.lastIndexOf(' ', length))} …`;
 }
 
 export function link(href, text) {

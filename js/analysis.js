@@ -268,23 +268,6 @@ export function diverges(program, votes) {
 }
 
 /**
- * How the person would vote, with their own corrections replacing Jev's
- * reading: 'yes' and 'no' count fully, 'skip' takes the vote out.
- * `corrections` maps vote ids to one of those.
- */
-export function correctPersonVotes(person, corrections) {
-  const corrected = { ...person };
-  for (const [id, choice] of Object.entries(corrections)) {
-    if (!(id in person)) continue;
-    corrected[id] = choice === 'skip' ? { lean: 0, clarity: 0 } : { lean: choice === 'yes' ? 1 : -1, clarity: 1 };
-  }
-  return corrected;
-}
-
-/** Jev's reading of how the person would vote, in the words of correctPersonVotes. */
-export const choiceOf = ({ lean, clarity }) => (clarity < COVERED ? 'skip' : lean > 0 ? 'yes' : 'no');
-
-/**
  * The weighted mean of the sources that say something, or null when none
  * does. `scores` and `weights` are keyed by source.
  */

@@ -16,3 +16,11 @@ test('sentences split at sentence ends, not at abbreviations in lower case', () 
 test('an ordinal does not end a sentence', () => {
   assert.equal(sentencesOf('Ab dem 1. Januar gilt das. Dann kommt mehr.').length, 2);
 });
+
+test('bullets start a new sentence and are dropped', () => {
+  assert.deepEqual(sentencesOf('Wir wollen mehr Wohnungen. ✔ Wir fordern einen Mietendeckel ✔ Mieten einfrieren'), [
+    'Wir wollen mehr Wohnungen.',
+    'Wir fordern einen Mietendeckel',
+    'Mieten einfrieren',
+  ]);
+});
