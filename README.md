@@ -58,6 +58,12 @@ topics it is silent on don't count, and parties silent on all of them are listed
 apart rather than ranked last. Where a party's votes and program disagree clearly
 on a topic, the page says so.
 
+The page opens on an overview: per party, the mean of the three sources that
+say something, with each source's score next to it and a way into its
+evidence. Where Jev misjudges how the person would vote in a roll-call vote,
+they can correct it, or take the vote out; the scores update without asking Jev
+again, and the correction is kept in the browser for that opinion.
+
 The three views are not equally strong. Roll-call votes are a small, contested
 subset of what the Bundestag decides. FDP and BSW have not been in the Bundestag
 since 2025, so they have no votes since then and appear in statements only
@@ -100,5 +106,6 @@ Anyone can read it from there, so use a separate key with a low credit limit.
 - `js/analysis.js`: what Jev is asked about programs, votes and statements, and how answers become a match.
 - `js/parties.js`: the parties and links into their programs.
 - `js/suggestions.js`: the "Thema vorschlagen" topics from the original.
-- `js/app.js`: the page.
+- `js/results.js`: the overview, the three source views and vote corrections.
+- `js/app.js`: the topic form, running the analysis, and the sources dialog.
 - `css/theme.css`: every raw color value, including party colors.

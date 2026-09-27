@@ -23,10 +23,14 @@
     </header>
 
     <main>
-      <p>
-        Schreib zu den Themen, die dir wichtig sind, was du denkst. Jev vergleicht deine Meinung mit
-        den Wahlprogrammen zur Bundestagswahl 2025, mit ihren Abstimmungen im Bundestag und mit dem, was
-        ihre Politikerinnen und Politiker sagen.
+      <p class="intro">
+        Welche Partei will, was du willst? Nimm ein paar Themen, die dir wichtig sind, und schreib zu jedem
+        in einem Satz, was passieren soll. Je konkreter, desto besser: „Der Mindestlohn soll auf 15 Euro
+        steigen“ statt „Mindestlohn ist wichtig“.
+      </p>
+      <p class="muted">
+        Jev vergleicht das mit den Wahlprogrammen zur Bundestagswahl 2025, den Abstimmungen im Bundestag und
+        dem, was Politikerinnen und Politiker sagen.
       </p>
 
       <ol id="topics"></ol>
@@ -45,20 +49,27 @@
       </form>
 
       <section id="results" hidden>
-        <div id="views" class="actions">
-          <button type="button" class="quiet" data-view="program" aria-pressed="true">Wahlprogramme</button>
-          <button type="button" class="quiet" data-view="votes" aria-pressed="false">Abstimmungen im Bundestag</button>
-          <button type="button" class="quiet" data-view="statements" aria-pressed="false">Aussagen</button>
+        <div id="views">
+          <button type="button" data-view="overview" aria-pressed="true">Überblick</button>
+          <button type="button" data-view="program" aria-pressed="false">Programme</button>
+          <button type="button" data-view="votes" aria-pressed="false">Abstimmungen</button>
+          <button type="button" data-view="statements" aria-pressed="false">Aussagen</button>
         </div>
-        <p id="votes-note" class="muted" hidden>
-          Nur namentliche Abstimmungen seit 2021, also ein kleiner, umstrittener Teil dessen, was der Bundestag
-          beschließt. Regierungsparteien stimmen fast immer gemeinsam ab und liegen hier deshalb oft gleichauf.
-          FDP und BSW sind seit 2025 nicht mehr im Bundestag.
+        <p class="muted">
+          −10 heißt, die Partei will das Gegenteil von dir, +10, sie will dasselbe. Tipp auf eine Partei, um die
+          Belege zu sehen.
         </p>
-        <p id="statements-note" class="muted" hidden>
-          Reden im Bundestag seit März 2025 und Texte der Bundestagsfraktionen und Bundesparteien.
-          Einzelne Politikerinnen und Politiker vertreten nicht immer die Linie ihrer Partei.
-          FDP und BSW kommen nur über ihre Parteiwebsites vor.
+        <p class="muted" data-note="overview">
+          Der Mittelwert aus Programm, Abstimmungen und Aussagen, soweit sie etwas zu deinen Themen sagen.
+        </p>
+        <p class="muted" data-note="votes" hidden>
+          Namentliche Abstimmungen seit 2021, ein kleiner Teil dessen, was der Bundestag beschließt.
+          Koalitionen stimmen meist gemeinsam ab. Liegt Jev falsch, wie du abstimmen würdest, korrigier es
+          bei der Abstimmung.
+        </p>
+        <p class="muted" data-note="statements" hidden>
+          Reden im Bundestag seit März 2025 und Texte der Fraktionen und Bundesparteien. Einzelne
+          Politikerinnen und Politiker vertreten nicht immer die Parteilinie.
         </p>
         <ol id="ranking"></ol>
         <div id="silent" hidden>
@@ -96,7 +107,7 @@
     <template id="topic-template">
       <li class="topic">
         <input class="topic-name" placeholder="Thema, z. B. Mietpreisbremse" aria-label="Thema" />
-        <textarea class="topic-opinion" rows="3" maxlength="1000" placeholder="Deine Meinung" aria-label="Deine Meinung"></textarea>
+        <textarea class="topic-opinion" rows="3" maxlength="1000" placeholder="Was soll passieren?" aria-label="Deine Meinung"></textarea>
         <div class="actions">
           <button class="suggest quiet" type="button">Thema vorschlagen</button>
           <span class="spacer"></span>

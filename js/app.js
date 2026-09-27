@@ -1,23 +1,10 @@
 import { askJev, findApiKey, isApiKey, rememberApiKey } from './jev.js';
 import { VOTES_PER_TOPIC, closest, closestPassages, embedOpinion, loadIndex, shorten } from './retrieval.js';
 import { DOCS_PER_PARTY, closestDocuments, closestPassage, loadDocuments, loadStatements } from './statements.js';
-import {
-  LEVELS,
-  STATEMENT_KINDS,
-  buildProgramRequest,
-  buildStatementsRequest,
-  buildVotesRequest,
-  diverges,
-  isCovered,
-  levelOf,
-  overallScore,
-  readPartyAnswers,
-  readPersonVotes,
-  readVotes,
-} from './analysis.js';
+import { buildProgramRequest, buildStatementsRequest, buildVotesRequest, readPartyAnswers, readPersonVotes } from './analysis.js';
 import { PARTIES, programUrl } from './parties.js';
+import { element, link, showAnalysis } from './results.js';
 import { SUGGESTIONS } from './suggestions.js';
-import { describePosition, positionOf } from './votes.js';
 
 const STORAGE_KEY = 'votingaid.topics';
 // Every topic is one embedding and three Jev requests on a shared, capped key.
@@ -34,17 +21,6 @@ const load = (url) =>
 const programsReady = load('data/programme.json');
 const votesReady = load('data/abstimmungen.json');
 const statementsReady = loadStatements();
-
-// What each view calls a party that has nothing to say.
-const SILENCE = {
-  program: { all: 'Keine klare Position im Wahlprogramm zu deinen Themen:', one: 'Keine klare Position im Programm', where: 'im Programm' },
-  votes: { all: 'Keine passende Abstimmung zu deinen Themen:', one: 'Keine passende Abstimmung', where: 'in Abstimmungen' },
-  statements: { all: 'Keine passende Aussage zu deinen Themen:', one: 'Keine passende Aussage', where: 'in Aussagen' },
-};
-
-// The last analysis, kept so switching views needs no new requests.
-let analysis = null;
-let view = 'program';
 
 function readTopics() {
   return [...topicList.children].map((item) => ({
@@ -120,13 +96,14 @@ async function analyseTopic(apiKey, { programs, votes, statements }, { topic, op
     askJev(apiKey, buildVotesRequest(topic, opinion, closeVotes)),
     askJev(apiKey, buildStatementsRequest(topic, opinion, found)),
   ]);
-  const personVotes = readPersonVotes(voteAnswers.answers);
   return {
     topic: topic || opinion,
+    // Corrections to how the person would vote are kept per opinion.
+    key: `${topic}: ${opinion}`,
     program: readPartyAnswers(programAnswers.answers),
-    votes: readVotes(personVotes, closeVotes),
     statements: readPartyAnswers(statementAnswers.answers),
-    personVotes,
+    jevVotes: readPersonVotes(voteAnswers.answers),
+    closeVotes,
     found: Object.values(found).flat(),
   };
 }
@@ -146,152 +123,23 @@ async function analyse() {
 
   $('analyse').disabled = true;
   $('results').hidden = true;
-  $('status').textContent = 'Jev vergleicht deine Meinung mit Programmen, Abstimmungen und Aussagen…';
+  $('status').textContent = 'Jev vergleicht deine Meinung mit Programmen, Abstimmungen und Aussagen. Das dauert einen Moment…';
   try {
     const [programs, votes, statements] = await Promise.all([programsReady, votesReady, statementsReady]);
     const sources = { programs, votes, statements };
     const topicResults = await Promise.all(topics.map((topic) => analyseTopic(apiKey, sources, topic)));
-    analysis = {
+    showAnalysis({
       topics: topicResults,
       passages: new Map(programs.items.map((item) => [item.id, item])),
       votes: new Map(votes.items.map((item) => [item.id, item])),
       statements: new Map(topicResults.flatMap((topic) => topic.found).map((found) => [found.doc.id, found])),
-    };
-    showResults();
+    });
     $('status').textContent = '';
   } catch (error) {
     $('status').textContent = `Das hat nicht geklappt: ${error.message}`;
   } finally {
     $('analyse').disabled = false;
   }
-}
-
-function showResults() {
-  $('results').hidden = false;
-  for (const button of document.querySelectorAll('#views button')) {
-    button.setAttribute('aria-pressed', String(button.dataset.view === view));
-  }
-  $('votes-note').hidden = view !== 'votes';
-  $('statements-note').hidden = view !== 'statements';
-
-  const scored = PARTIES.map((party) => {
-    const readings = analysis.topics.map((topic) => topic[view][party.id]);
-    return { party, overall: overallScore(readings), covered: readings.filter(isCovered).length };
-  });
-  // Parties that say nothing about any topic are not ranked: a missing
-  // position is not a low score, and listing them last would suggest one.
-  const ranked = scored.filter(({ overall }) => overall !== null).sort((a, b) => b.overall - a.overall);
-  const silent = scored.filter(({ overall }) => overall === null);
-
-  $('ranking').replaceChildren(...ranked.map((entry) => rankedParty(entry)));
-  $('silent').hidden = !silent.length;
-  $('silent-text').textContent = SILENCE[view].all;
-  $('silent-parties').replaceChildren(
-    ...silent.map(({ party }) => element('li', `party-${party.id}`, party.short)),
-  );
-}
-
-function rankedParty({ party, overall, covered }) {
-  const item = element('li', `party party-${party.id}`);
-  const details = document.createElement('details');
-  const summary = document.createElement('summary');
-  summary.append(element('span', 'name', party.short), scoreBar(overall), element('span', 'score', formatScore(overall)));
-  const total = analysis.topics.length;
-  if (covered < total) {
-    summary.append(element('span', 'coverage', `nur ${covered} von ${total} Themen ${SILENCE[view].where} behandelt`));
-  }
-  details.append(summary, element('p', 'muted', party.name));
-  for (const topic of analysis.topics) details.append(finding(topic, party));
-  item.append(details);
-  return item;
-}
-
-function finding(topic, party) {
-  const reading = topic[view][party.id];
-  const block = element('div', 'finding');
-  block.append(element('p', 'finding-topic', topic.topic));
-  if (!isCovered(reading)) {
-    block.append(element('p', 'verdict silent', SILENCE[view].one));
-    return block;
-  }
-  const level = levelOf(reading.score);
-  block.append(element('p', `verdict level-${level}`, `${formatScore(reading.score)} · ${LEVELS[level]}`));
-  if (view !== 'statements' && diverges(topic.program[party.id], topic.votes[party.id])) {
-    block.append(element('p', 'divergence', 'Programm und Abstimmungen passen hier nicht zusammen'));
-  }
-  if (view === 'program') {
-    const passage = analysis.passages.get(reading.sources[0]);
-    block.append(
-      element('blockquote', '', passage.text),
-      link(programUrl(party.id, passage.page), `Wahlprogramm ${party.short}, Seite ${passage.page}`),
-    );
-  } else if (view === 'votes') {
-    // All of them, since every one counts towards the score.
-    for (const id of reading.sources) {
-      block.append(...voteSource(analysis.votes.get(id), topic.personVotes[id], party));
-    }
-  } else {
-    block.append(...statementSource(analysis.statements.get(reading.sources[0])));
-  }
-  return block;
-}
-
-/** The vote, how the person would vote in it, how the party did, and a link. */
-function voteSource(vote, person, party) {
-  const yours = person.lean > 0 ? 'dafür' : 'dagegen';
-  return [
-    element('p', 'vote-title', `${vote.title} (${vote.date}, ${vote.accepted ? 'angenommen' : 'abgelehnt'})`),
-    element('p', 'vote-position', `Deine Meinung spricht ${yours}. ${party.short}: ${describePosition(positionOf(vote.results[party.id]))}`),
-    link(vote.url, 'Abstimmung auf abgeordnetenwatch.de'),
-  ];
-}
-
-/** A bar from the middle: left for contradiction, right for agreement. */
-function scoreBar(score) {
-  const bar = element('span', 'bar');
-  const fill = document.createElement('span');
-  fill.style.left = `${50 + Math.min(score, 0) * 50}%`;
-  fill.style.width = `${Math.abs(score) * 50}%`;
-  bar.append(fill);
-  return bar;
-}
-
-/** -1–1 as -10 to +10, with a real minus sign. */
-function formatScore(score) {
-  const points = Math.round(score * 10);
-  if (points > 0) return `+${points}`;
-  return points < 0 ? `−${-points}` : '0';
-}
-
-/** The quote, who said it, when and where, and a link to the full source. */
-function statementSource({ doc, passage }) {
-  const who = [doc.speaker, doc.role].filter(Boolean).join(', ');
-  const meta = [who, STATEMENT_KINDS[doc.kind], doc.date].filter(Boolean).join(' · ');
-  const nodes = [element('blockquote', '', passage), element('p', 'statement-meta', meta)];
-  if (doc.kind === 'rede' && doc.title) nodes.push(element('p', 'statement-context', `Debatte: ${shortened(doc.title, 160)}`));
-  const label = doc.kind === 'rede' ? `${doc.source} (PDF)` : `${doc.source}: ${doc.title}`;
-  nodes.push(link(doc.url, label));
-  return nodes;
-}
-
-function shortened(text, length) {
-  if (text.length <= length) return text;
-  return `${text.slice(0, text.lastIndexOf(' ', length))} …`;
-}
-
-function link(href, text) {
-  const node = element('a', '', text);
-  node.href = href;
-  node.target = '_blank';
-  node.rel = 'noopener';
-  return node;
-}
-
-function element(name, className, text) {
-  const node = document.createElement(name);
-  if (className) node.className = className;
-  if (text !== undefined) node.textContent = text;
-  return node;
 }
 
 $('add').addEventListener('click', () => {
@@ -307,12 +155,6 @@ $('key').addEventListener('submit', (event) => {
   $('key').hidden = true;
   analyse();
 });
-for (const button of document.querySelectorAll('#views button')) {
-  button.addEventListener('click', () => {
-    view = button.dataset.view;
-    showResults();
-  });
-}
 
 function fillSources(votes) {
   $('program-list').replaceChildren(

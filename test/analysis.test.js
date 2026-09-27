@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {
   buildProgramRequest,
   buildVotesRequest,
+  combinedScore,
+  correctPersonVotes,
   diverges,
   levelOf,
   overallScore,
@@ -70,6 +72,21 @@ test('parties that voted the same way get the same score, and parties that voted
   // vote-2 does not decide the demand, so it neither counts nor shows as a source.
   assert.deepEqual(readings.spd.sources, ['vote-1']);
   assert.equal(readings.fdp, null);
+});
+
+test('a correction by the person overrides Jev, and a skipped vote no longer counts', () => {
+  const votes = [vote('vote-1', { spd: { yes: 100 } }), vote('vote-2', { spd: { no: 100 } })];
+  const person = { 'vote-1': { lean: 1, clarity: 0.9 }, 'vote-2': { lean: 1, clarity: 0.9 } };
+  assert.equal(readVotes(person, votes).spd.score, 0);
+  const corrected = correctPersonVotes(person, { 'vote-2': 'no', 'vote-9': 'yes' });
+  assert.equal(readVotes(corrected, votes).spd.score, 1);
+  assert.deepEqual(readVotes(correctPersonVotes(person, { 'vote-1': 'skip' }), votes).spd.sources, ['vote-2']);
+  assert.equal(Object.hasOwn(corrected, 'vote-9'), false);
+});
+
+test('the overview averages the sources that say something', () => {
+  assert.equal(combinedScore([1, null, 0]), 0.5);
+  assert.equal(combinedScore([null, null]), null);
 });
 
 test('a party voting against its own program is flagged', () => {

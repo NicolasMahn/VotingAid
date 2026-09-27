@@ -266,3 +266,26 @@ export function overallScore(readings) {
 export function diverges(program, votes) {
   return isCovered(program) && isCovered(votes) && Math.abs(program.score - votes.score) >= DIVERGENCE;
 }
+
+/**
+ * How the person would vote, with their own corrections replacing Jev's
+ * reading: 'yes' and 'no' count fully, 'skip' takes the vote out.
+ * `corrections` maps vote ids to one of those.
+ */
+export function correctPersonVotes(person, corrections) {
+  const corrected = { ...person };
+  for (const [id, choice] of Object.entries(corrections)) {
+    if (!(id in person)) continue;
+    corrected[id] = choice === 'skip' ? { lean: 0, clarity: 0 } : { lean: choice === 'yes' ? 1 : -1, clarity: 1 };
+  }
+  return corrected;
+}
+
+/** Jev's reading of how the person would vote, in the words of correctPersonVotes. */
+export const choiceOf = ({ lean, clarity }) => (clarity < COVERED ? 'skip' : lean > 0 ? 'yes' : 'no');
+
+/** The mean of the sources that say something, or null when none does. */
+export function combinedScore(scores) {
+  const known = scores.filter((score) => score !== null);
+  return known.length ? known.reduce((sum, score) => sum + score, 0) / known.length : null;
+}
