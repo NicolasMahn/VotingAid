@@ -1,0 +1,323 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 1.5rem 1rem 3rem;
+  background: var(--paper);
+  color: var(--ink);
+  font: 15px/1.45 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+header,
+.flow {
+  max-width: 68rem;
+  margin: 0 auto;
+}
+
+h1 {
+  margin: 0 0 0.75rem;
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+}
+
+/* The shapes of the legend. */
+.shape {
+  display: inline-block;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid var(--ink-muted);
+}
+
+.shape.event {
+  border-radius: 50%;
+}
+
+.shape.task {
+  border-radius: 0.3rem;
+  width: 1.5rem;
+}
+
+.shape.gateway {
+  width: 0.85rem;
+  height: 0.85rem;
+  transform: rotate(45deg);
+}
+
+.shape.store {
+  border-radius: 50% / 25%;
+}
+
+.lane {
+  display: inline-block;
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 0.2rem;
+  background: var(--lane);
+}
+
+.person { --lane: var(--lane-person); }
+.voyage { --lane: var(--lane-voyage); }
+.jev { --lane: var(--lane-jev); }
+.code { --lane: var(--lane-code); }
+.store { --lane: var(--lane-data); }
+
+/* Flow */
+
+.flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 1.5rem;
+}
+
+.node {
+  width: min(20rem, 100%);
+  text-align: center;
+}
+
+.node small {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  font-weight: 400;
+}
+
+.task,
+.store {
+  padding: 0.6rem 0.8rem;
+  border: 1.5px solid var(--line);
+  border-left: 6px solid var(--lane);
+  border-radius: 0.7rem;
+  background: var(--card);
+}
+
+.store {
+  border: 1.5px solid var(--lane);
+  border-radius: 50% / 1.1rem;
+  padding: 0.9rem 1rem;
+}
+
+.jev {
+  border-color: var(--lane);
+  border-width: 2px 2px 2px 6px;
+}
+
+details.node > summary {
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+}
+
+details.node > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.node > summary::before {
+  content: "▸ ";
+  color: var(--ink-muted);
+}
+
+details.node[open] > summary::before {
+  content: "▾ ";
+}
+
+details.node[open] {
+  text-align: left;
+}
+
+details.node > p,
+details.node > ol {
+  font-size: 0.85rem;
+  margin: 0.5rem 0 0;
+}
+
+.event,
+.gateway {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  text-align: left;
+  font-weight: 600;
+}
+
+.event .circle {
+  flex: none;
+  width: 1.8rem;
+  height: 1.8rem;
+  border: 2px solid var(--lane);
+  border-radius: 50%;
+  background: var(--card);
+}
+
+.event.end .circle {
+  border-width: 5px;
+}
+
+.diamond {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 2px solid var(--lane-code);
+  background: var(--card);
+  transform: rotate(45deg);
+}
+
+/* The symbol stays upright inside the turned square. */
+.diamond::after {
+  content: attr(data-symbol);
+  transform: rotate(-45deg);
+  font-weight: 700;
+  color: var(--ink-muted);
+}
+
+.arrow,
+.line {
+  width: 2px;
+  height: 1.4rem;
+  margin: 0 auto;
+  background: var(--ink-muted);
+  position: relative;
+}
+
+.arrow::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: -5px;
+  border: 6px solid transparent;
+  border-top-color: var(--ink-muted);
+  border-bottom: none;
+}
+
+.line {
+  flex: 1;
+}
+
+/* The three sources side by side, split from one line and joined into one. */
+.columns {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 1.5rem;
+  width: 100%;
+  padding: 1.4rem 0;
+}
+
+.split,
+.join {
+  position: absolute;
+  left: calc(100% / 6);
+  right: calc(100% / 6);
+  height: 1.4rem;
+  border: 2px solid var(--ink-muted);
+}
+
+.split {
+  top: 0;
+  border-bottom: none;
+}
+
+.join {
+  bottom: 0;
+  border-top: none;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.column .node {
+  width: 100%;
+}
+
+.wide {
+  width: min(32rem, 100%);
+}
+
+/* Prompts */
+
+.prompt {
+  margin-top: 0.6rem;
+  font-size: 0.82rem;
+}
+
+.prompt .meta {
+  margin: 0.6rem 0 0.1rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+}
+
+.prompt .instructions {
+  margin: 0;
+}
+
+.question {
+  margin-top: 0.4rem;
+  padding-left: 0.6rem;
+  border-left: 3px solid var(--lane-jev);
+}
+
+.criteria {
+  margin: 0.3rem 0 0;
+  padding-left: 1.2rem;
+  color: var(--ink-muted);
+}
+
+.request summary {
+  margin-top: 0.6rem;
+  cursor: pointer;
+  color: var(--accent);
+}
+
+.request pre {
+  max-height: 20rem;
+  overflow: auto;
+  padding: 0.6rem;
+  border-radius: 0.5rem;
+  background: var(--paper);
+  font-size: 0.72rem;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 48rem) {
+  .columns {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .split,
+  .join {
+    display: none;
+  }
+}

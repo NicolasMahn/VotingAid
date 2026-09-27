@@ -34,7 +34,7 @@ export function showAnalysis(result, key) {
   openParties.clear();
   openCells.clear();
   excerpts.clear();
-  for (const topic of analysis.topics) topic.votes = readVotes(topic.jevVotes, topic.closeVotes);
+  for (const topic of analysis.topics) topic.votes = readVotes(topic.voteDirections, topic.closeVotes);
   render();
   $('results').scrollIntoView({ behavior: 'smooth' });
 }
@@ -196,14 +196,14 @@ function statementCitation(doc) {
 /** One vote: whether the party voted as the person would, what it was, and how both voted. */
 function voteItem(topic, vote, party) {
   const position = positionOf(vote.results[party.id]);
-  const agreement = topic.jevVotes[vote.id].lean * leanOf(vote.results[party.id]);
+  const agreement = topic.voteDirections[vote.id].lean * leanOf(vote.results[party.id]);
   const [kind, mark, label] =
     agreement > AGREES ? ['agree', '✓', 'wie du'] : agreement < -AGREES ? ['disagree', '✗', 'anders als du'] : ['neutral', '~', 'weder noch'];
   const item = element('li', `vote ${kind}`);
   const badge = element('span', 'badge', mark);
   badge.setAttribute('aria-label', `${party.short} stimmte ${label}`);
   const text = element('div');
-  const yours = topic.jevVotes[vote.id].lean > 0 ? 'dafür' : 'dagegen';
+  const yours = topic.voteDirections[vote.id].lean > 0 ? 'dafür' : 'dagegen';
   const meta = element('p', 'vote-meta', `Du ${yours} · ${party.short} ${position.stance} · ${vote.date}`);
   meta.title = describePosition(position);
   text.append(sourceLink(vote.url, vote.title), meta);

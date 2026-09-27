@@ -50,10 +50,15 @@ agreement, for whether it says anything about the person's specific demand.
 Then, from the excerpts that do, it places each party and picks the one that
 shows it best; parties without such an excerpt count as silent. Judging
 agreement on excerpts that merely share the topic gave confident scores for
-parties that had said nothing to the point. See `docs/workflow.svg`.
-For votes, Jev only judges how the person would vote in each one, without seeing
-the parties; the code then compares that with how each party voted, so parties
-that voted alike score alike. Jev returns probabilities, not prose. Every
+parties that had said nothing to the point.
+
+The whole flow, with every prompt as Jev gets it, is drawn in
+[`docs/workflow.html`](https://nicolasmahn.github.io/VotingAid/docs/workflow.html)
+(and as editable Mermaid in `docs/workflow.mmd`).
+Votes take the same two steps without seeing the parties: first whether a vote
+decides the demand at all, then which way a yes goes relative to it. The code
+then compares that with how each party voted, so parties that voted alike score
+alike. Jev returns probabilities, not prose. Every
 finding on the page cites its source.
 
 Scores run from -10 (the party wants the opposite) to +10 (it wants the same).

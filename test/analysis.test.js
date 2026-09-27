@@ -3,16 +3,18 @@ import assert from 'node:assert/strict';
 import {
   buildMatchRequest,
   buildRelevanceRequest,
-  buildVotesRequest,
+  buildVoteDirectionRequest,
+  buildVoteRelevanceRequest,
   combinedScore,
   diverges,
   levelOf,
   overallScore,
   evidenceOf,
   readPartyAnswers,
-  readPersonVotes,
+  readVoteDirections,
   readVotes,
   relevantEvidence,
+  relevantVotes,
 } from '../js/analysis.js';
 import { closestPassages, loadIndex } from '../js/retrieval.js';
 import { leanOf, positionOf } from '../js/votes.js';
@@ -67,26 +69,29 @@ test('only excerpts that address the demand are judged, and parties without any 
 const vote = (id, results) => ({ id, date: '2025-06-01', title: id, description: 'x', accepted: true, results });
 
 test('Jev judges votes without seeing how the parties voted', () => {
-  const request = buildVotesRequest('Rente', 'Die Rente soll steigen.', [vote('vote-1', { spd: { yes: 100 } })]);
-  assert.deepEqual(Object.keys(request.questions), ['vote-1']);
-  assert.doesNotMatch(JSON.stringify(request.state), /results|100/);
+  const votes = [vote('vote-1', { spd: { yes: 100 } })];
+  for (const request of [buildVoteRelevanceRequest('Rente', 'Die Rente soll steigen.', votes), buildVoteDirectionRequest('Rente', 'Die Rente soll steigen.', votes)]) {
+    assert.deepEqual(Object.keys(request.questions), ['vote-1']);
+    assert.doesNotMatch(JSON.stringify(request.state), /results|100/);
+  }
 });
 
-test('parties that voted the same way get the same score, and parties that voted against get the opposite', () => {
+test('only votes that decide the demand count, and parties that voted alike score alike', () => {
   const votes = [
     vote('vote-1', { spd: { yes: 100 }, union: { yes: 180, no_show: 20 }, afd: { no: 120 }, linke: { abstain: 40 } }),
     vote('vote-2', { spd: { no: 100 }, union: { no: 200 }, afd: { yes: 120 } }),
   ];
-  const person = readPersonVotes({
-    'vote-1': { probabilities: { yes: 0.9, no: 0, bundled: 0.05, unrelated: 0.05 } },
-    'vote-2': { probabilities: { yes: 0.02, no: 0.03, bundled: 0.05, unrelated: 0.9 } },
-  });
+  const relevant = relevantVotes(votes, { 'vote-1': { noul: 0.9 }, 'vote-2': { noul: 0.1 } });
+  // vote-2 is only on the wider topic, so Jev is not asked which way it goes.
+  assert.deepEqual(Object.keys(buildVoteDirectionRequest('Rente', 'x', relevant).questions), ['vote-1']);
+  const person = readVoteDirections(relevant, { 'vote-1': { probabilities: { towards: 0.9, away: 0.1 } } });
+  assert.deepEqual(person, { 'vote-1': { lean: 0.8, clarity: 0.9 } });
+
   const readings = readVotes(person, votes);
   assert.deepEqual(readings.spd, readings.union);
-  assert.equal(readings.spd.score, 1);
-  assert.equal(readings.afd.score, -1);
+  assert.equal(readings.spd.score, 0.8);
+  assert.equal(readings.afd.score, -0.8);
   assert.equal(readings.linke.score, 0);
-  // vote-2 does not decide the demand, so it neither counts nor shows as a source.
   assert.deepEqual(readings.spd.sources, ['vote-1']);
   assert.equal(readings.fdp, null);
 });

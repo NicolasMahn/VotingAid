@@ -4,11 +4,13 @@ import { DOCS_PER_PARTY, closestDocuments, closestPassage, loadDocuments, loadSt
 import {
   buildMatchRequest,
   buildRelevanceRequest,
-  buildVotesRequest,
+  buildVoteDirectionRequest,
+  buildVoteRelevanceRequest,
   evidenceOf,
   readPartyAnswers,
-  readPersonVotes,
+  readVoteDirections,
   relevantEvidence,
+  relevantVotes,
 } from './analysis.js';
 import { PARTIES, programUrl } from './parties.js';
 import { element, link, showAnalysis } from './results.js';
@@ -104,14 +106,23 @@ async function judge(apiKey, source, topic, opinion, found) {
   return readPartyAnswers(answers, relevant);
 }
 
+/** How the person would vote: first which votes decide the demand, then which way a yes goes in those. */
+async function judgeVotes(apiKey, topic, opinion, votes) {
+  const relevance = await askJev(apiKey, buildVoteRelevanceRequest(topic, opinion, votes));
+  const relevant = relevantVotes(votes, relevance.answers);
+  if (!relevant.length) return {};
+  const { answers } = await askJev(apiKey, buildVoteDirectionRequest(topic, opinion, relevant));
+  return readVoteDirections(relevant, answers);
+}
+
 async function analyseTopic(apiKey, { programs, votes, statements }, { topic, opinion }) {
   const query = await embedOpinion(apiKey, topic, opinion);
   const passages = closestPassages(programs, shorten(query, programs));
   const closeVotes = closest(votes.items, shorten(query, votes), VOTES_PER_TOPIC);
   const found = await closestStatements(statements, query);
-  const [programReadings, voteAnswers, statementReadings] = await Promise.all([
+  const [programReadings, voteDirections, statementReadings] = await Promise.all([
     judge(apiKey, 'program', topic, opinion, passages),
-    askJev(apiKey, buildVotesRequest(topic, opinion, closeVotes)),
+    judgeVotes(apiKey, topic, opinion, closeVotes),
     judge(apiKey, 'statements', topic, opinion, found),
   ]);
   return {
@@ -121,7 +132,7 @@ async function analyseTopic(apiKey, { programs, votes, statements }, { topic, op
     query,
     program: programReadings,
     statements: statementReadings,
-    jevVotes: readPersonVotes(voteAnswers.answers),
+    voteDirections,
     closeVotes,
     found: Object.values(found).flat(),
   };

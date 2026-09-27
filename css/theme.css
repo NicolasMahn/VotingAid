@@ -35,6 +35,13 @@
   --demo-olive: #8a9a3b;
   --demo-rose: #e76fa8;
   --demo-slate: #58708a;
+
+  /* Who does a task in docs/workflow.html. */
+  --lane-person: #e8b54a;
+  --lane-voyage: #4f8fe0;
+  --lane-jev: #8a63d2;
+  --lane-code: #8a8f98;
+  --lane-data: #b9ae97;
 }
 
 @media (prefers-color-scheme: dark) {

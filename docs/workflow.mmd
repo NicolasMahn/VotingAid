@@ -1,0 +1,52 @@
+%% Voting Aid: from an opinion to the ranking. The same flow as workflow.html,
+%% as text: open it in mermaid.live, or import it into Excalidraw, draw.io or Miro.
+%% Circles are events, boxes tasks, diamonds decisions, cylinders data.
+flowchart TB
+  start((Du schreibst zu jedem Thema,<br/>was passieren soll)):::person
+  query[Suchvektor bilden]:::voyage
+  split{+}
+  start --> query --> split
+
+  subgraph Programme
+    pdb[(Wahlprogramme 2025<br/>2.025 Abschnitte)]:::data
+    psearch[Nächste Abschnitte suchen<br/>4 je Partei]:::code
+    prel[Passt der Abschnitt<br/>zur Forderung?]:::jev
+    pgate{passt, ab 0,5?}
+    pmatch[Wo steht die Partei<br/>zur Forderung?]:::jev
+    pdb -.-> psearch --> prel --> pgate -->|ja| pmatch
+  end
+
+  subgraph Abstimmungen
+    vdb[(Namentliche Abstimmungen<br/>230, je Fraktion gezählt)]:::data
+    vsearch[Nächste Abstimmungen suchen<br/>8 insgesamt]:::code
+    vrel[Passt die Abstimmung<br/>zur Forderung?]:::jev
+    vgate{passt, ab 0,5?}
+    vdir[Geht ein Ja in Richtung<br/>der Forderung?]:::jev
+    vcompare[Mit den Fraktionen vergleichen]:::code
+    vdb -.-> vsearch --> vrel --> vgate -->|ja| vdir --> vcompare
+  end
+
+  subgraph Aussagen
+    sdb[(Reden im Bundestag und Websites<br/>der Fraktionen und Bundesparteien)]:::data
+    ssearch[Nächste Aussagen suchen<br/>3 je Partei]:::code
+    srel[Passt die Aussage<br/>zur Forderung?]:::jev
+    sgate{passt, ab 0,5?}
+    smatch[Wo steht die Partei<br/>zur Forderung?]:::jev
+    sdb -.-> ssearch --> srel --> sgate -->|ja| smatch
+  end
+
+  split --> psearch & vsearch & ssearch
+  join{+}
+  pmatch & vcompare & smatch --> join
+  pgate -->|nein: ohne Fund| join
+  vgate -->|nein: zählt nicht| join
+  sgate -->|nein: ohne Fund| join
+  combine[Werte zusammenführen<br/>je Thema und Quelle, über Themen, nach Gewichtung]:::code
+  done(((Rangliste von −10 bis +10, mit Belegen))):::person
+  join --> combine --> done
+
+  classDef person fill:#fbf1d9,stroke:#e8b54a
+  classDef voyage fill:#e6effc,stroke:#4f8fe0
+  classDef jev fill:#efe7fb,stroke:#8a63d2,stroke-width:2px
+  classDef code fill:#eceef1,stroke:#8a8f98
+  classDef data fill:#f4efe4,stroke:#b9ae97

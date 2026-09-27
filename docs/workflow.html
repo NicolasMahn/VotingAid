@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Voting Aid: Ablauf</title>
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="workflow.css" />
+    <script type="module" src="workflow.js"></script>
+  </head>
+  <body>
+    <!--
+      The pipeline as a BPMN-style flow: circles are events, rounded boxes are
+      tasks, diamonds are decisions, cylinders are data. The color of a box is
+      who does the task. Jev's prompts are filled in by workflow.js from
+      js/analysis.js, so they are always the ones the page sends.
+    -->
+    <header>
+      <h1>Voting Aid: von der Meinung zur Rangliste</h1>
+      <ul class="legend">
+        <li><span class="shape event"></span>Ereignis</li>
+        <li><span class="shape task"></span>Aufgabe</li>
+        <li><span class="shape gateway"></span>Entscheidung</li>
+        <li><span class="shape store"></span>Daten, vorab gebaut</li>
+        <li><span class="lane person"></span>Du</li>
+        <li><span class="lane voyage"></span>Voyage AI</li>
+        <li><span class="lane jev"></span>Jev</li>
+        <li><span class="lane code"></span>Code im Browser</li>
+      </ul>
+      <p class="hint">Aufgaben mit ▸ lassen sich aufklappen, bei Jev mit dem genauen Prompt.</p>
+    </header>
+
+    <main class="flow">
+      <div class="node event person">
+        <span class="circle"></span>
+        <span>Du schreibst zu jedem Thema, was passieren soll</span>
+      </div>
+      <div class="arrow"></div>
+      <details class="node task voyage">
+        <summary>Suchvektor bilden</summary>
+        <p>
+          Das Mittel aus dem Embedding des Themas und dem von „Thema: Meinung“, mit
+          <code>voyage-4-large</code>, 1.024 Dimensionen. Das Thema allein hält die Suche in beide Richtungen offen:
+          „Großspenden verbieten“ und „Großspenden ausweiten“ finden dieselben Stellen.
+        </p>
+      </details>
+      <div class="arrow"></div>
+      <div class="node gateway parallel" title="Parallel: alle drei Quellen gleichzeitig"><span class="diamond" data-symbol="+"></span></div>
+
+      <div class="columns">
+        <div class="split"></div>
+
+        <section class="column">
+          <details class="node store">
+            <summary>Wahlprogramme 2025<small>2.025 Abschnitte</small></summary>
+            <p>
+              Die sieben Programme als PDF, mit pdftotext in Abschnitte von etwa 1.000 Zeichen zerlegt, die nie über
+              eine Seite hinausgehen, damit jeder Beleg auf seine Seite verlinkt. Je Abschnitt ein Embedding, 512
+              Dimensionen, int8. <code>scripts/build_programs.py</code>
+            </p>
+          </details>
+          <div class="arrow"></div>
+          <details class="node task code">
+            <summary>Nächste Abschnitte suchen<small>4 je Partei</small></summary>
+            <p>Kosinus-Ähnlichkeit zum Suchvektor, gekürzt auf 512 Dimensionen.</p>
+          </details>
+          <div class="arrow"></div>
+          <details class="node task jev" data-prompt="program-relevance">
+            <summary>Passt der Abschnitt zur Forderung?<small>je Abschnitt, neutral</small></summary>
+          </details>
+          <div class="arrow"></div>
+          <div class="node gateway">
+            <span class="diamond" data-symbol="?"></span>
+            <span>passt, ab 0,5<small>sonst: Partei ohne Fund</small></span>
+          </div>
+          <div class="arrow"></div>
+          <details class="node task jev" data-prompt="program-match">
+            <summary>Wo steht die Partei zur Forderung?<small>je Partei, nur passende Abschnitte</small></summary>
+          </details>
+          <div class="line"></div>
+        </section>
+
+        <section class="column">
+          <details class="node store">
+            <summary>Namentliche Abstimmungen<small>230, je Fraktion gezählt</small></summary>
+            <p>
+              Aus der API von abgeordnetenwatch.de (CC0), 20. und 21. Bundestag. Je Abstimmung die Stimmen jeder
+              Fraktion und ein Embedding aus Titel und Beschreibung. <code>scripts/build_votes.py</code>
+            </p>
+          </details>
+          <div class="arrow"></div>
+          <details class="node task code">
+            <summary>Nächste Abstimmungen suchen<small>8 insgesamt</small></summary>
+            <p>Kosinus-Ähnlichkeit zum Suchvektor, gekürzt auf 512 Dimensionen.</p>
+          </details>
+          <div class="arrow"></div>
+          <details class="node task jev" data-prompt="vote-relevance">
+            <summary>Passt die Abstimmung zur Forderung?<small>je Abstimmung, neutral</small></summary>
+          </details>
+          <div class="arrow"></div>
+          <div class="node gateway">
+            <span class="diamond" data-symbol="?"></span>
+            <span>passt, ab 0,5<small>sonst: zählt nicht</small></span>
+          </div>
+          <div class="arrow"></div>
+          <details class="node task jev" data-prompt="vote-direction">
+            <summary>Geht ein Ja in Richtung der Forderung?<small>je passende Abstimmung</small></summary>
+          </details>
+          <div class="arrow"></div>
+          <details class="node task code">
+            <summary>Mit den Fraktionen vergleichen<small>ohne Jev</small></summary>
+            <p>
+              Je Fraktion (ja − nein) / anwesend, mal die Richtung aus dem Schritt davor, gewichtet damit, wie klar
+              die Abstimmung zur Forderung passt. Fraktionen, die gleich abgestimmt haben, bekommen denselben Wert.
+            </p>
+          </details>
+        </section>
+
+        <section class="column">
+          <details class="node store">
+            <summary>Aussagen<small>Reden im Bundestag und Websites</small></summary>
+            <p>
+              Alle Redebeiträge im Bundestag seit 2025-03-25 aus den Plenarprotokollen, und Seiten der Websites der
+              Bundestagsfraktionen und Bundesparteien: 17.063 Dokumente. Je Dokument ein Binärvektor mit 1.024 Bit
+              für die schnelle Suche, je Absatz ein Vektor mit 256 Dimensionen.
+              <code>scripts/build_speeches.py</code>, <code>build_web.py</code>, <code>build_statements.py</code>
+            </p>
+          </details>
+          <div class="arrow"></div>
+          <details class="node task code">
+            <summary>Nächste Aussagen suchen<small>3 je Partei</small></summary>
+            <p>
+              8 Kandidaten je Partei nach Hamming-Abstand im Binärindex, dann die 3 mit dem ähnlichsten Absatz.
+            </p>
+          </details>
+          <div class="arrow"></div>
+          <details class="node task jev" data-prompt="statements-relevance">
+            <summary>Passt die Aussage zur Forderung?<small>je Aussage, neutral</small></summary>
+          </details>
+          <div class="arrow"></div>
+          <div class="node gateway">
+            <span class="diamond" data-symbol="?"></span>
+            <span>passt, ab 0,5<small>sonst: Partei ohne Fund</small></span>
+          </div>
+          <div class="arrow"></div>
+          <details class="node task jev" data-prompt="statements-match">
+            <summary>Wo steht die Partei zur Forderung?<small>je Partei, nur passende Aussagen</small></summary>
+          </details>
+          <div class="line"></div>
+        </section>
+
+        <div class="join"></div>
+      </div>
+
+      <div class="node gateway parallel" title="Warten, bis alle drei Quellen fertig sind"><span class="diamond" data-symbol="+"></span></div>
+      <div class="arrow"></div>
+      <details class="node task code wide">
+        <summary>Werte zusammenführen</summary>
+        <ol>
+          <li>Je Partei, Thema und Quelle ein Wert von −1 bis +1, dazu die Abdeckung: wie klar der passendste Beleg die Forderung trifft.</li>
+          <li>Je Quelle das Mittel über die Themen, gewichtet nach Abdeckung.</li>
+          <li>Die Quellen nach deiner Gewichtung gemittelt: aus, normal oder doppelt.</li>
+        </ol>
+      </details>
+      <div class="arrow"></div>
+      <div class="node event end person">
+        <span class="circle"></span>
+        <span>Rangliste von −10 bis +10, mit Belegen<small>Parteien ohne Fund stehen grau am Ende</small></span>
+      </div>
+    </main>
+  </body>
+</html>

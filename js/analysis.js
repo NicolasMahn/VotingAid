@@ -167,42 +167,70 @@ export function readPartyAnswers(answers, relevant) {
   });
 }
 
-/**
- * The opinion plus the closest roll-call votes. Jev is asked how the person
- * would vote in each, without seeing how the parties voted; the parties are
- * then compared with that in readVotes. Asking Jev per party instead made it
- * judge the same vote differently for parties that voted the same way.
- */
-export function buildVotesRequest(topic, opinion, votes) {
+// Votes take the same two steps, with a different second question. Jev
+// first checks, vote by vote, whether a vote decides the person's specific
+// demand at all; then, for the votes that do, which way a yes goes relative
+// to the demand. Neither step sees how the parties voted: they are compared
+// in readVotes, so parties that voted alike score alike.
+
+const VOTES_HOW_TO_READ =
+  'Voting yes means voting for what the title names, whatever the result: descriptions often ' +
+  'report that a motion was rejected, which is how others voted, not what the motion wants. ' +
+  'If a title starts with "Ablehnung", voting yes means rejecting the motion it names.';
+
+const voteState = (topic, opinion, votes) => ({
+  person: { topic, opinion },
+  how_to_read: VOTES_HOW_TO_READ,
+  roll_call_votes: votes.map(({ id, date, title, description }) => ({
+    id,
+    date,
+    title,
+    description: description.slice(0, DESCRIPTION_CHARS),
+  })),
+});
+
+/** Step one for votes: per vote, whether it decides the person's specific demand at all. */
+export function buildVoteRelevanceRequest(topic, opinion, votes) {
   return {
     model: MODEL,
-    state: {
-      person: { topic, opinion },
-      how_to_read:
-        'Voting yes means voting for what the title names, whatever the result: descriptions often ' +
-        'report that a motion was rejected, which is how others voted, not what the motion wants. ' +
-        'If a title starts with "Ablehnung", voting yes means rejecting the motion it names.',
-      roll_call_votes: votes.map(({ id, date, title, description }) => ({
+    state: voteState(topic, opinion, votes),
+    questions: Object.fromEntries(
+      votes.map(({ id, title }) => [
         id,
-        date,
-        title,
-        description: description.slice(0, DESCRIPTION_CHARS),
-      })),
-    },
+        {
+          type: 'noul',
+          instructions:
+            `Does roll-call vote ${id} ("${title}") decide something about the person's specific demand, ` +
+            'for it or against it? It counts only if the demand is what the vote mainly decides. Sharing ' +
+            'the wider topic does not count, nor does a law that decides mostly other things. Do not judge ' +
+            'how the person would vote, only whether the vote is about the demand.',
+        },
+      ]),
+    ),
+  };
+}
+
+/** The votes that decide the demand, each with its `relevance`. */
+export function relevantVotes(votes, answers) {
+  return votes
+    .map((vote) => ({ ...vote, relevance: answers[vote.id]?.noul ?? 0 }))
+    .filter(({ relevance }) => relevance >= COVERED);
+}
+
+/** Step two for votes: which way a yes goes, relative to the person's demand. */
+export function buildVoteDirectionRequest(topic, opinion, votes) {
+  return {
+    model: MODEL,
+    state: voteState(topic, opinion, votes),
     questions: Object.fromEntries(
       votes.map(({ id, title }) => [
         id,
         {
           type: 'choice',
-          instructions:
-            `How would the person, given their opinion, vote in roll-call vote ${id} ("${title}")? ` +
-            'Judge by what the vote mainly decides, not by its topic or by side effects.',
+          instructions: `Does a yes in roll-call vote ${id} ("${title}") go towards what the person demands, or away from it?`,
           criteria: {
-            yes: 'Yes: mainly, the vote puts into practice what the person demands, or goes in that direction',
-            no: 'No: mainly, the vote does the opposite of what the person demands, or blocks it',
-            // Omnibus laws touch many demands; voting against one says little about any of them.
-            bundled: 'Either: the vote touches the demand, but decides mostly other things, so the person could vote either way',
-            unrelated: 'Neither: the vote does not decide anything the person demands or opposes',
+            towards: 'Towards: a yes puts into practice what the person demands, or goes in that direction',
+            away: 'Away: a yes does the opposite of what the person demands, or blocks it',
           },
         },
       ]),
@@ -211,15 +239,15 @@ export function buildVotesRequest(topic, opinion, votes) {
 }
 
 /**
- * How the person would vote in each vote: `{ lean: -1–1, clarity: 0–1 }`,
- * where lean is +1 for a clear yes and clarity is how likely the vote decides
- * the demand at all.
+ * How the person would vote in each relevant vote: `{ lean: -1–1, clarity: 0–1 }`,
+ * where lean is +1 for a clear yes and clarity is how clearly the vote decides
+ * the demand.
  */
-export function readPersonVotes(answers) {
+export function readVoteDirections(relevant, answers) {
   return Object.fromEntries(
-    Object.entries(answers).map(([id, { probabilities: { yes = 0, no = 0 } }]) => {
-      const clarity = yes + no;
-      return [id, { lean: clarity ? (yes - no) / clarity : 0, clarity }];
+    relevant.map(({ id, relevance }) => {
+      const { towards = 0, away = 0 } = answers[id]?.probabilities ?? {};
+      return [id, { lean: towards + away ? (towards - away) / (towards + away) : 0, clarity: relevance }];
     }),
   );
 }
