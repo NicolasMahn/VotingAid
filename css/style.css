@@ -622,6 +622,8 @@ a.how:hover {
 }
 
 .topics thead th {
+  /* Over the middle of the cells beneath, not left where the row's text starts. */
+  text-align: center;
   white-space: nowrap;
   font-size: 0.75rem;
   font-weight: 400;
