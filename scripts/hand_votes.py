@@ -153,7 +153,7 @@ def subject_of(context: str) -> str:
 
 def law_name(agenda: str) -> str | None:
     """The name of the law an agenda item debates, from "Entwurfs eines Gesetzes zur …"."""
-    found = re.search(r"Entwurfs? eines (.+?)(?=\s*(?:Drucksache|Beschlussempfehlung|Bericht)|\s*\(|$)", agenda)
+    found = re.search(r"Entwurfs? eines (.+?)(?=\s*(?:Drucksache|Beschlussempfehlung|Bericht)|\s*\(|\.|$)", agenda)
     # "eines Faire-Mieten-Gesetzes" names the "Faire-Mieten-Gesetz".
     return re.sub(r"^(\S*[Gg]esetz)es\b", r"\1", found.group(1)) if found else None
 

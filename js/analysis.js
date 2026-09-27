@@ -19,7 +19,7 @@ export const LEVELS = [
 const LEVEL_MEANINGS = [
   'Klarer Widerspruch: Die Partei will klar das Gegenteil dessen, was die Person fordert',
   'Eher Widerspruch: Die Partei lehnt eher ab, was die Person fordert',
-  'Teils, teils: Die Partei stimmt teilweise zu, ist unentschieden, oder das Material entscheidet es nicht',
+  'Teils, teils: Die Partei stimmt teilweise zu, ist unentschieden, oder die Auszüge lassen es offen',
   'Eher Übereinstimmung: Die Partei unterstützt eher, was die Person fordert',
   'Klare Übereinstimmung: Die Partei will klar, was die Person fordert',
 ];
@@ -55,7 +55,7 @@ const SOURCES = {
   program: {
     items: (passagesByParty) =>
       mapParties((id) => (passagesByParty[id] ?? []).map(({ id: key, page, text }) => ({ id: key, seite: page, text }))),
-    evidence: (short) => `dem Wahlprogramm von ${short}, nach diesen Auszügen`,
+    evidence: 'diesen Auszügen aus ihrem Wahlprogramm',
     howToRead: 'Auszüge aus den Wahlprogrammen der Parteien zur Bundestagswahl 2025.',
   },
   statements: {
@@ -70,10 +70,12 @@ const SOURCES = {
           text: passage,
         })),
       ),
-    evidence: (short) => `dem, was Politikerinnen, Politiker und offizielle Kanäle von ${short} in diesen Aussagen sagen`,
+    evidence: 'diesen Aussagen ihrer Politikerinnen, Politiker und offiziellen Kanäle',
+    // "Die Person" is always the one using Voting Aid, never a speaker.
     howToRead:
-      'Aussagen einzelner Politikerinnen und Politiker entsprechen nicht immer der Parteilinie. Reden ' +
-      'argumentieren oft gegen eine andere Partei: Beurteile, was die sprechende Person will, nicht was sie angreift.',
+      'Aussagen aus Reden im Bundestag und von den Websites der Fraktionen und Bundesparteien. Einzelne ' +
+      'Politikerinnen und Politiker vertreten nicht immer die Parteilinie. In Reden wird oft eine andere ' +
+      'Partei angegriffen: Entscheidend ist, was die Rednerin oder der Redner selbst will.',
   },
 };
 
@@ -91,10 +93,11 @@ export function buildRelevanceRequest(source, topic, opinion, evidence) {
       questions[item.id] = {
         type: 'noul',
         instructions:
-          `Sagt ${item.id}, was ${short} zur konkreten Forderung der Person will: dafür, dagegen oder ein ` +
-          'anderer Weg zum selben Ziel? Die Gegenposition zurückzuweisen zählt. Nur das weitere Thema zu ' +
-          'teilen zählt nicht, ebenso wenig eine Frage oder eine Nebenbemerkung. Beurteile nicht, ob die ' +
-          'Partei der Person zustimmt, nur ob der Auszug etwas zur Forderung sagt.',
+          `Sagt der Auszug ${item.id}, was ${short} zur konkreten Forderung der Person will? Dafür, dagegen ` +
+          'oder ein anderer Weg zum selben Ziel zählt, auch wenn die Forderung nicht wörtlich vorkommt: etwa ' +
+          'wenn die Partei verteidigt, was die Person abschaffen will, oder die Gegenposition zurückweist. ' +
+          'Es reicht nicht, wenn der Auszug nur das Thema berührt oder nur eine Frage stellt. Ob die Partei ' +
+          'der Person zustimmt, spielt hier keine Rolle.',
       };
     }
   }
@@ -123,11 +126,11 @@ export function buildMatchRequest(source, topic, opinion, relevant) {
     questions[`${id}_match`] = {
       type: 'score',
       instructions:
-        `Wo steht ${short} zu dem, was die Person fordert, nach ${SOURCES[source].evidence(short)}? ` +
-        'Vergleiche mit der konkreten Forderung, nicht mit dem weiteren Thema: Eine Partei, die ' +
-        'einschränken will, was die Person ausweiten will, widerspricht ihr; eine Partei, die in dieselbe ' +
-        'Richtung weiter gehen will oder eine Maßnahme als zu schwach kritisiert, stimmt ihr zu. Beurteile ' +
-        'nur das vorliegende Material, nicht was du sonst über die Partei weißt.',
+        `Wo steht ${short} laut ${SOURCES[source].evidence} zur Forderung der Person? ` +
+        'Maßstab ist die konkrete Forderung, nicht das Thema. Will die Partei einschränken, was die Person ' +
+        'ausweiten will, widerspricht sie. Will sie in dieselbe Richtung weiter gehen, oder hält sie eine ' +
+        'Maßnahme für zu schwach, stimmt sie zu. Beurteile nur diese Auszüge, nicht was du sonst über die ' +
+        'Partei weißt.',
       criteria: LEVEL_MEANINGS,
     };
     if (items.length > 1) {
@@ -175,10 +178,11 @@ export function readPartyAnswers(answers, relevant) {
 // in readVotes, so parties that voted alike score alike.
 
 const VOTES_HOW_TO_READ =
-  'Mit Ja stimmen heißt, für das zu stimmen, was der Titel nennt, unabhängig vom Ergebnis: ' +
-  'Beschreibungen berichten oft, dass ein Antrag abgelehnt wurde; das sagt, wie andere abgestimmt ' +
-  'haben, nicht was der Antrag will. Beginnt ein Titel mit „Ablehnung“, oder empfiehlt eine ' +
-  'Beschlussempfehlung, einen Antrag abzulehnen, heißt ein Ja, den Antrag abzulehnen.';
+  'Abstimmungen im Bundestag. Ein Ja stimmt für das, was der Titel nennt. Beschreibungen nennen oft das ' +
+  'Ergebnis, etwa „abgelehnt“: Das sagt nur, wie die Mehrheit gestimmt hat, nicht was zur Abstimmung ' +
+  'stand. Beginnt ein Titel mit „Ablehnung“, oder wird über die Empfehlung eines Ausschusses abgestimmt, ' +
+  'einen Antrag abzulehnen, heißt ein Ja: den Antrag ablehnen. Wird über den Gesetzentwurf oder Antrag ' +
+  'selbst abgestimmt, heißt ein Ja: dafür. Hat eine Abstimmung einen eigenen Hinweis, gilt dieser.';
 
 const voteState = (topic, opinion, votes) => ({
   person: { thema: topic, meinung: opinion },
@@ -204,11 +208,10 @@ export function buildVoteRelevanceRequest(topic, opinion, votes) {
         {
           type: 'noul',
           instructions:
-            `Entscheidet die Abstimmung ${id} („${rejects ?? title}“) etwas über die konkrete Forderung der Person, ` +
-            'dafür oder dagegen? Das zählt, wenn die Forderung ihr Gegenstand oder ein zentraler Teil davon ist; ' +
-            'auch ein Antrag, der das Gegenteil fordert, zählt. Nur das weitere Thema zu teilen zählt nicht, ' +
-            'ebenso wenig ein Gesetz, in dem die Forderung nur ein Nebenpunkt ist. Beurteile nicht, wie die ' +
-            'Person abstimmen würde, nur ob es in der Abstimmung um die Forderung geht.',
+            `Geht es in der Abstimmung ${id} („${rejects ?? title}“) um die konkrete Forderung der Person? ` +
+            'Ja, wenn die Forderung ihr Gegenstand oder ein zentraler Teil davon ist, auch wenn die Abstimmung ' +
+            'das Gegenteil will. Nein, wenn sie nur das Thema berührt oder die Forderung in einem Gesetz nur ein ' +
+            'Nebenpunkt ist. Wie die Person abstimmen würde, spielt hier keine Rolle.',
         },
       ]),
     ),
@@ -233,11 +236,11 @@ export function buildVoteDirectionRequest(topic, opinion, votes) {
         {
           type: 'choice',
           instructions: rejects
-            ? `Geht der Antrag in ${id} („${rejects}“) in Richtung dessen, was die Person fordert, oder davon weg?`
-            : `Geht ein Ja in der Abstimmung ${id} („${title}“) in Richtung dessen, was die Person fordert, oder davon weg?`,
+            ? `Wohin führt der Antrag „${rejects}“ (Abstimmung ${id}), wenn er angenommen wird: zur Forderung der Person hin oder von ihr weg?`
+            : `Wohin führt ein Ja in der Abstimmung ${id} („${title}“): zur Forderung der Person hin oder von ihr weg?`,
           criteria: {
-            hin: 'In Richtung: Ein Ja setzt um, was die Person fordert, oder geht in diese Richtung',
-            weg: 'Davon weg: Ein Ja bewirkt das Gegenteil dessen, was die Person fordert, oder blockiert es',
+            hin: 'Hin: setzt die Forderung um oder kommt ihr näher',
+            weg: 'Weg: bewirkt das Gegenteil oder verhindert die Forderung',
           },
         },
       ]),

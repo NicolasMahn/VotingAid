@@ -163,7 +163,7 @@ function evidence(topic, party, source) {
   if (!isCovered(reading)) {
     const none = {
       program: 'Das Wahlprogramm bezieht dazu keine klare Position.',
-      votes: `${party.short} hat über nichts Passendes namentlich abgestimmt.`,
+      votes: `${party.short} hat über nichts Passendes abgestimmt.`,
       statements: 'Keine passende Aussage gefunden.',
     };
     return [element('p', 'muted', none[source])];
