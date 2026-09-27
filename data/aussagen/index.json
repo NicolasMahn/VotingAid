@@ -12,18 +12,18 @@
   "spd",
   "union"
  ],
- "count": 17063,
+ "count": 17146,
  "from": "2025-03-25",
- "to": "2026-09-24",
+ "to": "2026-09-27",
  "counts": {
   "rede": 13660,
-  "fraktion": 2117,
-  "partei": 1286
+  "fraktion": 2121,
+  "partei": 1365
  },
  "websites": {
   "afd.de": {
    "party": "afd",
-   "count": 317,
+   "count": 319,
    "from": "2025-03-26"
   },
   "afdbundestag.de": {
@@ -38,37 +38,42 @@
   },
   "cdu.de": {
    "party": "union",
-   "count": 488,
+   "count": 489,
    "from": "2025-03-25"
   },
   "cducsu.de": {
    "party": "union",
-   "count": 506,
+   "count": 508,
    "from": "2025-03-25"
+  },
+  "csu.de": {
+   "party": "union",
+   "count": 76,
+   "from": "2025-03-26"
   },
   "die-linke.de": {
    "party": "linke",
-   "count": 39,
+   "count": 38,
    "from": "2025-04-09"
   },
   "dielinkebt.de": {
    "party": "linke",
    "count": 150,
-   "from": "2026-07-09"
+   "from": "2026-07-10"
   },
   "fdp.de": {
    "party": "fdp",
    "count": 96,
-   "from": "2026-08-01"
+   "from": "2026-08-04"
   },
   "gruene-bundestag.de": {
    "party": "gruene",
-   "count": 286,
+   "count": 287,
    "from": "2025-03-25"
   },
   "gruene.de": {
    "party": "gruene",
-   "count": 125,
+   "count": 126,
    "from": "2025-03-25"
   },
   "spd.de": {
@@ -78,7 +83,7 @@
   },
   "spdfraktion.de": {
    "party": "spd",
-   "count": 581,
+   "count": 582,
    "from": "2025-05-27"
   }
  }

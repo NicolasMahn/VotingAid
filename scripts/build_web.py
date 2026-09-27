@@ -56,6 +56,9 @@ SITES = [
      "links": r'href="([^"]*/pressemitteilungen/detail/[^"]*)"', "listing_pages": 15},
     {"party": "afd", "kind": "fraktion", "home": "https://afdbundestag.de/"},
     {"party": "union", "kind": "partei", "home": "https://www.cdu.de/"},
+    # The CSU is a party of its own; its news page lists every message back to 2024-12.
+    {"party": "union", "kind": "partei", "home": "https://www.csu.de/", "listing": "https://www.csu.de/aktuell/meldungen/",
+     "first_page": 1, "listing_pages": 1, "links": r'href="(/aktuell/meldungen/[a-z]+-20\d{2}/[^"]+/)"'},
     {"party": "spd", "kind": "partei", "home": "https://www.spd.de/", "sitemaps": ["https://www.spd.de/sitemap.xml"]},
     {"party": "gruene", "kind": "partei", "home": "https://www.gruene.de/"},
     {"party": "linke", "kind": "partei", "home": "https://www.die-linke.de/", "sitemaps": ["https://www.die-linke.de/sitemap.xml"]},
