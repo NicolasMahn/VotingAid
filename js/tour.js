@@ -1,6 +1,6 @@
-// Two short guided tours, one for writing the topics and one for reading the
-// result: the page dims, one control at a time is lifted out, and a bubble
-// beside it says what it is for.
+// A short guided tour: the page dims, one control at a time is lifted out,
+// and a bubble beside it says what it is for. The steps about the result
+// only come when there is a result on screen.
 
 const STEPS = [
   { target: '.topic .topic-name', text: 'Wähl ein Thema, zum Beispiel „Mindestlohn“.' },
@@ -14,17 +14,17 @@ const STEPS = [
   { target: '#analyse', text: 'Jev vergleicht deine Sätze mit Wahlprogrammen, Abstimmungen im Bundestag und Aussagen.' },
   {
     target: '#ranking > li:first-child',
-    tour: 'results',
+    results: true,
     text: 'Jede Partei bekommt einen Wert: −10 heißt, sie will das Gegenteil von dir, +10, sie will dasselbe.',
   },
   {
     target: '#ranking > li:first-child',
-    tour: 'results',
+    results: true,
     text: 'Tipp auf eine Partei für ihre Werte je Thema und Quelle, dann auf einen Wert für die Belege. Ein Strich heißt, die Quelle sagt dazu nichts Klares.',
   },
-  { target: '#ranking > li.silent', tour: 'results', text: 'Grau am Ende stehen Parteien, die zu deinen Themen nichts Passendes gesagt haben. Sie haben keinen Wert, keinen schlechten.' },
-  { target: '#toggle-weights', tour: 'results', text: 'Hier stellst du ein, wie stark Programme, Abstimmungen und Aussagen zählen.' },
-  { target: 'a.how', tour: 'results', text: 'Wie das Ergebnis genau entsteht, zeigt der Ablauf, mit jedem Prompt an Jev.' },
+  { target: '#ranking > li.silent', results: true, text: 'Grau am Ende stehen Parteien, die zu deinen Themen nichts Passendes gesagt haben. Sie haben keinen Wert, keinen schlechten.' },
+  { target: '#toggle-weights', results: true, text: 'Hier stellst du ein, wie stark Programme, Abstimmungen und Aussagen zählen.' },
+  { target: 'a.how', results: true, text: 'Wie das Ergebnis genau entsteht, zeigt der Ablauf, mit jedem Prompt an Jev.' },
 ];
 
 const $ = (id) => document.getElementById(id);
@@ -32,9 +32,10 @@ const $ = (id) => document.getElementById(id);
 let steps = [];
 let index = 0;
 
-/** Starts one of the tours, 'input' or 'results', at its first step. */
-export function startTour(tour) {
-  steps = STEPS.filter((step) => (step.tour ?? 'input') === tour && document.querySelector(step.target));
+/** Starts the tour at its first step. */
+export function startTour() {
+  const hasResults = !$('results').hidden;
+  steps = STEPS.filter((step) => (!step.results || hasResults) && document.querySelector(step.target));
   index = 0;
   $('tour').hidden = false;
   document.addEventListener('keydown', onKey);

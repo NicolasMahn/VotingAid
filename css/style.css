@@ -435,7 +435,7 @@ button.how-to:hover {
 
 .results-head {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   margin-bottom: 0.5rem;
 }
