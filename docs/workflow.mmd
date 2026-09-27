@@ -4,9 +4,9 @@
 %% and what a step runs once for are on the HTML page.
 flowchart TB
   start((Du schreibst zu jedem Thema,<br/>was passieren soll)):::person
+  subgraph Thema[Läuft einmal je Thema]
   query[Meinung einbetten]:::voyage
   split{+}
-  start --> query --> split
 
   subgraph Programme
     pdb[(Wahlprogramme 2025<br/>2.025 Abschnitte)]:::data
@@ -44,6 +44,8 @@ flowchart TB
   pgate -->|nein| pdrop(((fällt weg)))
   vgate -->|nein| vdrop(((fällt weg)))
   sgate -->|nein| sdrop(((fällt weg)))
+  end
+  start --> query --> split
   combine[Werte zusammenführen<br/>je Thema und Quelle, über Themen, nach Gewichtung]:::code
   done(((Rangliste mit Belegen))):::person
   join --> combine --> done

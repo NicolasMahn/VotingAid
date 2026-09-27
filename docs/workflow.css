@@ -904,8 +904,9 @@ dialog::backdrop {
   }
 
   .lanes .chip {
-    font-size: 0.65rem;
-    white-space: normal;
+    gap: 0.25rem;
+    padding: 0.1rem 0.4rem 0.1rem 0.3rem;
+    font-size: 0.6rem;
   }
 
   .gateway {
@@ -949,4 +950,35 @@ dialog::backdrop {
   margin-right: 0.2rem;
   color: var(--ink);
   font-size: 1.15rem;
+}
+
+/* The part of the flow that runs once per topic, as a BPMN multi-instance subprocess. */
+.per-topic {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 2.4rem 1rem 0.5rem;
+  border: 1.5px dashed var(--line);
+  border-radius: 1.2rem;
+}
+
+.frame-label {
+  position: absolute;
+  top: 0.7rem;
+  left: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+@media (max-width: 44rem) {
+  .per-topic {
+    padding: 2.4rem 0.4rem 0.4rem;
+  }
 }

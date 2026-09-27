@@ -40,6 +40,7 @@
       </ul>
       <ul class="legend per-legend" aria-label="Was ein Schritt einmal je … macht">
         <li>Läuft einmal je</li>
+        <li><svg class="per-icon"><use href="#i-topic" /></svg>Thema</li>
         <li><svg class="per-icon"><use href="#i-party" /></svg>Partei</li>
         <li><svg class="per-icon"><use href="#i-excerpt" /></svg>Abschnitt</li>
         <li><svg class="per-icon"><use href="#i-vote" /></svg>Abstimmung</li>
@@ -53,6 +54,9 @@
         Du schreibst zu jedem Thema, was passieren soll
       </div>
       <div class="link"></div>
+      <!-- Everything in here runs once per topic; merging and the ranking take all topics together. -->
+      <div class="per-topic">
+        <p class="frame-label"><svg class="per-icon"><use href="#i-topic" /></svg>Läuft einmal je Thema</p>
       <button class="card voyage single" type="button" data-panel="query">
         <span class="chip voyage">Voyage AI</span>
         <strong>Meinung einbetten</strong>
@@ -162,6 +166,8 @@
       </div>
 
       <div class="fan in" aria-hidden="true"><span class="bar"></span><i class="mid"></i><b class="head centre"></b></div>
+      </div>
+      <div class="link"></div>
       <button class="card code single" type="button" data-panel="combine">
         <span class="chip code">Code</span>
         <strong>Werte zusammenführen</strong>
@@ -177,6 +183,7 @@
 
     <!-- What a step runs once for. Drawn with the text color, so they suit both themes. -->
     <svg class="defs" aria-hidden="true">
+      <symbol id="i-topic" viewBox="0 0 16 16"><path d="M2 2.5h7.2l4.8 5-4.8 5H2z" /><circle cx="5" cy="7.5" r="1.1" /></symbol>
       <symbol id="i-party" viewBox="0 0 16 16"><circle cx="5.5" cy="5" r="2.2" /><circle cx="11" cy="5.5" r="1.8" /><path d="M1.5 13.5c0-2.5 1.8-4.2 4-4.2s4 1.7 4 4.2M9.8 9.6c.4-.1.8-.2 1.2-.2 1.9 0 3.4 1.5 3.4 3.8" /></symbol>
       <symbol id="i-excerpt" viewBox="0 0 16 16"><path d="M4 1.8h5.5L12.5 5v9.2H4z" /><path d="M6 7.5h4.5M6 10h4.5M6 12.3h3" /></symbol>
       <symbol id="i-vote" viewBox="0 0 16 16"><path d="M2.5 8.5h11v5.5h-11zM5.5 8.5l1-6h3l1 6" /><path d="M5 11.2h6" /></symbol>
