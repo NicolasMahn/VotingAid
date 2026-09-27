@@ -15,7 +15,8 @@
       tasks, diamonds are decisions, dashed cards are data built beforehand.
       A card marked ≡ runs once per item. The chip on a card says who does the
       task. Every card opens a side panel; for Jev's tasks it shows the prompt
-      the page sends, built by workflow.js from js/analysis.js.
+      the page sends, built by workflow.js from js/analysis.js. The term
+      buttons open explainers in the same panel, apart from the steps.
     -->
     <header class="page-head">
       <a class="brand" href="../"><img src="../favicon.svg" alt="" width="28" height="28" />Voting Aid</a>
@@ -34,6 +35,10 @@
         <li><span class="mini gateway"></span>Entscheidung</li>
         <li><span class="loop">≡</span>je Element</li>
       </ul>
+      <p class="terms">
+        <button class="term" type="button" data-panel="embedding">Embedding erklärt</button>
+        <button class="term" type="button" data-panel="threshold">Was heißt ab 0,5?</button>
+      </p>
     </header>
 
     <main class="flow">
@@ -61,8 +66,8 @@
         </button>
         <button class="card data" type="button" data-panel="votes-data">
           <span class="chips"><span class="chip data">Daten</span><span class="chip voyage">eingebettet</span></span>
-          <strong>234 Abstimmungen</strong>
-          <small>namentlich, seit 2021</small>
+          <strong>654 Abstimmungen</strong>
+          <small>namentlich und per Handzeichen</small>
         </button>
         <button class="card data" type="button" data-panel="statements-data">
           <span class="chips"><span class="chip data">Daten</span><span class="chip voyage">eingebettet</span></span>
@@ -80,7 +85,7 @@
         <button class="card code" type="button" data-panel="votes-search">
           <span class="chip code">Code</span>
           <strong>Nächste Abstimmungen</strong>
-          <span class="loop">≡ 8 insgesamt</span>
+          <span class="loop">≡ 12 insgesamt</span>
         </button>
         <button class="card code" type="button" data-panel="statements-search">
           <span class="chip code">Code</span>
@@ -108,9 +113,9 @@
 
         <div class="link to-gateway"></div><div class="link to-gateway"></div><div class="link to-gateway"></div>
 
-        <div class="gateway"><span class="diamond"></span><span class="no"><i></i><span class="stop"></span><span class="no-text">fällt weg</span></span><small>ja, ab 0,5</small></div>
-        <div class="gateway"><span class="diamond"></span><span class="no"><i></i><span class="stop"></span><span class="no-text">fällt weg</span></span><small>ja, ab 0,5</small></div>
-        <div class="gateway"><span class="diamond"></span><span class="no"><i></i><span class="stop"></span><span class="no-text">fällt weg</span></span><small>ja, ab 0,5</small></div>
+        <div class="gateway"><span class="diamond"></span><span class="no"><i></i><span class="stop"></span><span class="no-text">fällt weg</span></span><button class="term" type="button" data-panel="threshold">ja, ab 0,5</button></div>
+        <div class="gateway"><span class="diamond"></span><span class="no"><i></i><span class="stop"></span><span class="no-text">fällt weg</span></span><button class="term" type="button" data-panel="threshold">ja, ab 0,5</button></div>
+        <div class="gateway"><span class="diamond"></span><span class="no"><i></i><span class="stop"></span><span class="no-text">fällt weg</span></span><button class="term" type="button" data-panel="threshold">ja, ab 0,5</button></div>
 
         <div class="link"></div><div class="link"></div><div class="link"></div>
 
@@ -154,6 +159,18 @@
       </div>
     </main>
 
+    <!-- Bar pictures of an embedding's numbers, shared by the panels. -->
+    <svg class="defs" aria-hidden="true">
+      <symbol id="vector" viewBox="0 0 292 48">
+        <line x1="0" y1="24" x2="292" y2="24" />
+        <rect x="4" y="21.6" width="8" height="2.4" rx="1.5" stroke="none" /><rect x="16" y="24" width="8" height="9.6" rx="1.5" stroke="none" /><rect x="28" y="17.4" width="8" height="6.6" rx="1.5" stroke="none" /><rect x="40" y="9.8" width="8" height="14.2" rx="1.5" stroke="none" /><rect x="52" y="24" width="8" height="4.0" rx="1.5" stroke="none" /><rect x="64" y="23.0" width="8" height="1.0" rx="1.5" stroke="none" /><rect x="76" y="24" width="8" height="12.4" rx="1.5" stroke="none" /><rect x="88" y="16.0" width="8" height="8.0" rx="1.5" stroke="none" /><rect x="100" y="20.4" width="8" height="3.6" rx="1.5" stroke="none" /><rect x="112" y="24" width="8" height="7.0" rx="1.5" stroke="none" /><rect x="124" y="12.8" width="8" height="11.2" rx="1.5" stroke="none" /><rect x="136" y="24" width="8" height="2.0" rx="1.5" stroke="none" /><rect x="148" y="18.6" width="8" height="5.4" rx="1.5" stroke="none" /><rect x="160" y="24" width="8" height="14.8" rx="1.5" stroke="none" /><rect x="172" y="22.2" width="8" height="1.8" rx="1.5" stroke="none" /><rect x="184" y="15.2" width="8" height="8.8" rx="1.5" stroke="none" /><rect x="196" y="24" width="8" height="5.6" rx="1.5" stroke="none" /><rect x="208" y="11.4" width="8" height="12.6" rx="1.5" stroke="none" /><rect x="220" y="24" width="8" height="1.0" rx="1.5" stroke="none" /><rect x="232" y="19.6" width="8" height="4.4" rx="1.5" stroke="none" /><rect x="244" y="24" width="8" height="10.0" rx="1.5" stroke="none" /><rect x="256" y="16.8" width="8" height="7.2" rx="1.5" stroke="none" /><rect x="268" y="21.2" width="8" height="2.8" rx="1.5" stroke="none" /><rect x="280" y="24" width="8" height="6.0" rx="1.5" stroke="none" />
+      </symbol>
+      <symbol id="vector-topic" viewBox="0 0 292 48">
+        <line x1="0" y1="24" x2="292" y2="24" />
+        <rect x="4" y="20.0" width="8" height="4.0" rx="1.5" stroke="none" /><rect x="16" y="24" width="8" height="6.0" rx="1.5" stroke="none" /><rect x="28" y="15.8" width="8" height="8.2" rx="1.5" stroke="none" /><rect x="40" y="13.6" width="8" height="10.4" rx="1.5" stroke="none" /><rect x="52" y="24" width="8" height="6.8" rx="1.5" stroke="none" /><rect x="64" y="21.0" width="8" height="3.0" rx="1.5" stroke="none" /><rect x="76" y="24" width="8" height="10.0" rx="1.5" stroke="none" /><rect x="88" y="19.6" width="8" height="4.4" rx="1.5" stroke="none" /><rect x="100" y="18.0" width="8" height="6.0" rx="1.5" stroke="none" /><rect x="112" y="24" width="8" height="4.2" rx="1.5" stroke="none" /><rect x="124" y="11.8" width="8" height="12.2" rx="1.5" stroke="none" /><rect x="136" y="24" width="8" height="4.8" rx="1.5" stroke="none" /><rect x="148" y="22.0" width="8" height="2.0" rx="1.5" stroke="none" /><rect x="160" y="24" width="8" height="12.0" rx="1.5" stroke="none" /><rect x="172" y="20.0" width="8" height="4.0" rx="1.5" stroke="none" /><rect x="184" y="18.0" width="8" height="6.0" rx="1.5" stroke="none" /><rect x="196" y="24" width="8" height="8.0" rx="1.5" stroke="none" /><rect x="208" y="14.0" width="8" height="10.0" rx="1.5" stroke="none" /><rect x="220" y="22.0" width="8" height="2.0" rx="1.5" stroke="none" /><rect x="232" y="21.6" width="8" height="2.4" rx="1.5" stroke="none" /><rect x="244" y="24" width="8" height="7.2" rx="1.5" stroke="none" /><rect x="256" y="14.4" width="8" height="9.6" rx="1.5" stroke="none" /><rect x="268" y="23.6" width="8" height="0.4" rx="1.5" stroke="none" /><rect x="280" y="24" width="8" height="3.6" rx="1.5" stroke="none" />
+      </symbol>
+    </svg>
+
     <dialog id="panel" aria-labelledby="panel-title">
       <div class="panel-head">
         <p id="panel-title"></p>
@@ -164,33 +181,81 @@
 
     <!-- What the cards without a prompt open onto: short facts, not prose. -->
     <template id="query">
-      <figure class="embedding" aria-label="Texte mit ähnlicher Bedeutung liegen nah beieinander">
-        <svg viewBox="0 0 320 170" role="img">
-          <rect x="1" y="1" width="318" height="168" rx="12" class="plane" />
-          <circle cx="92" cy="62" r="7" class="you" />
-          <text x="106" y="56" class="label strong">Deine Meinung</text>
-          <text x="106" y="72" class="label">„Mindestlohn auf 15 Euro“</text>
-          <circle cx="70" cy="100" r="5" class="near" />
-          <text x="82" y="104" class="label">„Lohnuntergrenze anheben“</text>
-          <circle cx="126" cy="126" r="5" class="near" />
-          <text x="138" y="130" class="label">„faire Löhne für alle“</text>
-          <circle cx="262" cy="36" r="5" class="far" />
-          <text x="186" y="26" class="label">„Tempolimit 130“</text>
-          <circle cx="252" cy="140" r="5" class="far" />
-          <text x="180" y="160" class="label">„Atomkraft“</text>
-          <path d="M92 62 L70 100 M92 62 L126 126" class="reach" />
-        </svg>
-        <figcaption>Nah beieinander heißt: ähnliche Bedeutung, auch mit anderen Wörtern.</figcaption>
-      </figure>
+      <ol class="embed-rows">
+        <li><span class="quote">„Mindestlohn: Der Mindestlohn soll auf 15 Euro steigen.“</span><svg class="vector" viewBox="0 0 292 48" aria-hidden="true"><use href="#vector" /></svg></li>
+        <li><span class="quote">„Mindestlohn“</span><svg class="vector" viewBox="0 0 292 48" aria-hidden="true"><use href="#vector-topic" /></svg></li>
+      </ol>
+      <p class="muted">Das Mittel aus beiden ist der Suchvektor. Das Thema findet Belege dafür und dagegen gleichermaßen, die Meinung bringt die Einzelheiten.</p>
       <dl class="facts">
-        <dt>Was ein Embedding ist</dt>
-        <dd>Eine Reihe von 1.024 Zahlen, die die Bedeutung eines Textes abbildet.</dd>
-        <dt>Was eingebettet wird</dt>
-        <dd>Thema und Meinung zusammen, und das Thema allein. Die Suche nutzt das Mittel aus beiden.</dd>
         <dt>Modell</dt>
-        <dd><code>voyage-4-large</code> über OpenRouter</dd>
+        <dd><code>voyage-4-large</code> über OpenRouter, 1.024 Zahlen</dd>
+        <dt>Danach</dt>
+        <dd>Die drei Suchen vergleichen den Suchvektor mit den vorab eingebetteten Daten.</dd>
+      </dl>
+      <button class="term" type="button" data-panel="embedding">Embedding erklärt</button>
+    </template>
+
+    <!-- Explainers: terms, not steps. Pictures first, a line of text each. -->
+    <template id="embedding" data-title="Embedding erklärt">
+      <ol class="explain">
+        <li>
+          <span class="quote">„Der Mindestlohn soll auf 15 Euro steigen.“</span>
+        </li>
+        <li>
+          <p class="muted">Ein Embedding-Modell, etwa von Voyage AI, macht daraus eine lange Reihe von Zahlen.</p>
+          <svg class="vector" viewBox="0 0 292 48" aria-hidden="true"><use href="#vector" /></svg>
+          <p class="numbers">0,12 · −0,48 · 0,33 · 0,71 · … <span class="muted">(hier 1.024 Zahlen)</span></p>
+        </li>
+        <li>
+          <p class="muted">Die Zahlen sind ein Punkt in einem Raum. Nah beieinander heißt: ähnliche Bedeutung, auch mit anderen Wörtern.</p>
+          <figure class="embedding">
+            <svg viewBox="0 0 320 180" role="img" aria-label="Texte über Löhne liegen nah an der Meinung, andere Themen weit weg">
+              <rect x="1" y="1" width="318" height="178" rx="12" class="plane" />
+              <path d="M70 70 L128 58 M70 70 L48 110 M70 70 L170 112" class="reach" />
+              <text x="16" y="28" class="label strong">Deine Meinung</text>
+              <text x="16" y="44" class="label">„Mindestlohn auf 15 Euro“</text>
+              <circle cx="70" cy="70" r="7" class="you" />
+              <circle cx="128" cy="58" r="5" class="near" />
+              <text x="138" y="62" class="label">„Mindestlohn einfrieren“</text>
+              <circle cx="48" cy="110" r="5" class="near" />
+              <text x="16" y="130" class="label">„Lohnuntergrenze anheben“</text>
+              <circle cx="170" cy="112" r="5" class="near" />
+              <text x="180" y="116" class="label">„faire Löhne für alle“</text>
+              <circle cx="272" cy="40" r="5" class="far" />
+              <text x="196" y="26" class="label">„Tempolimit 130“</text>
+              <circle cx="276" cy="146" r="5" class="far" />
+              <text x="230" y="168" class="label">„Atomkraft“</text>
+            </svg>
+          </figure>
+        </li>
+      </ol>
+      <dl class="facts">
+        <dt>Gut für</dt>
+        <dd>Passendes schnell finden, unter Tausenden Texten</dd>
+        <dt>Nicht für</dt>
+        <dd>Dafür oder dagegen: „Mindestlohn einfrieren“ liegt auch nah. Das prüft danach Jev.</dd>
       </dl>
     </template>
+
+    <template id="threshold" data-title="Was heißt ab 0,5?">
+      <div class="scale">
+        <span class="meter wide"><span class="mark"></span></span>
+        <span class="ends"><span>0<br />sicher nicht</span><span>0,5<br />unentschieden</span><span>1<br />sicher ja</span></span>
+      </div>
+      <p class="muted">Jev antwortet mit einer Wahrscheinlichkeit: 0,91 heißt, Jev hält es zu 91 % für wahr, dass der Auszug etwas zur Forderung sagt.</p>
+      <ul class="samples">
+        <li>
+          <span class="quote">„Wir wollen den Mindestlohn auf 15 Euro anheben.“</span>
+          <span class="noul"><span class="meter" style="--value: 0.91"><span class="fill"></span><span class="mark"></span></span><span class="reading"><strong>0,91</strong><span class="kept">bleibt</span></span></span>
+        </li>
+        <li>
+          <span class="quote">„Gute Arbeit braucht starke Tarifverträge.“</span>
+          <span class="noul"><span class="meter" style="--value: 0.18"><span class="fill"></span><span class="mark"></span></span><span class="reading"><strong>0,18</strong><span class="dropped">fällt weg</span></span></span>
+        </li>
+      </ul>
+      <p class="muted">Ab 0,5 hält Jev es für eher passend als nicht. Dann bleibt der Beleg und zählt, je höher, desto mehr.</p>
+    </template>
+
     <template id="programs-data">
       <dl class="facts">
         <dt>Quelle</dt><dd>Die 7 Wahlprogramme zur Bundestagswahl 2025, als PDF</dd>
@@ -201,11 +266,11 @@
     </template>
     <template id="votes-data">
       <dl class="facts">
-        <dt>Quelle</dt><dd>abgeordnetenwatch.de, Lizenz CC0</dd>
-        <dt>Umfang</dt><dd>Alle 234 namentlichen Abstimmungen im 20. und 21. Bundestag. Die meisten Beschlüsse fallen per Handzeichen und werden nicht je Fraktion erfasst.</dd>
-        <dt>Je Abstimmung</dt><dd>Titel, Beschreibung und die Stimmen jeder Fraktion</dd>
+        <dt>Namentlich</dt><dd>234 Abstimmungen im 20. und 21. Bundestag, von abgeordnetenwatch.de (CC0), mit den Stimmen jedes Mitglieds</dd>
+        <dt>Per Handzeichen</dt><dd>420 Abstimmungen seit 2025-03-25, aus den Plenarprotokollen gelesen. Dort steht, welche Fraktion dafür, dagegen oder enthalten war.</dd>
+        <dt>Weggelassen</dt><dd>Abstimmungen über das Verfahren, Wahlen und einstimmige Beschlüsse</dd>
         <dt>Eingebettet</dt><dd>Titel und Beschreibung, 512 Zahlen</dd>
-        <dt>Gebaut von</dt><dd><code>scripts/build_votes.py</code></dd>
+        <dt>Gebaut von</dt><dd><code>scripts/build_votes.py</code> und <code>hand_votes.py</code></dd>
       </dl>
     </template>
     <template id="statements-data">
@@ -224,7 +289,7 @@
     </template>
     <template id="votes-search">
       <dl class="facts">
-        <dt>Sucht</dt><dd>Die 8 Abstimmungen, die deiner Meinung am nächsten sind</dd>
+        <dt>Sucht</dt><dd>Die 12 Abstimmungen, die deiner Meinung am nächsten sind</dd>
       </dl>
     </template>
     <template id="statements-search">

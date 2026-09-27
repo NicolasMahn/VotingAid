@@ -16,9 +16,12 @@ Three databases, all static files built by `scripts/`:
 - `data/programme.json`: the seven programs in `programme/`, split into
   ~1,000-character passages that never cross a page (2,025 passages).
   `build_programs.py`.
-- `data/abstimmungen.json`: the roll-call votes of the 20th and 21st Bundestag (from 2021-11) from
-  the [abgeordnetenwatch.de API](https://www.abgeordnetenwatch.de/api) (CC0),
-  counted per parliamentary group; members without one are left out. `build_votes.py`.
+- `data/abstimmungen.json`: the roll-call votes of the 20th and 21st Bundestag
+  (from 2021-11) from the [abgeordnetenwatch.de API](https://www.abgeordnetenwatch.de/api)
+  (CC0), counted per parliamentary group, plus the votes by show of hands since
+  2025-03-25, read from the plenary protocols, where the chair says which
+  group voted how. Procedural votes, elections and unanimous votes are left out.
+  `build_votes.py`, `hand_votes.py`.
 - `data/aussagen/`: the speeches of the covered parties' members in the Bundestag since 2025-03-25, from the
   [plenary protocols](https://www.bundestag.de/services/opendata), plus pages from
   the websites of the Bundestag fractions and the federal parties.
@@ -77,7 +80,8 @@ embedding the passage's sentences when it is first opened; they are the
 party's own words, not a generated summary.
 
 The three sources are not equally strong. Roll-call votes are a small, contested
-subset of what the Bundestag decides. FDP and BSW have not been in the Bundestag
+subset of what the Bundestag decides; votes by show of hands cover much more,
+but only as each group's stance, and only since 2025-03-25. FDP and BSW have not been in the Bundestag
 since 2025-03-25, so they have no votes since then and appear in statements only
 through their party websites.
 

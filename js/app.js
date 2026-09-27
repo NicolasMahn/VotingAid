@@ -205,11 +205,12 @@ function fillSources(votes) {
     }),
   );
   const dates = votes.items.map((vote) => vote.date).sort();
+  const hands = votes.items.filter((vote) => vote.show_of_hands).length;
   $('votes-meta').replaceChildren(
-    `${votes.items.length} namentliche Abstimmungen von ${dates[0]} bis ${dates.at(-1)}, pro Fraktion ausgezählt. ` +
-      'Quelle: ',
+    `${votes.items.length - hands} namentliche Abstimmungen von ${dates[0]} bis ${dates.at(-1)}, pro Fraktion ausgezählt, von `,
     link('https://www.abgeordnetenwatch.de/api', 'abgeordnetenwatch.de'),
-    ' (Lizenz CC0). FDP und BSW sind seit 2025-03-25 nicht mehr im Bundestag.',
+    ` (Lizenz CC0), und ${hands} Abstimmungen per Handzeichen seit 2025-03-25 aus den Plenarprotokollen, ` +
+      'bei denen nur feststeht, wie jede Fraktion gestimmt hat. FDP und BSW sind seit 2025-03-25 nicht mehr im Bundestag.',
   );
 }
 

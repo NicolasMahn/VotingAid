@@ -177,16 +177,18 @@ export function readPartyAnswers(answers, relevant) {
 const VOTES_HOW_TO_READ =
   'Mit Ja stimmen heißt, für das zu stimmen, was der Titel nennt, unabhängig vom Ergebnis: ' +
   'Beschreibungen berichten oft, dass ein Antrag abgelehnt wurde; das sagt, wie andere abgestimmt ' +
-  'haben, nicht was der Antrag will. Beginnt ein Titel mit „Ablehnung“, heißt ein Ja, den genannten ' +
-  'Antrag abzulehnen.';
+  'haben, nicht was der Antrag will. Beginnt ein Titel mit „Ablehnung“, oder empfiehlt eine ' +
+  'Beschlussempfehlung, einen Antrag abzulehnen, heißt ein Ja, den Antrag abzulehnen.';
 
 const voteState = (topic, opinion, votes) => ({
   person: { thema: topic, meinung: opinion },
   lesehinweis: VOTES_HOW_TO_READ,
-  namentliche_abstimmungen: votes.map(({ id, date, title, description }) => ({
+  abstimmungen: votes.map(({ id, date, title, description, rejects }) => ({
     id,
     datum: date,
-    titel: title,
+    // A vote to reject a motion is shown as the motion; readVoteDirections turns the answer round.
+    titel: rejects ?? title,
+    ...(rejects && { hinweis: 'Abgestimmt wurde über die Empfehlung, diesen Antrag abzulehnen. Beurteile den Antrag selbst.' }),
     beschreibung: description.slice(0, DESCRIPTION_CHARS),
   })),
 });
@@ -197,16 +199,16 @@ export function buildVoteRelevanceRequest(topic, opinion, votes) {
     model: MODEL,
     state: voteState(topic, opinion, votes),
     questions: Object.fromEntries(
-      votes.map(({ id, title }) => [
+      votes.map(({ id, title, rejects }) => [
         id,
         {
           type: 'noul',
           instructions:
-            `Entscheidet die namentliche Abstimmung ${id} („${title}“) etwas über die konkrete Forderung der ` +
-            'Person, dafür oder dagegen? Das zählt nur, wenn die Forderung das ist, worüber hauptsächlich ' +
-            'abgestimmt wird. Nur das weitere Thema zu teilen zählt nicht, ebenso wenig ein Gesetz, das ' +
-            'hauptsächlich anderes regelt. Beurteile nicht, wie die Person abstimmen würde, nur ob es in der ' +
-            'Abstimmung um die Forderung geht.',
+            `Entscheidet die Abstimmung ${id} („${rejects ?? title}“) etwas über die konkrete Forderung der Person, ` +
+            'dafür oder dagegen? Das zählt, wenn die Forderung ihr Gegenstand oder ein zentraler Teil davon ist; ' +
+            'auch ein Antrag, der das Gegenteil fordert, zählt. Nur das weitere Thema zu teilen zählt nicht, ' +
+            'ebenso wenig ein Gesetz, in dem die Forderung nur ein Nebenpunkt ist. Beurteile nicht, wie die ' +
+            'Person abstimmen würde, nur ob es in der Abstimmung um die Forderung geht.',
         },
       ]),
     ),
@@ -226,11 +228,13 @@ export function buildVoteDirectionRequest(topic, opinion, votes) {
     model: MODEL,
     state: voteState(topic, opinion, votes),
     questions: Object.fromEntries(
-      votes.map(({ id, title }) => [
+      votes.map(({ id, title, rejects }) => [
         id,
         {
           type: 'choice',
-          instructions: `Geht ein Ja in der namentlichen Abstimmung ${id} („${title}“) in Richtung dessen, was die Person fordert, oder davon weg?`,
+          instructions: rejects
+            ? `Geht der Antrag in ${id} („${rejects}“) in Richtung dessen, was die Person fordert, oder davon weg?`
+            : `Geht ein Ja in der Abstimmung ${id} („${title}“) in Richtung dessen, was die Person fordert, oder davon weg?`,
           criteria: {
             hin: 'In Richtung: Ein Ja setzt um, was die Person fordert, oder geht in diese Richtung',
             weg: 'Davon weg: Ein Ja bewirkt das Gegenteil dessen, was die Person fordert, oder blockiert es',
@@ -248,9 +252,11 @@ export function buildVoteDirectionRequest(topic, opinion, votes) {
  */
 export function readVoteDirections(relevant, answers) {
   return Object.fromEntries(
-    relevant.map(({ id, relevance }) => {
+    relevant.map(({ id, relevance, rejects }) => {
       const { hin = 0, weg = 0 } = answers[id]?.probabilities ?? {};
-      return [id, { lean: hin + weg ? (hin - weg) / (hin + weg) : 0, clarity: relevance }];
+      const motion = hin + weg ? (hin - weg) / (hin + weg) : 0;
+      // A yes to rejecting a motion goes the other way from the motion.
+      return [id, { lean: rejects ? -motion : motion, clarity: relevance }];
     }),
   );
 }

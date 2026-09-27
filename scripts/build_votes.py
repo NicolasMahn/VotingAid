@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
-"""Turns the Bundestag's roll-call votes into data/abstimmungen.json.
+"""Turns the Bundestag's votes into data/abstimmungen.json.
 
-The votes come from the abgeordnetenwatch.de API (CC0). Only roll-call votes
-("namentliche Abstimmungen") are recorded per member, so this is a small,
-contested subset of everything the Bundestag decides. Each vote is counted per
-party and embedded like a program passage, so the browser can find the votes
-closest to an opinion.
+Roll-call votes ("namentliche Abstimmungen") come from the abgeordnetenwatch.de
+API (CC0), counted per member and fraction. They are a small, contested subset
+of what the Bundestag decides; most decisions are taken by show of hands,
+which hand_votes.py reads from the plenary protocols that build_speeches.py
+downloads (21st Bundestag). Each vote is embedded like a program passage, so
+the browser can find the votes closest to an opinion.
 
 Raw API responses are cached in .cache/, so a rerun only fetches new votes:
 
+    python3 scripts/build_speeches.py   # downloads the protocols
     OPENROUTER_API_KEY=sk-or-... python3 scripts/build_votes.py
 """
 
@@ -23,6 +25,7 @@ from collections import Counter
 from pathlib import Path
 
 from embeddings import index_file
+from hand_votes import show_of_hands
 
 ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / ".cache" / "abgeordnetenwatch"
@@ -101,6 +104,9 @@ def main() -> None:
                 }
             )
 
+    hands = show_of_hands(sorted((ROOT / ".cache" / "bundestag").glob("21*.xml")))
+    print(f"by show of hands: {len(hands)} votes")
+    items += hands
     items.sort(key=lambda item: item["date"], reverse=True)
     out = index_file(items, [f"{item['title']}. {item['description']}" for item in items])
     target = ROOT / "data" / "abstimmungen.json"

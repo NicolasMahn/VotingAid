@@ -9,7 +9,7 @@ export const QUERY_DIMENSIONS = 1024;
 
 export const PASSAGES_PER_PARTY = 4;
 // Jev judges each vote once, whatever the number of parties, so more are affordable.
-export const VOTES_PER_TOPIC = 8;
+export const VOTES_PER_TOPIC = 12;
 
 /** Decodes a data/*.json file into its items plus one vector per item. */
 export function loadIndex(file) {

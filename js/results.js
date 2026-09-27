@@ -204,8 +204,10 @@ function voteItem(topic, vote, party) {
   badge.setAttribute('aria-label', `${party.short} stimmte ${label}`);
   const text = element('div');
   const yours = topic.voteDirections[vote.id].lean > 0 ? 'dafür' : 'dagegen';
-  const meta = element('p', 'vote-meta', `Du ${yours} · ${party.short} ${position.stance} · ${vote.date}`);
-  meta.title = describePosition(position);
+  // Votes by show of hands record each fraction's stance, not its members' votes.
+  const how = vote.show_of_hands ? 'per Handzeichen' : describePosition(position);
+  const meta = element('p', 'vote-meta', `Du ${yours} · ${party.short} ${position.stance} · ${vote.date}${vote.show_of_hands ? ' · per Handzeichen' : ''}`);
+  meta.title = how;
   text.append(sourceLink(vote.url, vote.title), meta);
   item.append(badge, text);
   return item;

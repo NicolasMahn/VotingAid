@@ -96,6 +96,14 @@ test('only votes that decide the demand count, and parties that voted alike scor
   assert.equal(readings.fdp, null);
 });
 
+test('a yes to rejecting a motion counts against what the motion wants', () => {
+  const rejecting = { ...vote('hand-1', {}), rejects: 'Sanktionen stoppen', relevance: 0.9 };
+  const request = buildVoteDirectionRequest('Grundsicherung', 'Mehr Sanktionen.', [rejecting]);
+  assert.match(request.questions['hand-1'].instructions, /Antrag .*Sanktionen stoppen/);
+  const person = readVoteDirections([rejecting], { 'hand-1': { probabilities: { hin: 0.1, weg: 0.9 } } });
+  assert.equal(person['hand-1'].lean, 0.8);
+});
+
 test('sources are averaged by their weight, and silent or switched-off sources do not count', () => {
   const weights = { program: 1, votes: 2, statements: 1 };
   assert.equal(combinedScore({ program: 1, votes: -0.5, statements: null }, weights), 0);
