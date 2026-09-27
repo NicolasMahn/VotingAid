@@ -66,6 +66,10 @@ h1 {
   gap: 0.35rem;
 }
 
+.per-legend {
+  margin-top: 0.5rem;
+}
+
 .legend .sep {
   width: 1px;
   height: 1rem;
@@ -370,14 +374,35 @@ h1 {
   border-radius: 50%;
 }
 
-/* Runs once per item, like BPMN's multi-instance marker. */
-.loop {
-  color: var(--ink-muted);
-  font-size: 0.8rem;
+/* What a step runs once for, in the card's corner, like BPMN's multi-instance marker. */
+.card {
+  position: relative;
 }
 
-.legend .loop {
-  font-weight: 700;
+.per {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.8rem;
+  display: flex;
+  gap: 0.2rem;
+  color: var(--ink-muted);
+}
+
+.per svg,
+.per-icon {
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.defs {
+  position: absolute;
+  width: 0;
+  height: 0;
 }
 
 .chips {
@@ -852,9 +877,13 @@ dialog::backdrop {
   }
 
   .lanes .card small,
-  .lanes .loop,
   .gateway .term {
     display: none;
+  }
+
+  /* Narrow cards have no room beside the chip. */
+  .lanes .per {
+    position: static;
   }
 
   .lanes .chips .chip.voyage {

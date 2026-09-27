@@ -37,7 +37,13 @@
         <li><span class="stop"></span>Ende</li>
         <li><span class="mini task"></span>Aufgabe</li>
         <li><span class="mini gateway"></span>Entscheidung</li>
-        <li><span class="loop">≡</span>je Element</li>
+      </ul>
+      <ul class="legend per-legend" aria-label="Was ein Schritt einmal je … macht">
+        <li>Läuft einmal je</li>
+        <li><svg class="per-icon"><use href="#i-party" /></svg>Partei</li>
+        <li><svg class="per-icon"><use href="#i-excerpt" /></svg>Abschnitt</li>
+        <li><svg class="per-icon"><use href="#i-vote" /></svg>Abstimmung</li>
+        <li><svg class="per-icon"><use href="#i-statement" /></svg>Aussage</li>
       </ul>
     </header>
 
@@ -80,17 +86,16 @@
         <button class="card code" type="button" data-panel="programs-search">
           <span class="chip code">Code</span>
           <strong>Nächste Abschnitte</strong>
-          <span class="loop">≡ 4 je Partei</span>
+          <span class="per" title="läuft einmal je Partei" aria-label="läuft einmal je Partei"><svg><use href="#i-party" /></svg></span>
         </button>
         <button class="card code" type="button" data-panel="votes-search">
           <span class="chip code">Code</span>
           <strong>Nächste Abstimmungen</strong>
-          <span class="loop">≡ 12 insgesamt</span>
         </button>
         <button class="card code" type="button" data-panel="statements-search">
           <span class="chip code">Code</span>
           <strong>Nächste Aussagen</strong>
-          <span class="loop">≡ 3 je Partei</span>
+          <span class="per" title="läuft einmal je Partei" aria-label="läuft einmal je Partei"><svg><use href="#i-party" /></svg></span>
         </button>
 
         <div class="link"></div><div class="link"></div><div class="link"></div>
@@ -98,17 +103,17 @@
         <button class="card jev" type="button" data-panel="program-relevance">
           <span class="chip jev">Jev · Schritt 1</span>
           <strong>Sagt der Abschnitt etwas zur Forderung?</strong>
-          <span class="loop">≡ je Abschnitt</span>
+          <span class="per" title="läuft einmal je Partei und Abschnitt" aria-label="läuft einmal je Partei und Abschnitt"><svg><use href="#i-party" /></svg><svg><use href="#i-excerpt" /></svg></span>
         </button>
         <button class="card jev" type="button" data-panel="vote-relevance">
           <span class="chip jev">Jev · Schritt 1</span>
           <strong>Geht es in der Abstimmung um die Forderung?</strong>
-          <span class="loop">≡ je Abstimmung</span>
+          <span class="per" title="läuft einmal je Abstimmung" aria-label="läuft einmal je Abstimmung"><svg><use href="#i-vote" /></svg></span>
         </button>
         <button class="card jev" type="button" data-panel="statements-relevance">
           <span class="chip jev">Jev · Schritt 1</span>
           <strong>Sagt die Aussage etwas zur Forderung?</strong>
-          <span class="loop">≡ je Aussage</span>
+          <span class="per" title="läuft einmal je Partei und Aussage" aria-label="läuft einmal je Partei und Aussage"><svg><use href="#i-party" /></svg><svg><use href="#i-statement" /></svg></span>
         </button>
 
         <div class="link to-gateway"></div><div class="link to-gateway"></div><div class="link to-gateway"></div>
@@ -122,17 +127,17 @@
         <button class="card jev" type="button" data-panel="program-match">
           <span class="chip jev">Jev · Schritt 2</span>
           <strong>Wo steht die Partei zur Forderung?</strong>
-          <span class="loop">≡ je Partei mit passendem Abschnitt</span>
+          <span class="per" title="läuft einmal je Partei" aria-label="läuft einmal je Partei"><svg><use href="#i-party" /></svg></span>
         </button>
         <button class="card jev" type="button" data-panel="vote-direction">
           <span class="chip jev">Jev · Schritt 2</span>
           <strong>Wohin führt ein Ja: zur Forderung hin oder weg?</strong>
-          <span class="loop">≡ je passende Abstimmung</span>
+          <span class="per" title="läuft einmal je Abstimmung" aria-label="läuft einmal je Abstimmung"><svg><use href="#i-vote" /></svg></span>
         </button>
         <button class="card jev" type="button" data-panel="statements-match">
           <span class="chip jev">Jev · Schritt 2</span>
           <strong>Wo steht die Partei zur Forderung?</strong>
-          <span class="loop">≡ je Partei mit passender Aussage</span>
+          <span class="per" title="läuft einmal je Partei" aria-label="läuft einmal je Partei"><svg><use href="#i-party" /></svg></span>
         </button>
 
         <div class="link"></div><div class="link"></div><div class="link"></div>
@@ -141,18 +146,18 @@
           <span class="chip jev">Jev · Schritt 3</span>
           <strong>Zitat auswählen</strong>
           <small>den Abschnitt, der die Position am klarsten zeigt</small>
-          <span class="loop">≡ je Partei mit mehreren passenden Abschnitten</span>
+          <span class="per" title="läuft einmal je Partei" aria-label="läuft einmal je Partei"><svg><use href="#i-party" /></svg></span>
         </button>
         <button class="card code" type="button" data-panel="votes-compare">
           <span class="chip code">Code</span>
           <strong>Mit den Fraktionen vergleichen</strong>
-          <span class="loop">≡ je Fraktion</span>
+          <span class="per" title="läuft einmal je Partei und Abstimmung" aria-label="läuft einmal je Partei und Abstimmung"><svg><use href="#i-party" /></svg><svg><use href="#i-vote" /></svg></span>
         </button>
         <button class="card jev" type="button" data-panel="statements-source">
           <span class="chip jev">Jev · Schritt 3</span>
           <strong>Zitat auswählen</strong>
           <small>die Aussage, die die Position am klarsten zeigt</small>
-          <span class="loop">≡ je Partei mit mehreren passenden Aussagen</span>
+          <span class="per" title="läuft einmal je Partei" aria-label="läuft einmal je Partei"><svg><use href="#i-party" /></svg></span>
         </button>
       </div>
 
@@ -161,6 +166,7 @@
         <span class="chip code">Code</span>
         <strong>Werte zusammenführen</strong>
         <small>über alle Themen, nach deiner Gewichtung</small>
+        <span class="per" title="läuft einmal je Partei" aria-label="läuft einmal je Partei"><svg><use href="#i-party" /></svg></span>
       </button>
       <div class="link"></div>
       <div class="event person end">
@@ -168,6 +174,14 @@
         Rangliste mit Belegen
       </div>
     </main>
+
+    <!-- What a step runs once for. Drawn with the text color, so they suit both themes. -->
+    <svg class="defs" aria-hidden="true">
+      <symbol id="i-party" viewBox="0 0 16 16"><circle cx="5.5" cy="5" r="2.2" /><circle cx="11" cy="5.5" r="1.8" /><path d="M1.5 13.5c0-2.5 1.8-4.2 4-4.2s4 1.7 4 4.2M9.8 9.6c.4-.1.8-.2 1.2-.2 1.9 0 3.4 1.5 3.4 3.8" /></symbol>
+      <symbol id="i-excerpt" viewBox="0 0 16 16"><path d="M4 1.8h5.5L12.5 5v9.2H4z" /><path d="M6 7.5h4.5M6 10h4.5M6 12.3h3" /></symbol>
+      <symbol id="i-vote" viewBox="0 0 16 16"><path d="M2.5 8.5h11v5.5h-11zM5.5 8.5l1-6h3l1 6" /><path d="M5 11.2h6" /></symbol>
+      <symbol id="i-statement" viewBox="0 0 16 16"><path d="M2 3h12v8H7.5L4.5 13.8V11H2z" /></symbol>
+    </svg>
 
     <dialog id="panel" aria-labelledby="panel-title">
       <div class="panel-head">
