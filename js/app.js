@@ -1,7 +1,15 @@
 import { askJev, findApiKey, isApiKey, rememberApiKey } from './jev.js';
 import { VOTES_PER_TOPIC, closest, closestPassages, embedOpinion, loadIndex, shorten } from './retrieval.js';
 import { DOCS_PER_PARTY, closestDocuments, closestPassage, loadDocuments, loadStatements } from './statements.js';
-import { buildProgramRequest, buildStatementsRequest, buildVotesRequest, readPartyAnswers, readPersonVotes } from './analysis.js';
+import {
+  buildMatchRequest,
+  buildRelevanceRequest,
+  buildVotesRequest,
+  evidenceOf,
+  readPartyAnswers,
+  readPersonVotes,
+  relevantEvidence,
+} from './analysis.js';
 import { PARTIES, programUrl } from './parties.js';
 import { element, link, showAnalysis } from './results.js';
 import { SUGGESTIONS } from './suggestions.js';
@@ -86,23 +94,33 @@ async function closestStatements(statements, query) {
   );
 }
 
+/** Where each party stands in one source: first which items are to the point, then only those are judged. */
+async function judge(apiKey, source, topic, opinion, found) {
+  const evidence = evidenceOf(source, found);
+  const relevance = await askJev(apiKey, buildRelevanceRequest(source, topic, opinion, evidence));
+  const relevant = relevantEvidence(evidence, relevance.answers);
+  if (!Object.values(relevant).some((items) => items.length)) return readPartyAnswers({}, relevant);
+  const { answers } = await askJev(apiKey, buildMatchRequest(source, topic, opinion, relevant));
+  return readPartyAnswers(answers, relevant);
+}
+
 async function analyseTopic(apiKey, { programs, votes, statements }, { topic, opinion }) {
   const query = await embedOpinion(apiKey, topic, opinion);
   const passages = closestPassages(programs, shorten(query, programs));
   const closeVotes = closest(votes.items, shorten(query, votes), VOTES_PER_TOPIC);
   const found = await closestStatements(statements, query);
-  const [programAnswers, voteAnswers, statementAnswers] = await Promise.all([
-    askJev(apiKey, buildProgramRequest(topic, opinion, passages)),
+  const [programReadings, voteAnswers, statementReadings] = await Promise.all([
+    judge(apiKey, 'program', topic, opinion, passages),
     askJev(apiKey, buildVotesRequest(topic, opinion, closeVotes)),
-    askJev(apiKey, buildStatementsRequest(topic, opinion, found)),
+    judge(apiKey, 'statements', topic, opinion, found),
   ]);
   return {
     topic: topic || opinion,
-    // Corrections to how the person would vote are kept per opinion.
+    // Key sentences are cached per opinion.
     key: `${topic}: ${opinion}`,
     query,
-    program: readPartyAnswers(programAnswers.answers),
-    statements: readPartyAnswers(statementAnswers.answers),
+    program: programReadings,
+    statements: statementReadings,
     jevVotes: readPersonVotes(voteAnswers.answers),
     closeVotes,
     found: Object.values(found).flat(),

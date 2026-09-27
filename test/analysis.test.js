@@ -1,15 +1,18 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  buildProgramRequest,
+  buildMatchRequest,
+  buildRelevanceRequest,
   buildVotesRequest,
   combinedScore,
   diverges,
   levelOf,
   overallScore,
+  evidenceOf,
   readPartyAnswers,
   readPersonVotes,
   readVotes,
+  relevantEvidence,
 } from '../js/analysis.js';
 import { closestPassages, loadIndex } from '../js/retrieval.js';
 import { leanOf, positionOf } from '../js/votes.js';
@@ -27,23 +30,38 @@ test('clearly addressed topics weigh more than vaguely addressed ones', () => {
   assert.equal(overallScore([{ score: 1, covered: 1 }, { score: -1, covered: 0.5 }]), 1 / 3);
 });
 
-test('every party gets a match, coverage and source question about its program', () => {
-  const passages = Object.fromEntries(PARTIES.map(({ id }) => [id, [{ id: `${id}-0`, page: 1, text: 'x' }]]));
-  const { questions } = buildProgramRequest('Rente', 'Die Rente soll steigen.', passages);
-  assert.equal(Object.keys(questions).length, PARTIES.length * 3);
-  assert.deepEqual(Object.keys(questions.spd_source.criteria), ['spd-0']);
+const passages = Object.fromEntries(
+  PARTIES.map(({ id }) => [id, [{ id: `${id}-0`, page: 1, text: 'x' }, { id: `${id}-1`, page: 2, text: 'y' }]]),
+);
+
+test('first, every program excerpt is checked on its own for whether it addresses the demand', () => {
+  const { questions } = buildRelevanceRequest('program', 'Rente', 'Die Rente soll steigen.', evidenceOf('program', passages));
+  assert.equal(Object.keys(questions).length, PARTIES.length * 2);
+  assert.equal(questions['spd-0'].type, 'noul');
 });
 
-test('answers are read back per party on a scale from -1 to 1, and absent parties read as null', () => {
+test('only excerpts that address the demand are judged, and parties without any are not asked about', () => {
+  const relevant = relevantEvidence(evidenceOf('program', passages), {
+    'spd-0': { noul: 0.9 },
+    'spd-1': { noul: 0.2 },
+    'afd-0': { noul: 0.7 },
+    'afd-1': { noul: 0.6 },
+  });
+  const { state, questions } = buildMatchRequest('program', 'Rente', 'Die Rente soll steigen.', relevant);
+  assert.deepEqual(state.items.SPD.map(({ id }) => id), ['spd-0']);
+  // One item needs no choice of source.
+  assert.deepEqual(Object.keys(questions).sort(), ['afd_match', 'afd_source', 'spd_match']);
+
   const answers = {
-    fdp_match: { score: 3, legend: { 0: '', 1: '', 2: '', 3: '', 4: '' } },
-    fdp_covered: { noul: 0.8 },
-    fdp_source: { probabilities: { a: 0.3, b: 0.7 } },
+    spd_match: { score: 3, legend: { 0: '', 1: '', 2: '', 3: '', 4: '' } },
+    afd_match: { score: 0, legend: { 0: '', 1: '', 2: '', 3: '', 4: '' } },
+    afd_source: { probabilities: { 'afd-0': 0.3, 'afd-1': 0.7 } },
   };
-  const readings = readPartyAnswers(answers);
-  assert.deepEqual(readings.fdp, { score: 0.5, covered: 0.8, sources: ['b'] });
-  assert.equal(levelOf(readings.fdp.score), 3);
-  assert.equal(readings.spd, null);
+  const readings = readPartyAnswers(answers, relevant);
+  assert.deepEqual(readings.spd, { score: 0.5, covered: 0.9, sources: ['spd-0'] });
+  assert.deepEqual(readings.afd, { score: -1, covered: 0.7, sources: ['afd-1'] });
+  assert.equal(levelOf(readings.spd.score), 3);
+  assert.equal(readings.fdp, null);
 });
 
 const vote = (id, results) => ({ id, date: '2025-06-01', title: id, description: 'x', accepted: true, results });

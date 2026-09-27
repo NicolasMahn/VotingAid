@@ -37,64 +37,11 @@ const DIVERGENCE = 1;
 // Vote descriptions are written for the web and can run long.
 const DESCRIPTION_CHARS = 1200;
 
-const capitalised = (text) => text[0].toUpperCase() + text.slice(1);
-
-// For programs and statements, Jev answers three narrow questions per party:
-// where the material places it, whether it addresses the demand at all, and
-// which item shows it best. Keys are namespaced by party (`spd_match`) so
-// readPartyAnswers can split them back out.
-function partyQuestions(short, evidence, candidates, coverage) {
-  return {
-    match: {
-      type: 'score',
-      instructions:
-        `Where does ${short} stand on what the person demands, judging by ${evidence}? ` +
-        'Compare with the concrete demand, not the wider topic: a party that wants to restrict ' +
-        'what the person wants to expand contradicts them, while a party that wants to go further ' +
-        'in the same direction, or criticises a measure as too weak, agrees. Judge only the material provided, ' +
-        'not what you know about the party. If it does not address the demand, choose the ' +
-        'middle level; a separate question records that.',
-      criteria: LEVEL_MEANINGS,
-    },
-    covered: {
-      type: 'noul',
-      instructions: capitalised(coverage(short, evidence)),
-    },
-    source: {
-      type: 'choice',
-      instructions: `Which item best shows where ${short} stands on what the person demands?`,
-      criteria: Object.fromEntries(candidates.map((id) => [id, null])),
-    },
-  };
-}
-
-function questionsFor(evidenceOf, candidatesOf, coverage) {
-  const questions = {};
-  for (const { id, short } of PARTIES) {
-    const candidates = candidatesOf(id);
-    if (!candidates.length) continue;
-    for (const [key, question] of Object.entries(partyQuestions(short, evidenceOf(short), candidates, coverage))) {
-      questions[`${id}_${key}`] = question;
-    }
-  }
-  return questions;
-}
-
-/** The opinion plus the closest program passages of every party. */
-export function buildProgramRequest(topic, opinion, passagesByParty) {
-  const programs = Object.fromEntries(
-    PARTIES.map(({ id, short }) => [short, passagesByParty[id].map(({ id: key, page, text }) => ({ id: key, page, text }))]),
-  );
-  return {
-    model: MODEL,
-    state: { person: { topic, opinion }, party_programs: programs },
-    questions: questionsFor(
-      (short) => `the program of ${short}, judged from its excerpts`,
-      (party) => passagesByParty[party].map((passage) => passage.id),
-      (short, evidence) => `${evidence} takes a clear position on the person's specific demand, not just on the wider topic.`,
-    ),
-  };
-}
+// Programs and statements are judged in two steps. First Jev checks, item by
+// item and without judging agreement, whether an excerpt says anything about
+// the person's specific demand. Only the excerpts that do are then shown to
+// Jev to place the party. Judging agreement on excerpts that merely share the
+// topic gave confident scores for parties that had said nothing to the point.
 
 export const STATEMENT_KINDS = {
   rede: 'Rede im Bundestag',
@@ -102,43 +49,99 @@ export const STATEMENT_KINDS = {
   partei: 'Website der Bundespartei',
 };
 
-/**
- * The opinion plus, per party, the closest passages from speeches and the
- * fraction's and party's websites. `statementsByParty` maps party ids to
- * `{ doc, passage }` pairs.
- */
-export function buildStatementsRequest(topic, opinion, statementsByParty) {
-  const statements = Object.fromEntries(
-    PARTIES.map(({ id, short }) => [
-      short,
-      (statementsByParty[id] ?? []).map(({ doc, passage }) => ({
-        id: doc.id,
-        kind: STATEMENT_KINDS[doc.kind],
-        speaker: [doc.speaker, doc.role].filter(Boolean).join(', ') || null,
-        date: doc.date,
-        context: doc.title,
-        text: passage,
-      })),
-    ]),
-  );
+// Each source as items per party id, in the shape Jev sees them.
+const SOURCES = {
+  program: {
+    items: (passagesByParty) =>
+      mapParties((id) => (passagesByParty[id] ?? []).map(({ id: key, page, text }) => ({ id: key, page, text }))),
+    evidence: (short) => `the program of ${short}, judged from its excerpts`,
+    howToRead: 'Excerpts from each party\'s program for the Bundestagswahl 2025.',
+  },
+  statements: {
+    items: (statementsByParty) =>
+      mapParties((id) =>
+        (statementsByParty[id] ?? []).map(({ doc, passage }) => ({
+          id: doc.id,
+          kind: STATEMENT_KINDS[doc.kind],
+          speaker: [doc.speaker, doc.role].filter(Boolean).join(', ') || null,
+          date: doc.date,
+          context: doc.title,
+          text: passage,
+        })),
+      ),
+    evidence: (short) => `what politicians and official channels of ${short} have said in these statements`,
+    howToRead:
+      'Statements by individual politicians do not always match the party line. ' +
+      'Speeches often argue against another party; judge what the speaker wants, not what they attack.',
+  },
+};
+
+const mapParties = (itemsOf) => Object.fromEntries(PARTIES.map(({ id }) => [id, itemsOf(id)]));
+const byShortName = (itemsByParty) => Object.fromEntries(PARTIES.map(({ id, short }) => [short, itemsByParty[id] ?? []]));
+
+/** The source's items for Jev, per party id. `source` is 'program' or 'statements'. */
+export const evidenceOf = (source, found) => SOURCES[source].items(found);
+
+/** Step one: per item, whether it addresses the person's specific demand at all. */
+export function buildRelevanceRequest(source, topic, opinion, evidence) {
+  const questions = {};
+  for (const { id, short } of PARTIES) {
+    for (const item of evidence[id]) {
+      questions[item.id] = {
+        type: 'noul',
+        instructions:
+          `Does item ${item.id} say what ${short} wants on the person's specific demand: for it, against it, ` +
+          'or another way to the same end? Rejecting the opposite view counts. Sharing the wider topic ' +
+          'does not, nor does a question or a remark in passing. Do not judge whether the party agrees ' +
+          'with the person, only whether the item speaks to the demand.',
+      };
+    }
+  }
   return {
     model: MODEL,
-    state: {
-      person: { topic, opinion },
-      how_to_read:
-        'Statements by individual politicians do not always match the party line. ' +
-        'Speeches often argue against another party; judge what the speaker wants, not what they attack.',
-      statements,
-    },
-    questions: questionsFor(
-      (short) => `what politicians and official channels of ${short} have said in these statements`,
-      (party) => (statementsByParty[party] ?? []).map(({ doc }) => doc.id),
-      // Speeches often state a position by rebutting the other side rather than directly.
-      (short, evidence) =>
-        `${evidence} makes clear where ${short} stands on the person's specific demand, ` +
-        'either directly or by rejecting the opposite view. A question or remark that only ' +
-        'touches the topic does not count.',
-    ),
+    state: { person: { topic, opinion }, how_to_read: SOURCES[source].howToRead, items: byShortName(evidence) },
+    questions,
+  };
+}
+
+/** The items that address the demand, per party id, each with its `relevance`. */
+export function relevantEvidence(evidence, answers) {
+  return mapParties((id) =>
+    evidence[id]
+      .map((item) => ({ ...item, relevance: answers[item.id]?.noul ?? 0 }))
+      .filter(({ relevance }) => relevance >= COVERED),
+  );
+}
+
+/** Step two: where each party stands, judged only from its relevant items. */
+export function buildMatchRequest(source, topic, opinion, relevant) {
+  const questions = {};
+  for (const { id, short } of PARTIES) {
+    const items = relevant[id];
+    if (!items.length) continue;
+    questions[`${id}_match`] = {
+      type: 'score',
+      instructions:
+        `Where does ${short} stand on what the person demands, judging by ${SOURCES[source].evidence(short)}? ` +
+        'Compare with the concrete demand, not the wider topic: a party that wants to restrict ' +
+        'what the person wants to expand contradicts them, while a party that wants to go further ' +
+        'in the same direction, or criticises a measure as too weak, agrees. Judge only the material ' +
+        'provided, not what you know about the party.',
+      criteria: LEVEL_MEANINGS,
+    };
+    if (items.length > 1) {
+      questions[`${id}_source`] = {
+        type: 'choice',
+        instructions: `Which item best shows where ${short} stands on what the person demands?`,
+        criteria: Object.fromEntries(items.map((item) => [item.id, null])),
+      };
+    }
+  }
+  const items = byShortName(mapParties((id) => relevant[id].map(({ relevance, ...item }) => item)));
+  return {
+    model: MODEL,
+    state: { person: { topic, opinion }, how_to_read: SOURCES[source].howToRead, items },
+    questions,
   };
 }
 
@@ -147,24 +150,21 @@ const likeliest = (probabilities) =>
 
 /**
  * Per party: `{ score: -1–1, covered: 0–1, sources: [item id] }`, or null
- * when the party had no material to judge.
+ * when none of its items addressed the demand. Covered is how clearly its
+ * most relevant item does.
  */
-export function readPartyAnswers(answers) {
-  return Object.fromEntries(
-    PARTIES.map(({ id }) => {
-      const match = answers[`${id}_match`];
-      if (!match) return [id, null];
-      const topLevel = Object.keys(match.legend).length - 1;
-      return [
-        id,
-        {
-          score: (2 * match.score) / topLevel - 1,
-          covered: answers[`${id}_covered`].noul,
-          sources: [likeliest(answers[`${id}_source`].probabilities)],
-        },
-      ];
-    }),
-  );
+export function readPartyAnswers(answers, relevant) {
+  return mapParties((id) => {
+    const match = answers[`${id}_match`];
+    if (!match || !relevant[id].length) return null;
+    const topLevel = Object.keys(match.legend).length - 1;
+    const source = answers[`${id}_source`];
+    return {
+      score: (2 * match.score) / topLevel - 1,
+      covered: Math.max(...relevant[id].map(({ relevance }) => relevance)),
+      sources: [source ? likeliest(source.probabilities) : relevant[id][0].id],
+    };
+  });
 }
 
 /**

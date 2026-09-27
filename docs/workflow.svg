@@ -1,0 +1,183 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1330" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="15">
+  <!-- Voting Aid: how an opinion becomes a score. Kept in docs/ to discuss and improve the pipeline. -->
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#55595f" />
+    </marker>
+    <style>
+      .title { font-size: 26px; font-weight: 800; fill: #1b1d22; }
+      .band { font-size: 17px; font-weight: 700; fill: #1b1d22; }
+      .head { font-weight: 700; fill: #1b1d22; }
+      .text { fill: #33363c; }
+      .small { font-size: 13px; fill: #6b6f78; }
+      .data { fill: #f4efe4; stroke: #b9ae97; }
+      .search { fill: #e6effc; stroke: #7c9fd8; }
+      .jev { fill: #efe7fb; stroke: #8a63d2; stroke-width: 2; }
+      .code { fill: #eceef1; stroke: #9aa0a8; }
+      .result { fill: #e3f3e6; stroke: #5b9a5f; }
+      rect { stroke-width: 1.3; }
+      .line { stroke: #55595f; stroke-width: 1.6; fill: none; }
+      .dashed { stroke: #9aa0a8; stroke-width: 1.4; fill: none; stroke-dasharray: 5 5; }
+      .bandbox { fill: none; stroke: #d9d6ce; stroke-width: 1.5; stroke-dasharray: 2 6; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="1330" fill="#ffffff" stroke="none" />
+  <text class="title" x="40" y="48">Voting Aid: von der Meinung zum Wert</text>
+
+  <!-- Legend -->
+  <g transform="translate(700 26)">
+    <rect class="data" x="0" y="0" width="18" height="18" rx="4" /><text class="small" x="24" y="14">Daten</text>
+    <rect class="search" x="80" y="0" width="18" height="18" rx="4" /><text class="small" x="104" y="14">Suche</text>
+    <rect class="jev" x="160" y="0" width="18" height="18" rx="4" /><text class="small" x="184" y="14">Jev</text>
+    <rect class="code" x="222" y="0" width="18" height="18" rx="4" /><text class="small" x="246" y="14">Code</text>
+    <rect class="result" x="296" y="0" width="18" height="18" rx="4" /><text class="small" x="320" y="14">Ergebnis</text>
+  </g>
+
+  <!-- ============ Offline: the databases ============ -->
+  <rect class="bandbox" x="20" y="74" width="1160" height="252" rx="14" />
+  <text class="band" x="40" y="102">Datenbasis, vorab gebaut (scripts/)</text>
+
+  <g>
+    <rect class="data" x="60" y="118" width="320" height="58" rx="10" />
+    <text x="220" y="143" text-anchor="middle" class="head">Wahlprogramme 2025</text>
+    <text x="220" y="163" text-anchor="middle" class="small">7 PDFs, pdftotext</text>
+
+    <rect class="data" x="440" y="118" width="320" height="58" rx="10" />
+    <text x="600" y="143" text-anchor="middle" class="head">Namentliche Abstimmungen</text>
+    <text x="600" y="163" text-anchor="middle" class="small">abgeordnetenwatch.de API, CC0</text>
+
+    <rect class="data" x="820" y="118" width="320" height="58" rx="10" />
+    <text x="980" y="143" text-anchor="middle" class="head">Reden und Websites</text>
+    <text x="980" y="163" text-anchor="middle" class="small">Plenarprotokolle, Fraktionen, Bundesparteien</text>
+
+    <path class="line" d="M220 176v34" marker-end="url(#arrow)" />
+    <path class="line" d="M600 176v34" marker-end="url(#arrow)" />
+    <path class="line" d="M980 176v34" marker-end="url(#arrow)" />
+
+    <rect class="search" x="60" y="212" width="320" height="94" rx="10" />
+    <text x="220" y="238" text-anchor="middle" class="head">2.025 Abschnitte</text>
+    <text x="220" y="260" text-anchor="middle" class="text">~1.000 Zeichen, nie über Seiten</text>
+    <text x="220" y="282" text-anchor="middle" class="small">voyage-4-large, 512 dim, int8</text>
+
+    <rect class="search" x="440" y="212" width="320" height="94" rx="10" />
+    <text x="600" y="238" text-anchor="middle" class="head">230 Abstimmungen</text>
+    <text x="600" y="260" text-anchor="middle" class="text">Stimmen je Fraktion gezählt</text>
+    <text x="600" y="282" text-anchor="middle" class="small">Titel + Beschreibung, 512 dim, int8</text>
+
+    <rect class="search" x="820" y="212" width="320" height="94" rx="10" />
+    <text x="980" y="238" text-anchor="middle" class="head">17.063 Dokumente</text>
+    <text x="980" y="260" text-anchor="middle" class="text">Binärindex 1.024 bit je Dokument</text>
+    <text x="980" y="282" text-anchor="middle" class="small">+ 256 dim je Absatz, in Shards</text>
+  </g>
+
+  <!-- ============ Per topic, in the browser ============ -->
+  <rect class="bandbox" x="20" y="346" width="1160" height="964" rx="14" />
+  <text class="band" x="40" y="374">Pro Thema, im Browser</text>
+
+  <rect class="data" x="420" y="390" width="360" height="58" rx="10" />
+  <text x="600" y="415" text-anchor="middle" class="head">Thema + Meinung</text>
+  <text x="600" y="435" text-anchor="middle" class="small">„Der Mindestlohn soll auf 15 Euro steigen.“</text>
+  <path class="line" d="M600 448v28" marker-end="url(#arrow)" />
+
+  <rect class="search" x="420" y="476" width="360" height="72" rx="10" />
+  <text x="600" y="500" text-anchor="middle" class="head">Suchvektor</text>
+  <text x="600" y="520" text-anchor="middle" class="text">Mittel aus Embedding(Thema)</text>
+  <text x="600" y="539" text-anchor="middle" class="text">und Embedding(Thema: Meinung)</text>
+  <path class="line" d="M600 548v8H220v22" marker-end="url(#arrow)" />
+  <path class="line" d="M600 548v30" marker-end="url(#arrow)" />
+  <path class="line" d="M600 548v8H980v22" marker-end="url(#arrow)" />
+
+  <!-- Index lines from the databases -->
+  <path class="dashed" d="M52 259H40V620h18" marker-end="url(#arrow)" />
+  <path class="dashed" d="M768 259H800V620h-32" marker-end="url(#arrow)" />
+  <path class="dashed" d="M1148 259H1165V620h-23" marker-end="url(#arrow)" />
+
+  <!-- Retrieval -->
+  <rect class="search" x="60" y="580" width="320" height="80" rx="10" />
+  <text x="220" y="606" text-anchor="middle" class="head">Nächste Abschnitte</text>
+  <text x="220" y="628" text-anchor="middle" class="text">4 je Partei, Kosinus</text>
+
+  <rect class="search" x="440" y="580" width="320" height="80" rx="10" />
+  <text x="600" y="606" text-anchor="middle" class="head">Nächste Abstimmungen</text>
+  <text x="600" y="628" text-anchor="middle" class="text">8 insgesamt, Kosinus</text>
+
+  <rect class="search" x="820" y="580" width="320" height="80" rx="10" />
+  <text x="980" y="606" text-anchor="middle" class="head">Nächste Aussagen</text>
+  <text x="980" y="628" text-anchor="middle" class="text">8 je Partei per Hamming,</text>
+  <text x="980" y="648" text-anchor="middle" class="text">3 beste nach nächstem Absatz</text>
+
+  <path class="line" d="M220 660v24" marker-end="url(#arrow)" />
+  <path class="line" d="M600 660v24" marker-end="url(#arrow)" />
+  <path class="line" d="M980 660v24" marker-end="url(#arrow)" />
+
+  <!-- Jev, step one -->
+  <rect class="jev" x="60" y="686" width="320" height="96" rx="10" />
+  <text x="220" y="712" text-anchor="middle" class="head">Jev 1: passt der Abschnitt?</text>
+  <text x="220" y="734" text-anchor="middle" class="text">je Abschnitt, neutral: sagt er etwas</text>
+  <text x="220" y="754" text-anchor="middle" class="text">zur konkreten Forderung?</text>
+  <text x="220" y="772" text-anchor="middle" class="small">noul, Zustimmung wird nicht bewertet</text>
+
+  <rect class="jev" x="440" y="686" width="320" height="96" rx="10" />
+  <text x="600" y="712" text-anchor="middle" class="head">Jev: wie würdest du abstimmen?</text>
+  <text x="600" y="734" text-anchor="middle" class="text">je Abstimmung, ohne die Parteien:</text>
+  <text x="600" y="754" text-anchor="middle" class="text">dafür · dagegen · am Rande · nichts</text>
+  <text x="600" y="772" text-anchor="middle" class="small">choice mit Wahrscheinlichkeiten</text>
+
+  <rect class="jev" x="820" y="686" width="320" height="96" rx="10" />
+  <text x="980" y="712" text-anchor="middle" class="head">Jev 1: passt die Aussage?</text>
+  <text x="980" y="734" text-anchor="middle" class="text">je Aussage, neutral: sagt sie etwas</text>
+  <text x="980" y="754" text-anchor="middle" class="text">zur konkreten Forderung?</text>
+  <text x="980" y="772" text-anchor="middle" class="small">noul, Zustimmung wird nicht bewertet</text>
+
+  <path class="line" d="M220 782v34" marker-end="url(#arrow)" />
+  <text x="232" y="804" class="small">nur ≥ 0,5; sonst schweigt die Partei</text>
+  <path class="line" d="M600 782v34" marker-end="url(#arrow)" />
+  <text x="612" y="804" class="small">nur dafür + dagegen ≥ 0,5</text>
+  <path class="line" d="M980 782v34" marker-end="url(#arrow)" />
+  <text x="992" y="804" class="small">nur ≥ 0,5</text>
+
+  <!-- Jev, step two, and the vote comparison -->
+  <rect class="jev" x="60" y="818" width="320" height="96" rx="10" />
+  <text x="220" y="844" text-anchor="middle" class="head">Jev 2: wo steht die Partei?</text>
+  <text x="220" y="866" text-anchor="middle" class="text">5 Stufen von Widerspruch bis</text>
+  <text x="220" y="886" text-anchor="middle" class="text">Übereinstimmung, und bester Beleg</text>
+  <text x="220" y="904" text-anchor="middle" class="small">score + choice, nur passende Abschnitte</text>
+
+  <rect class="code" x="440" y="818" width="320" height="96" rx="10" />
+  <text x="600" y="844" text-anchor="middle" class="head">Vergleich mit den Fraktionen</text>
+  <text x="600" y="866" text-anchor="middle" class="text">(ja − nein) / anwesend, mal deine Richtung,</text>
+  <text x="600" y="886" text-anchor="middle" class="text">gewichtet nach Klarheit</text>
+  <text x="600" y="904" text-anchor="middle" class="small">gleich abgestimmt → gleicher Wert</text>
+
+  <rect class="jev" x="820" y="818" width="320" height="96" rx="10" />
+  <text x="980" y="844" text-anchor="middle" class="head">Jev 2: wo steht die Partei?</text>
+  <text x="980" y="866" text-anchor="middle" class="text">5 Stufen von Widerspruch bis</text>
+  <text x="980" y="886" text-anchor="middle" class="text">Übereinstimmung, und bester Beleg</text>
+  <text x="980" y="904" text-anchor="middle" class="small">score + choice, nur passende Aussagen</text>
+
+  <path class="line" d="M220 914v20H600v18" marker-end="url(#arrow)" />
+  <path class="line" d="M600 914v38" marker-end="url(#arrow)" />
+  <path class="line" d="M980 914v20H600v18" marker-end="url(#arrow)" />
+
+  <!-- Combining -->
+  <rect class="code" x="300" y="954" width="600" height="62" rx="10" />
+  <text x="600" y="980" text-anchor="middle" class="head">Je Partei, Thema und Quelle: Wert −1 … +1 und Abdeckung</text>
+  <text x="600" y="1002" text-anchor="middle" class="small">Abdeckung = wie klar der passendste Beleg die Forderung trifft</text>
+  <path class="line" d="M600 1016v24" marker-end="url(#arrow)" />
+
+  <rect class="code" x="300" y="1042" width="600" height="62" rx="10" />
+  <text x="600" y="1068" text-anchor="middle" class="head">Je Quelle: Mittel über die Themen</text>
+  <text x="600" y="1090" text-anchor="middle" class="small">gewichtet nach Abdeckung; Themen unter 0,5 zählen nicht</text>
+  <path class="line" d="M600 1104v24" marker-end="url(#arrow)" />
+
+  <rect class="result" x="300" y="1130" width="600" height="62" rx="10" />
+  <text x="600" y="1156" text-anchor="middle" class="head">Gesamtwert −10 … +10 und Rangliste</text>
+  <text x="600" y="1178" text-anchor="middle" class="small">Gewichtung je Quelle: aus · normal · doppelt; ohne Fund: grau, ohne Wert</text>
+  <path class="line" d="M600 1192v24" marker-end="url(#arrow)" />
+
+  <rect class="search" x="300" y="1218" width="600" height="72" rx="10" />
+  <text x="600" y="1244" text-anchor="middle" class="head">Belege beim Aufklappen</text>
+  <text x="600" y="1266" text-anchor="middle" class="text">Kernsätze: die zwei Sätze, die dem Suchvektor am nächsten sind</text>
+  <text x="600" y="1284" text-anchor="middle" class="small">Satz-Embeddings erst beim Öffnen; wörtlich zitiert, […] für Auslassungen</text>
+</svg>

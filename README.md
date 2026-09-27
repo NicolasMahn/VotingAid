@@ -45,8 +45,12 @@ For each topic, programs, votes and statements go to Jev in three separate
 requests, and the page ranks parties separately for each. Mixing them would blur
 the parties: coalition partners usually vote together whatever their programs say, and
 one politician's speech is not the party line. For programs and statements, Jev
-answers three narrow questions per party: where the material places it, whether
-it takes a clear position at all, and which passage or statement shows it best.
+works in two steps. First it checks each excerpt on its own, without judging
+agreement, for whether it says anything about the person's specific demand.
+Then, from the excerpts that do, it places each party and picks the one that
+shows it best; parties without such an excerpt count as silent. Judging
+agreement on excerpts that merely share the topic gave confident scores for
+parties that had said nothing to the point. See `docs/workflow.svg`.
 For votes, Jev only judges how the person would vote in each one, without seeing
 the parties; the code then compares that with how each party voted, so parties
 that voted alike score alike. Jev returns probabilities, not prose. Every
