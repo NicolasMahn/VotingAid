@@ -43,7 +43,7 @@ const element = (name, className, text) => {
 /** A question as Jev gets it: its type, its instructions, and its answer options. */
 function question([key, { type, instructions, criteria }]) {
   const block = element('div', 'question');
-  block.append(element('p', 'meta', `${key} · ${type}`), element('p', 'instructions', instructions));
+  block.append(element('p', 'meta', `${key} · ${type}`), element('p', '', instructions));
   const options = Array.isArray(criteria) ? criteria : Object.entries(criteria ?? {}).map(([k, v]) => v ?? k);
   if (options.length) {
     const list = element('ol', 'criteria');
@@ -53,17 +53,30 @@ function question([key, { type, instructions, criteria }]) {
   return block;
 }
 
-for (const [name, request] of Object.entries(REQUESTS)) {
-  const node = document.querySelector(`[data-prompt="${name}"]`);
-  const body = element('div', 'prompt');
-  body.append(
-    element('p', 'meta', 'Lesehinweis im Zustand'),
-    element('p', 'instructions', request.state.how_to_read),
+function prompt(request) {
+  const nodes = [
+    element('p', 'muted', 'So fragt die Seite Jev, hier für „Der Mindestlohn soll auf 15 Euro steigen.“ Die Fragen sind englisch, wie Jev sie bekommt.'),
+    element('p', 'meta', 'Lesehinweis'),
+    element('p', 'how', request.state.how_to_read),
     ...Object.entries(request.questions).map(question),
-  );
-  // The whole request for the example, to see what else Jev is given.
+  ];
+  // The whole request, to see everything Jev is given.
   const whole = element('details', 'request');
-  whole.append(element('summary', '', 'Ganze Anfrage für das Beispiel'), element('pre', '', JSON.stringify(request, null, 2)));
-  body.append(whole);
-  node.append(body);
+  whole.append(element('summary', '', 'Ganze Anfrage als JSON'), element('pre', '', JSON.stringify(request, null, 2)));
+  return [...nodes, whole];
+}
+
+const panel = document.getElementById('panel');
+panel.querySelector('.close').addEventListener('click', () => panel.close());
+// A click on the backdrop lands on the dialog element itself.
+panel.addEventListener('click', (event) => event.target === panel && panel.close());
+
+for (const card of document.querySelectorAll('.card')) {
+  card.addEventListener('click', () => {
+    const name = card.dataset.panel;
+    document.getElementById('panel-title').textContent = card.querySelector('strong').textContent;
+    const body = REQUESTS[name] ? prompt(REQUESTS[name]) : [document.getElementById(name).content.cloneNode(true)];
+    document.getElementById('panel-body').replaceChildren(...body);
+    panel.showModal();
+  });
 }
