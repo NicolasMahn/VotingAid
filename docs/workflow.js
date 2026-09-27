@@ -3,12 +3,14 @@
 // Jev meets it: what it reads, and each question with a made-up answer.
 import {
   COVERED,
+  LEVELS,
   buildMatchRequest,
   buildRelevanceRequest,
   buildSourceRequest,
   buildVoteDirectionRequest,
   buildVoteRelevanceRequest,
   evidenceOf,
+  levelOf,
   relevantEvidence,
   relevantVotes,
 } from '../js/analysis.js';
@@ -128,7 +130,20 @@ function state({ person, lesehinweis, ...rest }) {
   ];
 }
 
-/** How Jev would answer one question, drawn as the control it amounts to. */
+/** -1–1 as the page shows it, -10 to +10. */
+const points = (value) => {
+  const rounded = Math.round(value * 10);
+  return rounded > 0 ? `+${rounded}` : rounded < 0 ? `−${-rounded}` : '0';
+};
+
+/** What the app makes of an answer, shown above the probabilities it comes from. */
+const outcome = (value, text) => element('p', 'outcome', element('strong', '', value), ` ${text}`);
+
+/**
+ * How Jev would answer one question, drawn as the control it amounts to.
+ * Only where the app takes the likeliest option, choosing a quote, is one
+ * option marked; a score and a direction use every probability.
+ */
 function answer(key, { type, criteria }) {
   if (type === 'noul') {
     const value = EXAMPLE_RELEVANCE[key];
@@ -142,6 +157,7 @@ function answer(key, { type, criteria }) {
   }
   const options = Array.isArray(criteria) ? criteria : Object.entries(criteria).map(([id, meaning]) => meaning ?? id);
   const probabilities = type === 'score' ? EXAMPLE_LEVELS : exampleChoice(options.length);
+  const picks = key.endsWith('_source');
   const likeliest = probabilities.indexOf(Math.max(...probabilities));
   const list = element(
     'ol',
@@ -149,16 +165,35 @@ function answer(key, { type, criteria }) {
     ...options.map((option, i) =>
       element(
         'li',
-        i === likeliest ? 'picked' : '',
+        picks && i === likeliest ? 'picked' : '',
         element('span', 'option', ...labelled(option)),
         element('span', 'share', meter(probabilities[i]), percent(probabilities[i])),
       ),
     ),
   );
-  if (type !== 'score') return list;
-  const score = probabilities.reduce((sum, p, level) => sum + p * level, 0);
-  return element('div', '', list, element('p', 'reading', 'Wert ', element('strong', '', decimal(score, 1)), ' auf der Skala 0 bis 4'));
+  if (type === 'score') {
+    const mean = probabilities.reduce((sum, p, level) => sum + p * level, 0);
+    const value = (2 * mean) / (options.length - 1) - 1;
+    return element(
+      'div',
+      '',
+      outcome(points(value), `für die Partei: der Mittelwert aller Stufen, gewichtet mit Jevs Wahrscheinlichkeiten (${decimal(mean, 1)} von 4). Das Wort daneben ist die Stufe, die diesem Mittelwert am nächsten liegt: „${LEVELS[levelOf(value)]}“.`),
+      list,
+    );
+  }
+  if (picks) return element('div', '', outcome(options[likeliest], 'wird zitiert: der Auszug mit der höchsten Wahrscheinlichkeit.'), list);
+  // A direction: yes minus no, so a close call counts less than a clear one.
+  const direction = probabilities[0] - probabilities[1];
+  return element('div', '', outcome(decimal(direction, 1), `als Richtung: hin minus weg (${percent(probabilities[0])} − ${percent(probabilities[1])}). Knappe Antworten zählen weniger als klare.`), list);
 }
+
+const link = (href, text) => {
+  const node = element('a', '', text);
+  node.href = href;
+  node.target = '_blank';
+  node.rel = 'noopener';
+  return node;
+};
 
 const explainer = (name, text) => {
   const button = element('button', `term ${name === 'jev' ? 'jev' : 'voyage'}`, text);
@@ -213,10 +248,11 @@ function jevExplained() {
     ['Ja oder nein', 'Sagt der Auszug etwas zur Forderung?', 'spd-12', REQUESTS['program-relevance'].questions['spd-12'],
       'Ab 0,5 hält Jev ein Ja für wahrscheinlicher als ein Nein. Darunter fällt der Beleg weg.'],
     ['Eine von mehreren', 'Wohin führt ein Ja: zur Forderung hin oder weg?', 'vote-1', REQUESTS['vote-direction'].questions['vote-1'], null],
-    ['Auf einer Skala', 'Wo steht die Partei zur Forderung?', 'spd_match', REQUESTS['program-match'].questions.spd_match, null],
+    ['Auf einer Skala', 'Wo steht die Partei zur Forderung?', 'spd_match', REQUESTS['program-match'].questions.spd_match,
+      'Beim Zitat nimmt die App dagegen den wahrscheinlichsten Auszug: Zeigen kann sie nur einen.'],
   ];
   return [
-    element('p', 'lead-in', 'Jev ist ein Entscheidungsmodell von TypeSafe. Es schreibt keinen Text, sondern beantwortet fest gestellte Fragen mit Wahrscheinlichkeiten.'),
+    element('p', 'lead-in', 'Jev ist ein System-One-Modell von TypeSafe: ein Entscheidungsmodell, das keinen Text schreibt, sondern fest gestellte Fragen mit Wahrscheinlichkeiten beantwortet.'),
     element(
       'ol',
       'questions',
@@ -236,6 +272,15 @@ function jevExplained() {
       'facts',
       element('dt', '', 'Gut für'),
       element('dd', '', 'Jede Partei bekommt dieselbe Frage, und die Antworten lassen sich vergleichen. Schnell und günstig, ohne erfundene Begründungen.'),
+      element('dt', '', 'Echte Prozente'),
+      element(
+        'dd',
+        '',
+        'Laut TypeSafe ist Jev auf kalibrierte Entscheidungen trainiert: Was Jev mit 0,8 bewertet, soll in etwa 80 % der Fälle zutreffen. Es sind also keine bloß normierten Modellwerte. Selbst nachgemessen haben wir das nicht. ',
+        link('https://docs.typesafe.ai/concepts/system-one', 'Mehr bei TypeSafe'),
+      ),
+      element('dt', '', 'Alle zählen'),
+      element('dd', '', 'Die App rechnet mit allen, nicht nur mit der wahrscheinlichsten Antwort. So zählt ein knappes Urteil weniger als ein klares. Nur die Schwelle 0,5 schneidet hart: Was darunter liegt, sieht Jev in Schritt 2 gar nicht, damit unpassende Auszüge das Urteil nicht verzerren.'),
       element('dt', '', 'Grenze'),
       element('dd', '', 'Jev urteilt nur über das, was es liest: die gefundenen Auszüge, nicht das ganze Programm.'),
     ),

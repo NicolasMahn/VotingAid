@@ -937,3 +937,16 @@ dialog::backdrop {
   margin: 0 0 0.5rem;
   font-weight: 700;
 }
+
+/* What the app makes of an answer: the number it goes on with. */
+.outcome {
+  margin: 0.2rem 0 0.7rem;
+  font-size: 0.88rem;
+  color: var(--ink-muted);
+}
+
+.outcome strong {
+  margin-right: 0.2rem;
+  color: var(--ink);
+  font-size: 1.15rem;
+}
