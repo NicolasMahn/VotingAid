@@ -33,7 +33,7 @@ test('statements tell Jev who said what, and parties without any have no questio
   const doc = { id: 's1', kind: 'rede', speaker: 'Lars Klingbeil', role: 'Bundesminister der Finanzen', date: '2025-09-23', title: 'Haushalt' };
   const evidence = evidenceOf('statements', { spd: [{ doc, passage: 'Wir investieren.' }] });
   const { state, questions } = buildRelevanceRequest('statements', 'Haushalt', 'Mehr investieren.', evidence);
-  assert.equal(state.items.SPD[0].speaker, 'Lars Klingbeil, Bundesminister der Finanzen');
-  assert.equal(state.items.SPD[0].kind, 'Rede im Bundestag');
+  assert.equal(state.auszuege.SPD[0].sprecher, 'Lars Klingbeil, Bundesminister der Finanzen');
+  assert.equal(state.auszuege.SPD[0].art, 'Rede im Bundestag');
   assert.deepEqual(Object.keys(questions), ['s1']);
 });

@@ -3,7 +3,7 @@
 %% Circles are events, boxes tasks, diamonds decisions, cylinders data.
 flowchart TB
   start((Du schreibst zu jedem Thema,<br/>was passieren soll)):::person
-  query[Suchvektor bilden]:::voyage
+  query[Meinung einbetten]:::voyage
   split{+}
   start --> query --> split
 
@@ -17,7 +17,7 @@ flowchart TB
   end
 
   subgraph Abstimmungen
-    vdb[(Namentliche Abstimmungen<br/>230, je Fraktion gezählt)]:::data
+    vdb[(Namentliche Abstimmungen<br/>234, seit 2021)]:::data
     vsearch[Nächste Abstimmungen suchen<br/>8 insgesamt]:::code
     vrel[Passt die Abstimmung<br/>zur Forderung?]:::jev
     vgate{passt, ab 0,5?}
@@ -38,11 +38,11 @@ flowchart TB
   split --> psearch & vsearch & ssearch
   join{+}
   pmatch & vcompare & smatch --> join
-  pgate -->|nein: ohne Fund| join
-  vgate -->|nein: zählt nicht| join
-  sgate -->|nein: ohne Fund| join
+  pgate -->|nein| pdrop(((fällt weg)))
+  vgate -->|nein| vdrop(((fällt weg)))
+  sgate -->|nein| sdrop(((fällt weg)))
   combine[Werte zusammenführen<br/>je Thema und Quelle, über Themen, nach Gewichtung]:::code
-  done(((Rangliste von −10 bis +10, mit Belegen))):::person
+  done(((Rangliste mit Belegen))):::person
   join --> combine --> done
 
   classDef person fill:#fbf1d9,stroke:#e8b54a

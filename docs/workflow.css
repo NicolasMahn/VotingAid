@@ -126,6 +126,7 @@ h1 {
 /* Flow */
 
 .flow {
+  --gap: 1.25rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -237,22 +238,25 @@ h1 {
   background: var(--line);
 }
 
-/* One line splitting into the three sources, and joining again. */
+/* One line splitting into the three sources, and joining again. The lane
+   centres sit a sixth of the width in from each side, less the gaps. */
 .fan {
+  --side: calc((100% - 2 * var(--gap)) / 6);
   position: relative;
   width: 100%;
   height: 2.6rem;
 }
 
-.fan span {
+.fan .bar {
   position: absolute;
-  left: calc((100% - 2.5rem) / 6);
-  right: calc((100% - 2.5rem) / 6);
+  left: var(--side);
+  right: var(--side);
   height: 50%;
   border: 2px solid var(--line);
 }
 
-.fan::before {
+.fan::before,
+.fan .mid {
   content: "";
   position: absolute;
   left: calc(50% - 1px);
@@ -261,18 +265,26 @@ h1 {
   background: var(--line);
 }
 
-.fan.out span {
-  bottom: 0;
-  border-bottom: none;
-  border-radius: 0.8rem 0.8rem 0 0;
-}
-
 .fan.out::before {
   top: 0;
 }
 
-.fan.in span {
+.fan.out .bar,
+.fan.out .mid {
+  bottom: 0;
+}
+
+.fan.out .bar {
+  border-bottom: none;
+  border-radius: 0.8rem 0.8rem 0 0;
+}
+
+.fan.in .bar,
+.fan.in .mid {
   top: 0;
+}
+
+.fan.in .bar {
   border-top: none;
   border-radius: 0 0 0.8rem 0.8rem;
 }
@@ -281,10 +293,23 @@ h1 {
   bottom: 0;
 }
 
+.fan .head {
+  position: absolute;
+  bottom: 0;
+  border: 5px solid transparent;
+  border-top-color: var(--ink-muted);
+  border-bottom: none;
+  transform: translateX(-5px);
+}
+
+.fan .head.left { left: calc(var(--side) + 1px); }
+.fan .head.centre { left: 50%; }
+.fan .head.right { left: calc(100% - var(--side) - 1px); }
+
 .lanes {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0 1.25rem;
+  gap: 0 var(--gap);
   width: 100%;
 }
 
@@ -298,28 +323,73 @@ h1 {
   color: var(--ink-muted);
 }
 
+/* A decision: yes goes on down, no ends to the side. */
 .gateway {
+  position: relative;
   display: grid;
   justify-items: center;
-  gap: 0.15rem;
-  text-align: center;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.gateway small {
-  color: var(--ink-muted);
-  font-size: 0.75rem;
-  font-weight: 400;
+  padding-top: 0.2rem;
 }
 
 .diamond {
-  width: 1rem;
-  height: 1rem;
-  margin-bottom: 0.2rem;
+  width: 1.1rem;
+  height: 1.1rem;
   border: 2px solid var(--lane-code);
   background: var(--card);
   transform: rotate(45deg);
+}
+
+/* The turned square reaches past its box; this lets the arrows meet its corners. */
+.link.to-gateway {
+  margin-bottom: 0.15rem;
+}
+
+.gateway small {
+  margin-top: 0.35rem;
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+}
+
+.gateway .no {
+  position: absolute;
+  top: 0.35rem;
+  left: calc(50% + 0.9rem);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.gateway .no i {
+  width: 1.1rem;
+  height: 2px;
+  background: var(--line);
+}
+
+/* An end event: a thick ring. */
+.stop {
+  width: 0.8rem;
+  height: 0.8rem;
+  border: 3px solid var(--ink-muted);
+  border-radius: 50%;
+}
+
+/* Runs once per item, like BPMN's multi-instance marker. */
+.loop {
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+}
+
+.legend .loop {
+  font-weight: 700;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
 }
 
 /* Side panel */
@@ -371,6 +441,72 @@ dialog::backdrop {
 
 #panel-body ol {
   padding-left: 1.2rem;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: minmax(6rem, auto) 1fr;
+  gap: 0.6rem 1rem;
+  margin: 1rem 0 0;
+}
+
+.facts dt {
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+  padding-top: 0.1rem;
+}
+
+.facts dd {
+  margin: 0;
+}
+
+.embedding {
+  margin: 1rem 0 0;
+}
+
+.embedding svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.embedding figcaption {
+  margin-top: 0.4rem;
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+}
+
+.embedding .plane {
+  fill: var(--card);
+  stroke: var(--line);
+}
+
+.embedding .label {
+  fill: var(--ink-muted);
+  font-size: 11px;
+}
+
+.embedding .label.strong {
+  fill: var(--ink);
+  font-weight: 700;
+}
+
+.embedding .you {
+  fill: var(--lane-voyage);
+}
+
+.embedding .near {
+  fill: color-mix(in srgb, var(--lane-voyage) 55%, var(--card));
+}
+
+.embedding .far {
+  fill: var(--line);
+}
+
+.embedding .reach {
+  stroke: var(--lane-voyage);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
 }
 
 .meta {
@@ -426,8 +562,8 @@ dialog::backdrop {
     padding: 1.25rem 0.75rem 3rem;
   }
 
-  .lanes {
-    gap: 0 0.5rem;
+  .flow {
+    --gap: 0.5rem;
   }
 
   .lanes .card {
@@ -439,7 +575,25 @@ dialog::backdrop {
   }
 
   .lanes .card small,
+  .lanes .loop,
   .gateway small {
+    display: none;
+  }
+
+  .lanes .chips .chip.voyage {
+    display: none;
+  }
+
+  .gateway .no {
+    left: calc(50% + 0.8rem);
+    font-size: 0.65rem;
+  }
+
+  .gateway .no i {
+    width: 0.5rem;
+  }
+
+  .gateway .no-text {
     display: none;
   }
 
@@ -461,8 +615,4 @@ dialog::backdrop {
     display: none;
   }
 
-  .fan span {
-    left: calc((100% - 1rem) / 6);
-    right: calc((100% - 1rem) / 6);
-  }
 }

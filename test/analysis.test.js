@@ -50,7 +50,7 @@ test('only excerpts that address the demand are judged, and parties without any 
     'afd-1': { noul: 0.6 },
   });
   const { state, questions } = buildMatchRequest('program', 'Rente', 'Die Rente soll steigen.', relevant);
-  assert.deepEqual(state.items.SPD.map(({ id }) => id), ['spd-0']);
+  assert.deepEqual(state.auszuege.SPD.map(({ id }) => id), ['spd-0']);
   // One item needs no choice of source.
   assert.deepEqual(Object.keys(questions).sort(), ['afd_match', 'afd_source', 'spd_match']);
 
@@ -84,7 +84,7 @@ test('only votes that decide the demand count, and parties that voted alike scor
   const relevant = relevantVotes(votes, { 'vote-1': { noul: 0.9 }, 'vote-2': { noul: 0.1 } });
   // vote-2 is only on the wider topic, so Jev is not asked which way it goes.
   assert.deepEqual(Object.keys(buildVoteDirectionRequest('Rente', 'x', relevant).questions), ['vote-1']);
-  const person = readVoteDirections(relevant, { 'vote-1': { probabilities: { towards: 0.9, away: 0.1 } } });
+  const person = readVoteDirections(relevant, { 'vote-1': { probabilities: { hin: 0.9, weg: 0.1 } } });
   assert.deepEqual(person, { 'vote-1': { lean: 0.8, clarity: 0.9 } });
 
   const readings = readVotes(person, votes);

@@ -55,9 +55,9 @@ function question([key, { type, instructions, criteria }]) {
 
 function prompt(request) {
   const nodes = [
-    element('p', 'muted', 'So fragt die Seite Jev, hier für „Der Mindestlohn soll auf 15 Euro steigen.“ Die Fragen sind englisch, wie Jev sie bekommt.'),
+    element('p', 'muted', 'So fragt die Seite Jev, hier für „Der Mindestlohn soll auf 15 Euro steigen.“'),
     element('p', 'meta', 'Lesehinweis'),
-    element('p', 'how', request.state.how_to_read),
+    element('p', 'how', request.state.lesehinweis),
     ...Object.entries(request.questions).map(question),
   ];
   // The whole request, to see everything Jev is given.

@@ -13,14 +13,15 @@ export const LEVELS = [
   'Eher Übereinstimmung',
   'Klare Übereinstimmung',
 ];
-// What Jev judges programs and statements against. Bare labels left it free to
-// read "Eher Widerspruch" as a weak verdict on a tangential remark.
+// Jev is asked in German, like the material it reads. What it judges
+// programs and statements against: bare labels left it free to read
+// "Eher Widerspruch" as a weak verdict on a tangential remark.
 const LEVEL_MEANINGS = [
-  'Clear contradiction: the party clearly wants the opposite of what the person demands',
-  'Leaning against: the party tends to oppose what the person demands',
-  'Mixed: the party agrees in part, is ambivalent, or the material does not settle it',
-  'Leaning towards: the party tends to support what the person demands',
-  'Clear agreement: the party clearly wants what the person demands',
+  'Klarer Widerspruch: Die Partei will klar das Gegenteil dessen, was die Person fordert',
+  'Eher Widerspruch: Die Partei lehnt eher ab, was die Person fordert',
+  'Teils, teils: Die Partei stimmt teilweise zu, ist unentschieden, oder das Material entscheidet es nicht',
+  'Eher Übereinstimmung: Die Partei unterstützt eher, was die Person fordert',
+  'Klare Übereinstimmung: Die Partei will klar, was die Person fordert',
 ];
 
 export const levelOf = (score) => Math.round(((score + 1) / 2) * (LEVELS.length - 1));
@@ -53,26 +54,26 @@ export const STATEMENT_KINDS = {
 const SOURCES = {
   program: {
     items: (passagesByParty) =>
-      mapParties((id) => (passagesByParty[id] ?? []).map(({ id: key, page, text }) => ({ id: key, page, text }))),
-    evidence: (short) => `the program of ${short}, judged from its excerpts`,
-    howToRead: 'Excerpts from each party\'s program for the Bundestagswahl 2025.',
+      mapParties((id) => (passagesByParty[id] ?? []).map(({ id: key, page, text }) => ({ id: key, seite: page, text }))),
+    evidence: (short) => `dem Wahlprogramm von ${short}, nach diesen Auszügen`,
+    howToRead: 'Auszüge aus den Wahlprogrammen der Parteien zur Bundestagswahl 2025.',
   },
   statements: {
     items: (statementsByParty) =>
       mapParties((id) =>
         (statementsByParty[id] ?? []).map(({ doc, passage }) => ({
           id: doc.id,
-          kind: STATEMENT_KINDS[doc.kind],
-          speaker: [doc.speaker, doc.role].filter(Boolean).join(', ') || null,
-          date: doc.date,
-          context: doc.title,
+          art: STATEMENT_KINDS[doc.kind],
+          sprecher: [doc.speaker, doc.role].filter(Boolean).join(', ') || null,
+          datum: doc.date,
+          kontext: doc.title,
           text: passage,
         })),
       ),
-    evidence: (short) => `what politicians and official channels of ${short} have said in these statements`,
+    evidence: (short) => `dem, was Politikerinnen, Politiker und offizielle Kanäle von ${short} in diesen Aussagen sagen`,
     howToRead:
-      'Statements by individual politicians do not always match the party line. ' +
-      'Speeches often argue against another party; judge what the speaker wants, not what they attack.',
+      'Aussagen einzelner Politikerinnen und Politiker entsprechen nicht immer der Parteilinie. Reden ' +
+      'argumentieren oft gegen eine andere Partei: Beurteile, was die sprechende Person will, nicht was sie angreift.',
   },
 };
 
@@ -90,16 +91,16 @@ export function buildRelevanceRequest(source, topic, opinion, evidence) {
       questions[item.id] = {
         type: 'noul',
         instructions:
-          `Does item ${item.id} say what ${short} wants on the person's specific demand: for it, against it, ` +
-          'or another way to the same end? Rejecting the opposite view counts. Sharing the wider topic ' +
-          'does not, nor does a question or a remark in passing. Do not judge whether the party agrees ' +
-          'with the person, only whether the item speaks to the demand.',
+          `Sagt ${item.id}, was ${short} zur konkreten Forderung der Person will: dafür, dagegen oder ein ` +
+          'anderer Weg zum selben Ziel? Die Gegenposition zurückzuweisen zählt. Nur das weitere Thema zu ' +
+          'teilen zählt nicht, ebenso wenig eine Frage oder eine Nebenbemerkung. Beurteile nicht, ob die ' +
+          'Partei der Person zustimmt, nur ob der Auszug etwas zur Forderung sagt.',
       };
     }
   }
   return {
     model: MODEL,
-    state: { person: { topic, opinion }, how_to_read: SOURCES[source].howToRead, items: byShortName(evidence) },
+    state: { person: { thema: topic, meinung: opinion }, lesehinweis: SOURCES[source].howToRead, auszuege: byShortName(evidence) },
     questions,
   };
 }
@@ -122,17 +123,17 @@ export function buildMatchRequest(source, topic, opinion, relevant) {
     questions[`${id}_match`] = {
       type: 'score',
       instructions:
-        `Where does ${short} stand on what the person demands, judging by ${SOURCES[source].evidence(short)}? ` +
-        'Compare with the concrete demand, not the wider topic: a party that wants to restrict ' +
-        'what the person wants to expand contradicts them, while a party that wants to go further ' +
-        'in the same direction, or criticises a measure as too weak, agrees. Judge only the material ' +
-        'provided, not what you know about the party.',
+        `Wo steht ${short} zu dem, was die Person fordert, nach ${SOURCES[source].evidence(short)}? ` +
+        'Vergleiche mit der konkreten Forderung, nicht mit dem weiteren Thema: Eine Partei, die ' +
+        'einschränken will, was die Person ausweiten will, widerspricht ihr; eine Partei, die in dieselbe ' +
+        'Richtung weiter gehen will oder eine Maßnahme als zu schwach kritisiert, stimmt ihr zu. Beurteile ' +
+        'nur das vorliegende Material, nicht was du sonst über die Partei weißt.',
       criteria: LEVEL_MEANINGS,
     };
     if (items.length > 1) {
       questions[`${id}_source`] = {
         type: 'choice',
-        instructions: `Which item best shows where ${short} stands on what the person demands?`,
+        instructions: `Welcher Auszug zeigt am besten, wo ${short} zur Forderung der Person steht?`,
         criteria: Object.fromEntries(items.map((item) => [item.id, null])),
       };
     }
@@ -140,7 +141,7 @@ export function buildMatchRequest(source, topic, opinion, relevant) {
   const items = byShortName(mapParties((id) => relevant[id].map(({ relevance, ...item }) => item)));
   return {
     model: MODEL,
-    state: { person: { topic, opinion }, how_to_read: SOURCES[source].howToRead, items },
+    state: { person: { thema: topic, meinung: opinion }, lesehinweis: SOURCES[source].howToRead, auszuege: items },
     questions,
   };
 }
@@ -174,18 +175,19 @@ export function readPartyAnswers(answers, relevant) {
 // in readVotes, so parties that voted alike score alike.
 
 const VOTES_HOW_TO_READ =
-  'Voting yes means voting for what the title names, whatever the result: descriptions often ' +
-  'report that a motion was rejected, which is how others voted, not what the motion wants. ' +
-  'If a title starts with "Ablehnung", voting yes means rejecting the motion it names.';
+  'Mit Ja stimmen heißt, für das zu stimmen, was der Titel nennt, unabhängig vom Ergebnis: ' +
+  'Beschreibungen berichten oft, dass ein Antrag abgelehnt wurde; das sagt, wie andere abgestimmt ' +
+  'haben, nicht was der Antrag will. Beginnt ein Titel mit „Ablehnung“, heißt ein Ja, den genannten ' +
+  'Antrag abzulehnen.';
 
 const voteState = (topic, opinion, votes) => ({
-  person: { topic, opinion },
-  how_to_read: VOTES_HOW_TO_READ,
-  roll_call_votes: votes.map(({ id, date, title, description }) => ({
+  person: { thema: topic, meinung: opinion },
+  lesehinweis: VOTES_HOW_TO_READ,
+  namentliche_abstimmungen: votes.map(({ id, date, title, description }) => ({
     id,
-    date,
-    title,
-    description: description.slice(0, DESCRIPTION_CHARS),
+    datum: date,
+    titel: title,
+    beschreibung: description.slice(0, DESCRIPTION_CHARS),
   })),
 });
 
@@ -200,10 +202,11 @@ export function buildVoteRelevanceRequest(topic, opinion, votes) {
         {
           type: 'noul',
           instructions:
-            `Does roll-call vote ${id} ("${title}") decide something about the person's specific demand, ` +
-            'for it or against it? It counts only if the demand is what the vote mainly decides. Sharing ' +
-            'the wider topic does not count, nor does a law that decides mostly other things. Do not judge ' +
-            'how the person would vote, only whether the vote is about the demand.',
+            `Entscheidet die namentliche Abstimmung ${id} („${title}“) etwas über die konkrete Forderung der ` +
+            'Person, dafür oder dagegen? Das zählt nur, wenn die Forderung das ist, worüber hauptsächlich ' +
+            'abgestimmt wird. Nur das weitere Thema zu teilen zählt nicht, ebenso wenig ein Gesetz, das ' +
+            'hauptsächlich anderes regelt. Beurteile nicht, wie die Person abstimmen würde, nur ob es in der ' +
+            'Abstimmung um die Forderung geht.',
         },
       ]),
     ),
@@ -227,10 +230,10 @@ export function buildVoteDirectionRequest(topic, opinion, votes) {
         id,
         {
           type: 'choice',
-          instructions: `Does a yes in roll-call vote ${id} ("${title}") go towards what the person demands, or away from it?`,
+          instructions: `Geht ein Ja in der namentlichen Abstimmung ${id} („${title}“) in Richtung dessen, was die Person fordert, oder davon weg?`,
           criteria: {
-            towards: 'Towards: a yes puts into practice what the person demands, or goes in that direction',
-            away: 'Away: a yes does the opposite of what the person demands, or blocks it',
+            hin: 'In Richtung: Ein Ja setzt um, was die Person fordert, oder geht in diese Richtung',
+            weg: 'Davon weg: Ein Ja bewirkt das Gegenteil dessen, was die Person fordert, oder blockiert es',
           },
         },
       ]),
@@ -246,8 +249,8 @@ export function buildVoteDirectionRequest(topic, opinion, votes) {
 export function readVoteDirections(relevant, answers) {
   return Object.fromEntries(
     relevant.map(({ id, relevance }) => {
-      const { towards = 0, away = 0 } = answers[id]?.probabilities ?? {};
-      return [id, { lean: towards + away ? (towards - away) / (towards + away) : 0, clarity: relevance }];
+      const { hin = 0, weg = 0 } = answers[id]?.probabilities ?? {};
+      return [id, { lean: hin + weg ? (hin - weg) / (hin + weg) : 0, clarity: relevance }];
     }),
   );
 }
