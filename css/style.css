@@ -501,6 +501,23 @@ h1 {
   content: none;
 }
 
+/* Below the ranking, the way into how it came about. */
+a.how {
+  display: inline-block;
+  margin-top: 1.25rem;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.6rem;
+  background: var(--card);
+  color: var(--ink);
+  font-size: 0.95rem;
+  text-decoration: none;
+}
+
+a.how:hover {
+  border-color: var(--accent);
+}
+
 /* A party's topics by source. */
 .topics {
   width: 100%;
