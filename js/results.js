@@ -67,7 +67,7 @@ function render() {
 function renderWeights() {
   $('weights').replaceChildren(
     ...SOURCES.map((source) => {
-      const row = element('div', 'weight');
+      const row = element('div', 'weight-row');
       const group = element('div', 'segmented');
       group.setAttribute('role', 'group');
       group.setAttribute('aria-label', `Gewicht für ${SOURCE_NAMES[source]}`);

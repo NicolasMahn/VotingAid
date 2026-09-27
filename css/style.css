@@ -2,6 +2,12 @@
   display: none !important;
 }
 
+/* Two heights for every control: main actions and inputs, and small ones. */
+:root {
+  --control: 2.75rem;
+  --control-sm: 2.25rem;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -75,6 +81,11 @@ textarea {
   padding: 0.6rem 0.8rem;
 }
 
+input {
+  height: var(--control);
+  padding-block: 0;
+}
+
 textarea {
   resize: vertical;
 }
@@ -94,9 +105,22 @@ button {
   cursor: pointer;
   border: 1px solid var(--accent);
   border-radius: 0.6rem;
-  padding: 0.5rem 1.1rem;
+  height: var(--control);
+  padding: 0 1.1rem;
   background: var(--accent);
   color: var(--accent-ink);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.icon {
+  display: block;
+}
+
+/* A square button holding only an icon, as tall as its row. */
+button.icon-only {
+  width: var(--control);
+  padding: 0;
 }
 
 button.quiet {
@@ -131,6 +155,7 @@ a:focus-visible {
 
 /* A small round "i" that opens an explanation where it is needed. */
 .info-button {
+  flex: none;
   width: 1.5rem;
   height: 1.5rem;
   padding: 0;
@@ -142,9 +167,10 @@ a:focus-visible {
   vertical-align: middle;
 }
 
-.info-button.large {
-  width: 2.2rem;
-  height: 2.2rem;
+.info-button.large,
+.results-head .info-button {
+  width: var(--control-sm);
+  height: var(--control-sm);
   font-size: 1.05rem;
 }
 
@@ -320,7 +346,6 @@ h1 {
 /* Beside the title, away from where one reaches when done. */
 .topic .suggest {
   flex: none;
-  padding: 0 0.75rem;
 }
 
 /* How much a topic counts: the card takes on more accent the more it counts. */
@@ -358,13 +383,16 @@ h1 {
   margin: 0;
 }
 
-.topic .actions button {
+.topic .actions button,
+#toggle-weights {
+  height: var(--control-sm);
+  padding: 0 0.85rem;
   font-size: 0.9rem;
-  padding: 0.35rem 0.8rem;
 }
 
 .topic .actions .icon-only {
-  padding: 0.45rem 0.6rem;
+  width: var(--control-sm);
+  padding: 0;
 }
 
 #key input {
@@ -396,10 +424,6 @@ h1 {
 
 
 
-#toggle-weights {
-  font-size: 0.9rem;
-  padding: 0.35rem 0.8rem;
-}
 
 #weights {
   display: grid;
@@ -411,7 +435,7 @@ h1 {
   background: var(--card);
 }
 
-.weight {
+.weight-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -419,16 +443,21 @@ h1 {
   font-size: 0.95rem;
 }
 
+/* Three equal segments, as tall as a small button. */
 .segmented {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.2rem;
+  width: min(15rem, 62%);
+  height: var(--control-sm);
   padding: 0.2rem;
   border: 1px solid var(--line);
   border-radius: 0.6rem;
 }
 
 .segmented button {
-  padding: 0.25rem 0.7rem;
+  height: 100%;
+  padding: 0;
   border: none;
   border-radius: 0.45rem;
   background: transparent;
@@ -546,9 +575,12 @@ h1 {
 
 /* Below the ranking, the way into how it came about. */
 a.how {
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--control);
   margin-top: 1.25rem;
-  padding: 0.55rem 1rem;
+  padding: 0 1rem;
   border: 1px solid var(--line);
   border-radius: 0.6rem;
   background: var(--card);
@@ -564,12 +596,15 @@ a.how:hover {
 /* A party's topics by source. */
 .topics {
   width: 100%;
+  /* Equal columns for the three sources, whatever their headings say. */
+  table-layout: fixed;
   border-collapse: collapse;
   margin: 0 0 1rem;
   font-size: 0.9rem;
 }
 
 .topics thead th {
+  white-space: nowrap;
   font-size: 0.75rem;
   font-weight: 400;
   color: var(--ink-muted);
@@ -601,6 +636,7 @@ a.how:hover {
 }
 
 .topics thead td {
+  width: 34%;
   text-align: left;
   padding-bottom: 0.3rem;
   border-top: none;
@@ -612,7 +648,8 @@ a.how:hover {
 
 .cell {
   width: 100%;
-  padding: 0.35rem 0;
+  height: var(--control-sm);
+  padding: 0;
   border: 1px solid var(--line);
   background: var(--card);
   color: var(--neutral);
@@ -732,6 +769,7 @@ a.source:hover {
 }
 
 .text-button {
+  height: auto;
   padding: 0;
   border: none;
   background: none;
@@ -811,7 +849,9 @@ dialog::backdrop {
 }
 
 #close-sources {
-  padding: 0.4rem 0.8rem;
+  width: var(--control-sm);
+  height: var(--control-sm);
+  padding: 0;
 }
 
 .disclosure {
@@ -893,6 +933,14 @@ a.pdf {
 
   .topics {
     font-size: 0.85rem;
+  }
+
+  .topics thead td {
+    width: 28%;
+  }
+
+  .topics thead th {
+    font-size: 0.68rem;
   }
 
   /* A sheet from the bottom, as phones show dialogs. */
