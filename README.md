@@ -126,4 +126,5 @@ Anyone can read it from there, so use a separate key with a low credit limit.
 - `js/results.js`: the ranking, weights, evidence and vote corrections.
 - `js/excerpt.js`: the key sentences of a quote.
 - `js/app.js`: the topic form, running the analysis, and the sources dialog.
+- `js/tour.js`: the guided tour behind "Kurze Tour".
 - `css/theme.css`: every raw color value, including party colors.

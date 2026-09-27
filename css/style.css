@@ -314,23 +314,82 @@ h1 {
   font-size: 1.15rem;
 }
 
-/* The way into how it all works, quiet beside the instruction. */
-a.how-to {
-  display: inline-flex;
-  align-items: center;
+/* The way into the guided tour, quiet beneath the instruction. */
+button.how-to {
   height: var(--control-sm);
   margin-top: 0.6rem;
   padding: 0 0.9rem;
-  border: 1px solid var(--line);
   border-radius: 1.2rem;
   background: var(--card);
-  color: var(--ink);
   font-size: 0.9rem;
-  text-decoration: none;
 }
 
-a.how-to:hover {
+button.how-to:hover {
   border-color: var(--accent);
+}
+
+/* The tour: the page dims around one lifted control, a bubble explains it. */
+#tour {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+}
+
+#tour-spot {
+  position: fixed;
+  border-radius: 0.8rem;
+  box-shadow: 0 0 0 200vmax var(--backdrop);
+  outline: 2px solid var(--accent);
+  transition: top 0.25s, left 0.25s, width 0.25s, height 0.25s;
+  pointer-events: none;
+}
+
+#tour-bubble {
+  position: fixed;
+  width: min(20rem, calc(100% - 1.5rem));
+  padding: 1rem 1rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 0.9rem;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 8px 30px var(--shadow);
+  transition: top 0.25s, left 0.25s;
+}
+
+#tour-text {
+  margin: 0 1.8rem 0.8rem 0;
+}
+
+.tour-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tour-actions .spacer {
+  flex: 1;
+}
+
+.tour-actions button {
+  height: var(--control-sm);
+  padding: 0 0.85rem;
+  font-size: 0.9rem;
+}
+
+#tour-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #tour-spot,
+  #tour-bubble {
+    transition: none;
+  }
 }
 
 .topic {

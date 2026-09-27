@@ -16,6 +16,7 @@ import {
 import { PARTIES, programUrl } from './parties.js';
 import { element, link, reweigh, showAnalysis } from './results.js';
 import { SUGGESTIONS } from './suggestions.js';
+import { startTour } from './tour.js';
 
 const STORAGE_KEY = 'votingaid.topics';
 // Every topic is one embedding and three Jev requests on a shared, capped key.
@@ -281,3 +282,5 @@ statementsReady.then(({ meta }) => {
 
 const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
 (saved.length ? saved : [{}]).forEach(addTopic);
+
+$('start-tour').addEventListener('click', startTour);

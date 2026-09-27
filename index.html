@@ -31,7 +31,7 @@
           <span class="demo-4 left" style="--size: 40%"></span>
         </div>
         <p class="lead">Schreib zu ein paar Themen, was passieren soll.</p>
-        <a class="how-to" href="docs/workflow.html">So funktioniert’s →</a>
+        <button id="start-tour" class="how-to quiet" type="button">Kurze Tour</button>
       </div>
       <ol id="topics"></ol>
 
@@ -124,6 +124,21 @@
         Der Code liegt auf <a href="https://github.com/NicolasMahn/VotingAid" target="_blank" rel="noopener">GitHub</a>.
       </p>
     </dialog>
+
+    <!-- The guided tour: a dimmed page, a lifted control, a bubble. js/tour.js places them. -->
+    <div id="tour" hidden>
+      <div id="tour-spot"></div>
+      <div id="tour-bubble" role="dialog" aria-live="polite" aria-labelledby="tour-text">
+        <p id="tour-text"></p>
+        <div class="tour-actions">
+          <span id="tour-count" class="muted"></span>
+          <span class="spacer"></span>
+          <button id="tour-back" class="quiet" type="button">Zurück</button>
+          <button id="tour-next" type="button">Weiter</button>
+        </div>
+        <button id="tour-close" class="quiet icon-only" type="button" aria-label="Tour beenden">✕</button>
+      </div>
+    </div>
 
     <template id="topic-template">
       <li class="topic" data-weight="1">
