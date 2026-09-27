@@ -85,16 +85,16 @@
 
         <button class="card code" type="button" data-panel="programs-search">
           <span class="chip code">Code</span>
-          <strong>Nächste Abschnitte</strong>
+          <strong>Die <span data-count="passages">4</span> ähnlichsten Abschnitte</strong>
           <span class="per" title="läuft einmal je Partei" aria-label="läuft einmal je Partei"><svg><use href="#i-party" /></svg></span>
         </button>
         <button class="card code" type="button" data-panel="votes-search">
           <span class="chip code">Code</span>
-          <strong>Nächste Abstimmungen</strong>
+          <strong>Die <span data-count="votes">12</span> ähnlichsten Abstimmungen</strong>
         </button>
         <button class="card code" type="button" data-panel="statements-search">
           <span class="chip code">Code</span>
-          <strong>Nächste Aussagen</strong>
+          <strong>Die <span data-count="statements">3</span> ähnlichsten Aussagen</strong>
           <span class="per" title="läuft einmal je Partei" aria-label="läuft einmal je Partei"><svg><use href="#i-party" /></svg></span>
         </button>
 
@@ -271,17 +271,18 @@
     </template>
     <template id="programs-search">
       <dl class="facts">
-        <dt>Sucht</dt><dd>Die 4 Abschnitte jeder Partei, die deiner Meinung am nächsten sind</dd>
+        <dt>Sucht</dt><dd>Je Partei die <span data-count="passages">4</span> Abschnitte, die deiner Meinung am ähnlichsten sind</dd>
       </dl>
     </template>
     <template id="votes-search">
       <dl class="facts">
-        <dt>Sucht</dt><dd>Die 12 Abstimmungen, die deiner Meinung am nächsten sind</dd>
+        <dt>Sucht</dt><dd>Die <span data-count="votes">12</span> Abstimmungen, die deiner Meinung am ähnlichsten sind, über alle Parteien</dd>
       </dl>
     </template>
     <template id="statements-search">
       <dl class="facts">
-        <dt>Sucht</dt><dd>Je Partei 8 Kandidaten, davon die 3 mit dem passendsten Absatz</dd>
+        <dt>Sucht</dt><dd>Je Partei die <span data-count="statements">3</span> Aussagen, die deiner Meinung am ähnlichsten sind</dd>
+        <dt>Wie</dt><dd>Erst 8 Kandidaten grob über den Binärindex, dann die mit dem ähnlichsten Absatz</dd>
       </dl>
     </template>
     <template id="votes-compare">

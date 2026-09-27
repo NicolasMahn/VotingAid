@@ -10,7 +10,7 @@ flowchart TB
 
   subgraph Programme
     pdb[(Wahlprogramme 2025<br/>2.025 Abschnitte)]:::data
-    psearch[Nächste Abschnitte suchen<br/>4 je Partei]:::code
+    psearch[Die 4 ähnlichsten Abschnitte<br/>je Partei]:::code
     prel[Sagt der Abschnitt etwas<br/>zur Forderung?]:::jev
     pgate{passt, ab 0,5?}
     pmatch[Wo steht die Partei<br/>zur Forderung?]:::jev
@@ -20,7 +20,7 @@ flowchart TB
 
   subgraph Abstimmungen
     vdb[(Namentliche Abstimmungen<br/>654, namentlich und per Handzeichen)]:::data
-    vsearch[Nächste Abstimmungen suchen<br/>12 insgesamt]:::code
+    vsearch[Die 12 ähnlichsten Abstimmungen]:::code
     vrel[Geht es in der Abstimmung<br/>um die Forderung?]:::jev
     vgate{passt, ab 0,5?}
     vdir[Wohin führt ein Ja:<br/>zur Forderung hin oder weg?]:::jev
@@ -30,7 +30,7 @@ flowchart TB
 
   subgraph Aussagen
     sdb[(Reden im Bundestag und Websites<br/>der Fraktionen und Bundesparteien)]:::data
-    ssearch[Nächste Aussagen suchen<br/>3 je Partei]:::code
+    ssearch[Die 3 ähnlichsten Aussagen<br/>je Partei]:::code
     srel[Sagt die Aussage etwas<br/>zur Forderung?]:::jev
     sgate{passt, ab 0,5?}
     smatch[Wo steht die Partei<br/>zur Forderung?]:::jev

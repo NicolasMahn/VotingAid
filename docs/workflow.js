@@ -12,6 +12,8 @@ import {
   relevantEvidence,
   relevantVotes,
 } from '../js/analysis.js';
+import { PASSAGES_PER_PARTY, VOTES_PER_TOPIC } from '../js/retrieval.js';
+import { DOCS_PER_PARTY } from '../js/statements.js';
 
 const TOPIC = 'Mindestlohn';
 const OPINION = 'Der Mindestlohn soll auf 15 Euro steigen.';
@@ -243,6 +245,13 @@ function jevExplained() {
 // Panels built here rather than from a template.
 const PANELS = { jev: { title: 'Jev erklärt', build: jevExplained } };
 
+// The search cards say how many items they fetch, as the app sets them.
+const COUNTS = { passages: PASSAGES_PER_PARTY, votes: VOTES_PER_TOPIC, statements: DOCS_PER_PARTY };
+const fillCounts = (root) => {
+  for (const count of root.querySelectorAll('[data-count]')) count.textContent = COUNTS[count.dataset.count];
+};
+fillCounts(document);
+
 const panel = document.getElementById('panel');
 panel.querySelector('.close').addEventListener('click', () => panel.close());
 // A click on the backdrop lands on the dialog element itself.
@@ -258,6 +267,7 @@ document.addEventListener('click', (event) => {
     trigger.querySelector('strong')?.textContent ?? template?.dataset.title ?? PANELS[name].title;
   const body = REQUESTS[name] ? prompt(REQUESTS[name]) : PANELS[name] ? PANELS[name].build() : [template.content.cloneNode(true)];
   document.getElementById('panel-body').replaceChildren(...body);
+  fillCounts(document.getElementById('panel-body'));
   if (!panel.open) panel.showModal();
   panel.scrollTop = 0;
 });
