@@ -10,7 +10,7 @@ flowchart TB
   subgraph Programme
     pdb[(Wahlprogramme 2025<br/>2.025 Abschnitte)]:::data
     psearch[Nächste Abschnitte suchen<br/>4 je Partei]:::code
-    prel[Passt der Abschnitt<br/>zur Forderung?]:::jev
+    prel[Sagt der Abschnitt etwas<br/>zur Forderung?]:::jev
     pgate{passt, ab 0,5?}
     pmatch[Wo steht die Partei<br/>zur Forderung?]:::jev
     pdb -.-> psearch --> prel --> pgate -->|ja| pmatch
@@ -19,17 +19,17 @@ flowchart TB
   subgraph Abstimmungen
     vdb[(Namentliche Abstimmungen<br/>654, namentlich und per Handzeichen)]:::data
     vsearch[Nächste Abstimmungen suchen<br/>12 insgesamt]:::code
-    vrel[Passt die Abstimmung<br/>zur Forderung?]:::jev
+    vrel[Geht es in der Abstimmung<br/>um die Forderung?]:::jev
     vgate{passt, ab 0,5?}
-    vdir[Geht ein Ja in Richtung<br/>der Forderung?]:::jev
-    vcompare[Mit den Fraktionen vergleichen]:::code
+    vdir[Wohin führt ein Ja:<br/>zur Forderung hin oder weg?]:::jev
+    vcompare[Mit den Fraktionen vergleichen<br/>Ablehnungsempfehlungen umgedreht]:::code
     vdb -.-> vsearch --> vrel --> vgate -->|ja| vdir --> vcompare
   end
 
   subgraph Aussagen
     sdb[(Reden im Bundestag und Websites<br/>der Fraktionen und Bundesparteien)]:::data
     ssearch[Nächste Aussagen suchen<br/>3 je Partei]:::code
-    srel[Passt die Aussage<br/>zur Forderung?]:::jev
+    srel[Sagt die Aussage etwas<br/>zur Forderung?]:::jev
     sgate{passt, ab 0,5?}
     smatch[Wo steht die Partei<br/>zur Forderung?]:::jev
     sdb -.-> ssearch --> srel --> sgate -->|ja| smatch

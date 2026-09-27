@@ -33,11 +33,19 @@ const statements = [
 const votes = [
   { id: 'vote-1', date: '2022-06-03', title: 'Anhebung des Mindestlohns', description: 'Der Mindestlohn steigt auf 12 Euro.' },
   { id: 'vote-2', date: '2022-11-10', title: 'Bürgergeld-Gesetz', description: 'Das Bürgergeld ersetzt Hartz IV.' },
+  // A vote on a recommendation to reject a motion: Jev judges the motion, the code turns the answer round.
+  {
+    id: 'hand-3',
+    date: '2025-11-06',
+    title: 'Ablehnung: Mindestlohn auf 15 Euro sofort',
+    rejects: 'Mindestlohn auf 15 Euro sofort',
+    description: 'Der Ausschuss empfiehlt, den Antrag „Mindestlohn auf 15 Euro sofort“ abzulehnen. Wer stimmt für diese Beschlussempfehlung? Ergebnis: angenommen.',
+  },
 ];
 
 // Made-up answers to step 1. The step 2 examples are built from the items
 // that pass them, as the app does, so the panels tell one consistent story.
-const EXAMPLE_RELEVANCE = { 'spd-12': 0.91, 'spd-31': 0.74, 'spd-40': 0.18, s42: 0.87, s77: 0.21, 'vote-1': 0.88, 'vote-2': 0.12 };
+const EXAMPLE_RELEVANCE = { 'spd-12': 0.91, 'spd-31': 0.74, 'spd-40': 0.18, s42: 0.87, s77: 0.21, 'vote-1': 0.88, 'vote-2': 0.12, 'hand-3': 0.93 };
 const relevanceAnswers = Object.fromEntries(Object.entries(EXAMPLE_RELEVANCE).map(([id, noul]) => [id, { noul }]));
 
 const programEvidence = evidenceOf('program', { spd: passages });
@@ -157,12 +165,15 @@ const explainer = (name, text) => {
 const TYPES = { noul: 'Wahrscheinlichkeit', choice: 'Auswahl', score: 'Skala' };
 
 function question([key, spec]) {
+  // For a recommendation to reject, the answer is about the motion; the app turns it round.
+  const turned = spec.type === 'choice' && votes.find((vote) => vote.id === key)?.rejects;
   return element(
     'li',
     'question',
     element('p', 'fields', element('code', '', key), element('span', 'type', `${spec.type} · ${TYPES[spec.type]}`)),
     element('p', '', spec.instructions),
     element('div', 'answer', element('span', 'example', 'Beispielantwort'), answer(key, spec)),
+    turned ? element('p', 'muted', 'Ein Ja zur Empfehlung lehnt diesen Antrag ab. Die App dreht die Antwort deshalb um: Hin wird zu weg.') : null,
   );
 }
 
@@ -190,9 +201,9 @@ function prompt(request) {
  */
 function jevExplained() {
   const kinds = [
-    ['Ja oder nein', 'Passt der Auszug zur Forderung?', 'spd-12', REQUESTS['program-relevance'].questions['spd-12'],
+    ['Ja oder nein', 'Sagt der Auszug etwas zur Forderung?', 'spd-12', REQUESTS['program-relevance'].questions['spd-12'],
       'Ab 0,5 hält Jev ein Ja für wahrscheinlicher als ein Nein. Darunter fällt der Beleg weg.'],
-    ['Eine von mehreren', 'Geht ein Ja in Richtung der Forderung?', 'vote-1', REQUESTS['vote-direction'].questions['vote-1'], null],
+    ['Eine von mehreren', 'Wohin führt ein Ja: zur Forderung hin oder weg?', 'vote-1', REQUESTS['vote-direction'].questions['vote-1'], null],
     ['Auf einer Skala', 'Wo steht die Partei zur Forderung?', 'spd_match', REQUESTS['program-match'].questions.spd_match, null],
   ];
   return [

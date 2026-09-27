@@ -97,17 +97,17 @@
 
         <button class="card jev" type="button" data-panel="program-relevance">
           <span class="chip jev">Jev · Schritt 1</span>
-          <strong>Passt der Abschnitt zur Forderung?</strong>
+          <strong>Sagt der Abschnitt etwas zur Forderung?</strong>
           <span class="loop">≡ je Abschnitt</span>
         </button>
         <button class="card jev" type="button" data-panel="vote-relevance">
           <span class="chip jev">Jev · Schritt 1</span>
-          <strong>Passt die Abstimmung zur Forderung?</strong>
+          <strong>Geht es in der Abstimmung um die Forderung?</strong>
           <span class="loop">≡ je Abstimmung</span>
         </button>
         <button class="card jev" type="button" data-panel="statements-relevance">
           <span class="chip jev">Jev · Schritt 1</span>
-          <strong>Passt die Aussage zur Forderung?</strong>
+          <strong>Sagt die Aussage etwas zur Forderung?</strong>
           <span class="loop">≡ je Aussage</span>
         </button>
 
@@ -126,7 +126,7 @@
         </button>
         <button class="card jev" type="button" data-panel="vote-direction">
           <span class="chip jev">Jev · Schritt 2</span>
-          <strong>Geht ein Ja in Richtung der Forderung?</strong>
+          <strong>Wohin führt ein Ja: zur Forderung hin oder weg?</strong>
           <span class="loop">≡ je passende Abstimmung</span>
         </button>
         <button class="card jev" type="button" data-panel="statements-match">
@@ -263,6 +263,8 @@
     <template id="votes-compare">
       <dl class="facts">
         <dt>Vergleicht</dt><dd>Wie jede Fraktion abgestimmt hat, mit der Richtung aus Schritt 2</dd>
+        <dt>Umgedreht</dt><dd>Wird über die Empfehlung abgestimmt, einen Antrag abzulehnen, beurteilt Jev den Antrag selbst. Ein Ja lehnt ihn ab, also dreht der Code die Richtung um.</dd>
+        <dt>Per Handzeichen</dt><dd>Hier steht nur fest, wie jede Fraktion gestimmt hat; sie zählt dann als geschlossen.</dd>
         <dt>Zählt mehr</dt><dd>Abstimmungen, die klar zur Forderung passen, und Fraktionen, die geschlossen abgestimmt haben</dd>
         <dt>Ohne Jev</dt><dd>Jev sieht die Fraktionen nie. Wer gleich abgestimmt hat, bekommt denselben Wert.</dd>
       </dl>
