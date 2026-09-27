@@ -148,7 +148,7 @@ function answer(key, { type, criteria }) {
 }
 
 const explainer = (name, text) => {
-  const button = element('button', 'term', text);
+  const button = element('button', `term ${name === 'jev' ? 'jev' : 'voyage'}`, text);
   button.type = 'button';
   button.dataset.panel = name;
   return button;

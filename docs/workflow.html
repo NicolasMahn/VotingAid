@@ -22,6 +22,10 @@
       <a class="brand" href="../"><img src="../favicon.svg" alt="" width="28" height="28" />Voting Aid</a>
       <h1>Von der Meinung zur Rangliste</h1>
       <p class="lead">Was passiert, wenn du auf „Analysieren“ drückst. Tipp auf einen Schritt für Details, bei Jev für den genauen Prompt.</p>
+      <p class="terms">
+        <button class="term voyage" type="button" data-panel="embedding">Embedding erklärt</button>
+        <button class="term jev" type="button" data-panel="jev">Jev erklärt</button>
+      </p>
       <ul class="legend" aria-label="Legende">
         <li><span class="chip person">Du</span></li>
         <li><span class="chip voyage">Voyage AI</span></li>
@@ -35,10 +39,6 @@
         <li><span class="mini gateway"></span>Entscheidung</li>
         <li><span class="loop">≡</span>je Element</li>
       </ul>
-      <p class="terms">
-        <button class="term" type="button" data-panel="embedding">Embedding erklärt</button>
-        <button class="term" type="button" data-panel="jev">Jev erklärt</button>
-      </p>
     </header>
 
     <main class="flow">
@@ -113,9 +113,9 @@
 
         <div class="link to-gateway"></div><div class="link to-gateway"></div><div class="link to-gateway"></div>
 
-        <div class="gateway"><span class="diamond"></span><span class="no"><i></i><span class="stop"></span><span class="no-text">fällt weg</span></span><button class="term" type="button" data-panel="jev">ja, ab 0,5</button></div>
-        <div class="gateway"><span class="diamond"></span><span class="no"><i></i><span class="stop"></span><span class="no-text">fällt weg</span></span><button class="term" type="button" data-panel="jev">ja, ab 0,5</button></div>
-        <div class="gateway"><span class="diamond"></span><span class="no"><i></i><span class="stop"></span><span class="no-text">fällt weg</span></span><button class="term" type="button" data-panel="jev">ja, ab 0,5</button></div>
+        <div class="gateway"><span class="diamond"></span><span class="no"><i></i><span class="stop"></span><span class="no-text">fällt weg</span></span><button class="term jev" type="button" data-panel="jev">ja, ab 0,5</button></div>
+        <div class="gateway"><span class="diamond"></span><span class="no"><i></i><span class="stop"></span><span class="no-text">fällt weg</span></span><button class="term jev" type="button" data-panel="jev">ja, ab 0,5</button></div>
+        <div class="gateway"><span class="diamond"></span><span class="no"><i></i><span class="stop"></span><span class="no-text">fällt weg</span></span><button class="term jev" type="button" data-panel="jev">ja, ab 0,5</button></div>
 
         <div class="link"></div><div class="link"></div><div class="link"></div>
 
@@ -179,7 +179,7 @@
         <dt>Modell</dt>
         <dd><code>voyage-4-large</code> über OpenRouter</dd>
       </dl>
-      <button class="term" type="button" data-panel="embedding">Embedding erklärt</button>
+      <button class="term voyage" type="button" data-panel="embedding">Embedding erklärt</button>
     </template>
 
     <!-- Explainers: terms, not steps. Pictures first, a line of text each. -->
@@ -215,7 +215,7 @@
         <dt>Hier</dt>
         <dd><code>voyage-4-large</code> von Voyage AI</dd>
       </dl>
-      <button class="term" type="button" data-panel="jev">Jev erklärt</button>
+      <button class="term jev" type="button" data-panel="jev">Jev erklärt</button>
     </template>
 
 
