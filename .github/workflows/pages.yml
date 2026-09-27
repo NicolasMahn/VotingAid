@@ -30,6 +30,11 @@ jobs:
       - name: Assemble the site
         run: mkdir _site && cp -r index.html favicon.svg css js data programme docs _site/
 
+      # Browsers cache the site for a while; tying each page's scripts and
+      # styles to the commit keeps a new page from running with an old script.
+      - name: Version the scripts and styles
+        run: sed -i "s/?v=dev/?v=${GITHUB_SHA::7}/g" _site/index.html _site/docs/workflow.html
+
       # With an OPENROUTER_KEY secret, the site works out of the box; the key
       # is then readable by every visitor, so use a dedicated, credit-capped
       # one. Without it, visitors are asked for their own key.

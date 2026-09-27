@@ -396,6 +396,8 @@ dialog {
   padding: 1.25rem 1.4rem 2rem;
   border: none;
   border-left: 1px solid var(--line);
+  /* Stands off from the page in both themes, where paper would merge with it. */
+  box-shadow: -8px 0 32px var(--shadow);
   background: var(--paper);
   color: var(--ink);
 }
@@ -561,99 +563,6 @@ dialog::backdrop {
 
 #panel-body > .term {
   margin-top: 1rem;
-}
-
-.quote {
-  display: block;
-  padding: 0.55rem 0.75rem;
-  border: 1px solid var(--line);
-  border-radius: 0.7rem;
-  background: var(--card);
-}
-
-/* The shared bars inherit their colors through <use>. */
-.vector {
-  display: block;
-  width: 100%;
-  max-width: 20rem;
-  height: auto;
-  fill: var(--lane-voyage);
-  stroke: var(--line);
-}
-
-.defs {
-  position: absolute;
-  width: 0;
-  height: 0;
-}
-
-.embed-rows,
-.explain,
-.samples {
-  display: grid;
-  gap: 0.9rem;
-  margin: 1rem 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.embed-rows li {
-  display: grid;
-  gap: 0.35rem;
-}
-
-/* Each explainer step leads to the next, like the flow itself. */
-.explain li + li {
-  position: relative;
-  padding-top: 1.4rem;
-}
-
-.explain li + li::before {
-  content: "↓";
-  position: absolute;
-  top: -0.35rem;
-  left: 0.75rem;
-  color: var(--ink-muted);
-}
-
-.explain p {
-  margin: 0 0 0.4rem;
-}
-
-.numbers {
-  font-family: ui-monospace, monospace;
-  font-size: 0.8rem;
-}
-
-.samples li {
-  display: grid;
-  gap: 0.4rem;
-}
-
-.scale {
-  margin: 1.25rem 0 0.25rem;
-}
-
-.meter.wide {
-  height: 0.9rem;
-  background: linear-gradient(to right, var(--line), var(--lane-jev));
-}
-
-.scale .ends {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 0.3rem;
-  color: var(--ink-muted);
-  font-size: 0.75rem;
-  line-height: 1.25;
-}
-
-.scale .ends span:nth-child(2) {
-  text-align: center;
-}
-
-.scale .ends span:last-child {
-  text-align: right;
 }
 
 /* Jev's request, drawn as if we had to answer it. */
@@ -984,4 +893,13 @@ dialog::backdrop {
     gap: 0.5rem;
   }
 
+}
+
+.lead-in {
+  margin: 0.25rem 0 1rem;
+}
+
+.kind {
+  margin: 0 0 0.5rem;
+  font-weight: 700;
 }

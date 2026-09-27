@@ -167,14 +167,13 @@ function question([key, spec]) {
 }
 
 function prompt(request) {
-  const hasNoul = Object.values(request.questions).some(({ type }) => type === 'noul');
   return [
     element('p', 'muted', 'So bekommt Jev die Aufgabe, gebaut vom Code der App für ein Beispiel. Die Antworten sind ausgedacht.'),
     element('p', 'meta', 'Jev liest'),
     ...state(request.state),
     element('p', 'meta', 'Jev antwortet'),
     element('ol', 'questions', ...Object.entries(request.questions).map(question)),
-    hasNoul ? explainer('threshold', 'Was heißt ab 0,5?') : null,
+    explainer('jev', 'Jev erklärt'),
     element(
       'details',
       'request',
@@ -183,6 +182,48 @@ function prompt(request) {
     ),
   ].filter(Boolean);
 }
+
+/**
+ * What Jev is, and the three kinds of question the app asks it, each with a
+ * made-up answer drawn like in the steps. The questions and options are the
+ * app's own, taken from the requests above.
+ */
+function jevExplained() {
+  const kinds = [
+    ['Ja oder nein', 'Passt der Auszug zur Forderung?', 'spd-12', REQUESTS['program-relevance'].questions['spd-12'],
+      'Ab 0,5 hält Jev ein Ja für wahrscheinlicher als ein Nein. Darunter fällt der Beleg weg.'],
+    ['Eine von mehreren', 'Geht ein Ja in Richtung der Forderung?', 'vote-1', REQUESTS['vote-direction'].questions['vote-1'], null],
+    ['Auf einer Skala', 'Wo steht die Partei zur Forderung?', 'spd_match', REQUESTS['program-match'].questions.spd_match, null],
+  ];
+  return [
+    element('p', 'lead-in', 'Jev ist ein Entscheidungsmodell von TypeSafe. Es schreibt keinen Text, sondern beantwortet fest gestellte Fragen mit Wahrscheinlichkeiten.'),
+    element(
+      'ol',
+      'questions',
+      ...kinds.map(([name, asked, key, spec, note]) =>
+        element(
+          'li',
+          'question',
+          element('p', 'kind', name),
+          element('p', '', asked),
+          element('div', 'answer', element('span', 'example', 'Beispielantwort'), answer(key, spec)),
+          note ? element('p', 'muted', note) : null,
+        ),
+      ),
+    ),
+    element(
+      'dl',
+      'facts',
+      element('dt', '', 'Gut für'),
+      element('dd', '', 'Jede Partei bekommt dieselbe Frage, und die Antworten lassen sich vergleichen. Schnell und günstig, ohne erfundene Begründungen.'),
+      element('dt', '', 'Grenze'),
+      element('dd', '', 'Jev urteilt nur über das, was es liest: die gefundenen Auszüge, nicht das ganze Programm.'),
+    ),
+  ];
+}
+
+// Panels built here rather than from a template.
+const PANELS = { jev: { title: 'Jev erklärt', build: jevExplained } };
 
 const panel = document.getElementById('panel');
 panel.querySelector('.close').addEventListener('click', () => panel.close());
@@ -196,8 +237,8 @@ document.addEventListener('click', (event) => {
   const name = trigger.dataset.panel;
   const template = document.getElementById(name);
   document.getElementById('panel-title').textContent =
-    trigger.querySelector('strong')?.textContent ?? template.dataset.title;
-  const body = REQUESTS[name] ? prompt(REQUESTS[name]) : [template.content.cloneNode(true)];
+    trigger.querySelector('strong')?.textContent ?? template?.dataset.title ?? PANELS[name].title;
+  const body = REQUESTS[name] ? prompt(REQUESTS[name]) : PANELS[name] ? PANELS[name].build() : [template.content.cloneNode(true)];
   document.getElementById('panel-body').replaceChildren(...body);
   if (!panel.open) panel.showModal();
   panel.scrollTop = 0;
